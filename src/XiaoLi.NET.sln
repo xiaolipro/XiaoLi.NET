@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32519.111
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventBus", "EventBus", "{88D65CDA-5D86-46A5-89DD-3CACBB771469}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.EventBus", "Xiaoli.EventBus\XiaoLi.EventBus.csproj", "{9517DE63-B135-44B3-88FD-63993E97DDA6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.EventBus.RabbitMQ", "XiaoLi.EventBus.RabbitMQ\XiaoLi.EventBus.RabbitMQ.csproj", "{BA5327CD-A662-4096-900F-E04A2FC8783E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MessageQueue", "MessageQueue", "{DE3A3335-629C-4B76-8101-4A8092EE94D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1CB0EEC3-B2BD-40C1-B5A6-C7A52ED14525}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.EventBus.UnitTests", "XiaoLi.EventBus.Tests\XiaoLi.EventBus.UnitTests.csproj", "{32C61CDC-E630-4DC1-9732-65F23FE494B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.RabbitMQ", "XiaoLi.RabbitMQ\XiaoLi.RabbitMQ.csproj", "{7153C67F-D55E-4DC1-ABA6-42BD05E42800}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Polly", "Polly", "{99CBE5C9-D121-4850-B380-D365A54D37D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9517DE63-B135-44B3-88FD-63993E97DDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9517DE63-B135-44B3-88FD-63993E97DDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9517DE63-B135-44B3-88FD-63993E97DDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9517DE63-B135-44B3-88FD-63993E97DDA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA5327CD-A662-4096-900F-E04A2FC8783E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA5327CD-A662-4096-900F-E04A2FC8783E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA5327CD-A662-4096-900F-E04A2FC8783E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA5327CD-A662-4096-900F-E04A2FC8783E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32C61CDC-E630-4DC1-9732-65F23FE494B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32C61CDC-E630-4DC1-9732-65F23FE494B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32C61CDC-E630-4DC1-9732-65F23FE494B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32C61CDC-E630-4DC1-9732-65F23FE494B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7153C67F-D55E-4DC1-ABA6-42BD05E42800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7153C67F-D55E-4DC1-ABA6-42BD05E42800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7153C67F-D55E-4DC1-ABA6-42BD05E42800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7153C67F-D55E-4DC1-ABA6-42BD05E42800}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9517DE63-B135-44B3-88FD-63993E97DDA6} = {88D65CDA-5D86-46A5-89DD-3CACBB771469}
+		{BA5327CD-A662-4096-900F-E04A2FC8783E} = {88D65CDA-5D86-46A5-89DD-3CACBB771469}
+		{1CB0EEC3-B2BD-40C1-B5A6-C7A52ED14525} = {88D65CDA-5D86-46A5-89DD-3CACBB771469}
+		{32C61CDC-E630-4DC1-9732-65F23FE494B6} = {1CB0EEC3-B2BD-40C1-B5A6-C7A52ED14525}
+		{7153C67F-D55E-4DC1-ABA6-42BD05E42800} = {DE3A3335-629C-4B76-8101-4A8092EE94D4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {19BAA99A-8EF9-4729-87DD-C7F355929D74}
+	EndGlobalSection
+EndGlobal
