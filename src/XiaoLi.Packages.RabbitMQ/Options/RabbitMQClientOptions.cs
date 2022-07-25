@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.RabbitMQ.Configs
+namespace XiaoLi.Packages.RabbitMQ.Options
 {
-    public class RabbitMQConfig
+    public class RabbitMQClientOptions
     {
         /// <summary>
         /// 主机
@@ -30,10 +30,5 @@ namespace XiaoLi.RabbitMQ.Configs
         /// 虚拟主机
         /// </summary>
         public string VirtualHost { get; set; }
-
-        /// <summary>
-        /// 重连次数
-        /// </summary>
-        public int Retries { get; set; }
     }
 }

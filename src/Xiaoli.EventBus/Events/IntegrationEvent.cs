@@ -3,7 +3,7 @@
 namespace XiaoLi.EventBus.Events
 {
     /// <summary>
-    /// 集成事件
+    /// 事件接口
     /// </summary>
     public class IntegrationEvent
     {

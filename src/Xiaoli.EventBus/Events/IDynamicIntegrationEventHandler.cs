@@ -13,8 +13,8 @@ namespace XiaoLi.EventBus.Events
         /// <summary>
         /// 处理动态事件
         /// </summary>
-        /// <param name="event">动态事件</param>
+        /// <param name="message">队列中的消息</param>
         /// <returns></returns>
-        Task Handle(dynamic @event);
+        Task Handle(string message);
     }
 }

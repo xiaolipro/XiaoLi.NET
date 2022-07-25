@@ -26,7 +26,7 @@ namespace XiaoLi.EventBus.Subscriptions
         public void AddDynamicSubscription<THandler>(string eventName) 
             where THandler : IDynamicIntegrationEventHandler
         {
-            var subscription = SubscriptionInfoFactory.CreateDynamicSubscriptionInfo<THandler>(eventName);
+            var subscription = SubscriptionInfo.Dynamic(eventName,typeof(THandler));
             DoAddSubscriptionInfo(subscription);
         }
 
@@ -34,7 +34,8 @@ namespace XiaoLi.EventBus.Subscriptions
             where TEvent : IntegrationEvent 
             where THandler : IIntegrationEventHandler<TEvent>
         {
-            var subscription = SubscriptionInfoFactory.CreateSubscriptionInfo<TEvent, THandler>();
+            string eventName = GetEventName<TEvent>();
+            var subscription = SubscriptionInfo.Typed(eventName,typeof(THandler));
             DoAddSubscriptionInfo(subscription);
         }
 

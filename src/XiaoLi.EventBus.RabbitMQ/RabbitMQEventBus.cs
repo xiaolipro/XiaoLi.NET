@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using XiaoLi.EventBus.Events;
-using XiaoLi.RabbitMQ;
+using XiaoLi.EventBus.Subscriptions;
+using XiaoLi.Packages.RabbitMQ;
 
 namespace XiaoLi.EventBus.RabbitMQ
 {
@@ -9,13 +13,18 @@ namespace XiaoLi.EventBus.RabbitMQ
     /// </summary>
     public class RabbitMQEventBus:IEventBus
     {
-        private readonly IRabbitMQConnector _connector;
+        private readonly IChannelFactory _channelFactory;
         private readonly ILogger<RabbitMQEventBus> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ISubscriptionsManager _subscriptionsManager;
 
-        public RabbitMQEventBus(IRabbitMQConnector connector,ILogger<RabbitMQEventBus> logger,)
+        public RabbitMQEventBus(IChannelFactory channelFactory,ILogger<RabbitMQEventBus> logger, IServiceProvider serviceProvider,
+            ISubscriptionsManager subscriptionsManager)
         {
-            _connector = connector;
+            _channelFactory = channelFactory;
             _logger = logger;
+            _serviceProvider = serviceProvider;
+            _subscriptionsManager = subscriptionsManager;
         }
         public void Publish(IntegrationEvent @event)
         {
@@ -45,6 +54,24 @@ namespace XiaoLi.EventBus.RabbitMQ
         public void Dispose()
         {
             throw new NotImplementedException();
+        }
+
+
+        private async Task ProcessEvent(string eventName, string message)
+        {
+            _logger.LogTrace("Processing RabbitMQ event: {EventName}", eventName);
+            if (!_subscriptionsManager.HasSubscriptions(eventName))
+            {
+                _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
+                return;
+            }
+
+            var subscriptionInfos = _subscriptionsManager.GetSubscriptionInfos(eventName);
+
+            foreach (var subscriptionInfo in subscriptionInfos)
+            {
+                if (subscriptionInfo.EvenType)
+            }
         }
     }
 }

@@ -86,13 +86,13 @@ namespace XiaoLi.EventBus.Subscriptions
 
 
         /// <summary>
-        /// 是否有订阅
+        /// 此事件是否有订阅
         /// </summary>
         /// <typeparam name="TEvent">事件类型</typeparam>
         /// <returns></returns>
         bool HasSubscriptions<TEvent>() where TEvent : IntegrationEvent;
         /// <summary>
-        /// 是否有订阅
+        /// 此事件是否有订阅
         /// </summary>
         /// <param name="eventName">事件名称</param>
         /// <returns></returns>
