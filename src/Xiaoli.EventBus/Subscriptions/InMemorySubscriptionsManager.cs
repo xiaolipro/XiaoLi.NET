@@ -108,7 +108,7 @@ namespace XiaoLi.EventBus.Subscriptions
             _subscriptions[eventName].Remove(subscriptionInfo);
             if (_subscriptions[eventName].Any()) return;
 
-            // 移除事件
+            // 事件移除
             _subscriptions.Remove(eventName);
             RaiseOnEventRemoved(eventName);
         }
