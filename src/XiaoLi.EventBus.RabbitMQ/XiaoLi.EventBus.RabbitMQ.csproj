@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Xiaoli.EventBus\XiaoLi.EventBus.csproj" />
-    <ProjectReference Include="..\XiaoLi.RabbitMQ\XiaoLi.Packages.RabbitMQ.csproj" />
+    <ProjectReference Include="..\XiaoLi.Packages.RabbitMQ\XiaoLi.Packages.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

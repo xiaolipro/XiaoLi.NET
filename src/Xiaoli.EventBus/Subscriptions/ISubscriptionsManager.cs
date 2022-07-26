@@ -100,6 +100,8 @@ namespace XiaoLi.EventBus.Subscriptions
 
 
         string GetEventName<TEvent>() where TEvent : IntegrationEvent;
+
+        Type GetEventTypeByName(string eventName);
         #endregion
 
     }

@@ -12,11 +12,15 @@ namespace XiaoLi.EventBus.Subscriptions
     public class InMemorySubscriptionsManager : ISubscriptionsManager
     {
         // 内存字典
-        // {{事件名称:[订阅信息]}}
+        // 数据格式：{事件名称:[订阅信息]}
         private readonly Dictionary<string, List<SubscriptionInfo>> _subscriptions;
+
+        // 事件类型列表
+        private readonly List<Type> _eventTypes;
         public InMemorySubscriptionsManager()
         {
             _subscriptions = new Dictionary<string, List<SubscriptionInfo>>();
+            _eventTypes = new List<Type>();
         }
 
         #region implements
@@ -26,7 +30,8 @@ namespace XiaoLi.EventBus.Subscriptions
         public void AddDynamicSubscription<THandler>(string eventName) 
             where THandler : IDynamicIntegrationEventHandler
         {
-            var subscription = SubscriptionInfo.Dynamic(eventName,typeof(THandler));
+            var handlerType = typeof(THandler);
+            var subscription = SubscriptionInfo.Dynamic(eventName,handlerType);
             DoAddSubscriptionInfo(subscription);
         }
 
@@ -35,7 +40,7 @@ namespace XiaoLi.EventBus.Subscriptions
             where THandler : IIntegrationEventHandler<TEvent>
         {
             string eventName = GetEventName<TEvent>();
-            var subscription = SubscriptionInfo.Typed(eventName,typeof(THandler));
+            var subscription = SubscriptionInfo.Typed(eventName, typeof(THandler));
             DoAddSubscriptionInfo(subscription);
         }
 
@@ -68,7 +73,11 @@ namespace XiaoLi.EventBus.Subscriptions
         public bool HasSubscriptions(string eventName)
             => _subscriptions.ContainsKey(eventName);
 
-        public string GetEventName<TEvent>() where TEvent : IntegrationEvent => typeof(TEvent).Name;
+        public string GetEventName<TEvent>() where TEvent : IntegrationEvent 
+            => typeof(TEvent).Name;
+
+        public Type GetEventTypeByName(string eventName) 
+            => _eventTypes.SingleOrDefault(type => type.Name.Equals(eventName, StringComparison.OrdinalIgnoreCase));
 
         #endregion
 
@@ -94,23 +103,48 @@ namespace XiaoLi.EventBus.Subscriptions
             }
 
             _subscriptions[eventName].Add(subscriptionInfo);
+
+            // 维护事件类型列表
+            if (!_eventTypes.Contains(handlerType))
+            {
+                _eventTypes.Add(handlerType);
+            }
         }
 
         /// <summary>
         /// 移除订阅信息
         /// </summary>
         /// <param name="subscriptionInfo"></param>
-        void DoRemoveSubscriptionInfo(SubscriptionInfo subscriptionInfo)
+        private void DoRemoveSubscriptionInfo(SubscriptionInfo subscriptionInfo)
         {
             if (subscriptionInfo == null) return;
             string eventName = subscriptionInfo.EventName;
 
             _subscriptions[eventName].Remove(subscriptionInfo);
-            if (_subscriptions[eventName].Any()) return;
 
-            // 事件移除
+
+            // 事件没有任何订阅信息时，清除事件
+            if (!_subscriptions[eventName].Any())
+            {
+                RemoveEvent(eventName);
+            }
+        }
+
+        /// <summary>
+        /// 移除事件
+        /// </summary>
+        /// <param name="eventName"></param>
+        private void RemoveEvent(string eventName)
+        {
+            // 从订阅集中移除
             _subscriptions.Remove(eventName);
             RaiseOnEventRemoved(eventName);
+            // 从事件类型列表中移除
+            var eventType = GetEventTypeByName(eventName);
+            if (eventType != null)
+            {
+                _eventTypes.Remove(eventType);
+            }
         }
 
         /// <summary>
@@ -119,7 +153,7 @@ namespace XiaoLi.EventBus.Subscriptions
         /// <param name="eventName"></param>
         /// <param name="handlerType"></param>
         /// <returns></returns>
-        SubscriptionInfo DoFindSubscription(string eventName, Type handlerType)
+        private SubscriptionInfo DoFindSubscription(string eventName, Type handlerType)
         {
             if (!HasSubscriptions(eventName)) return default;
 
@@ -130,7 +164,7 @@ namespace XiaoLi.EventBus.Subscriptions
         /// 引发移除事件
         /// </summary>
         /// <param name="eventName"></param>
-        void RaiseOnEventRemoved(string eventName)
+        private void RaiseOnEventRemoved(string eventName)
         {
             OnEventRemoved?.Invoke(this, eventName);
         }
