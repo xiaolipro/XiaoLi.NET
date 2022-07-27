@@ -10,12 +10,17 @@ namespace XiaoLi.Packages.RabbitMQ
     /// <summary>
     /// RabbitMQ--Channel工厂
     /// </summary>
-    public interface IChannelFactory:IDisposable
+    public interface IRabbitMQConnector:IDisposable
     {
         /// <summary>
-        /// 是否连接上
+        /// 连接还没断掉
         /// </summary>
         bool IsConnected { get; }
+
+        /// <summary>
+        /// 保持活性
+        /// </summary>
+        void KeepAalive();
 
         /// <summary>
         /// 创建channel

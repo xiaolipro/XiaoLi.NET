@@ -12,9 +12,9 @@ using XiaoLi.Packages.RabbitMQ.Options;
 
 namespace XiaoLi.Packages.RabbitMQ
 {
-    public class ChannelFactory : IChannelFactory
+    public class RabbitMqConnector : IRabbitMQConnector
     {
-        private readonly ILogger<ChannelFactory> _logger;
+        private readonly ILogger<RabbitMqConnector> _logger;
         private readonly IConnectionFactory _connectionFactory;
         private readonly int _retries;
         private IConnection _connection;
@@ -22,10 +22,11 @@ namespace XiaoLi.Packages.RabbitMQ
         private readonly object _lock = new object();
 
 
-        public ChannelFactory(ILogger<ChannelFactory> logger, IOptions<RabbitMQClientOptions> config, int retries)
+        public RabbitMqConnector(ILogger<RabbitMqConnector> logger, IOptions<RabbitMQClientOptions> config, int retries = 5)
         {
             _logger = logger;
-            _connectionFactory = GetConnectionFactory(config.Value);
+            var clientConfig = config.Value;
+            _connectionFactory = GetConnectionFactory(clientConfig);
             _retries = retries;
         }
 
@@ -62,12 +63,15 @@ namespace XiaoLi.Packages.RabbitMQ
             }
         }
 
-
+        public void KeepAalive()
+        {
+            if(!IsConnected) ReConnect();
+        }
 
         /// <summary>
         /// 重连
         /// </summary>
-        /// <exception cref="Exception"></exception>
+        /// <exception cref="Exception">RabbitMQ connections could not be created and opened</exception>
         private void ReConnect()
         {
             _logger.LogInformation("RabbitMQ Client is trying to connect");
