@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Xiaoli.EventBus\XiaoLi.EventBus.csproj" />
+    <ProjectReference Include="..\XiaoLi.NET\XiaoLi.NET.csproj" />
     <ProjectReference Include="..\XiaoLi.Packages.RabbitMQ\XiaoLi.Packages.RabbitMQ.csproj" />
   </ItemGroup>
 

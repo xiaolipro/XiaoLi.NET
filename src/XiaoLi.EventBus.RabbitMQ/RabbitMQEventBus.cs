@@ -11,17 +11,19 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using XiaoLi.EventBus.Events;
 using XiaoLi.EventBus.Subscriptions;
+using XiaoLi.NET.Extensions;
 using XiaoLi.Packages.RabbitMQ;
 
 namespace XiaoLi.EventBus.RabbitMQ
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线
+    /// 直连交换机，路由模式，以eventName作为routeKey
     /// </summary> 
     public class RabbitMQEventBus : IEventBus
     {
         const string BROKER_NAME = "xiaoli_event_bus";
-        
+
         private readonly IRabbitMQConnector _rabbitMqConnector;
         private readonly ILogger<RabbitMQEventBus> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -30,13 +32,13 @@ namespace XiaoLi.EventBus.RabbitMQ
         private readonly int _publishRetries;
         private readonly IModel _consumerChannel;
 
-        public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector, 
+        public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector,
             ILogger<RabbitMQEventBus> logger,
             IServiceProvider serviceProvider,
             ISubscriptionsManager subscriptionsManager,
             string subscriptionQueueName,
             int publishRetries
-            )
+        )
         {
             _rabbitMqConnector = rabbitMqConnector;
             _logger = logger;
@@ -47,28 +49,42 @@ namespace XiaoLi.EventBus.RabbitMQ
             _subscriptionsManager.OnEventRemoved += OnEventRemoved;
         }
 
-        private void OnEventRemoved(object sender, string eventName)
-        {
-            _rabbitMqConnector.KeepAalive();
-
-            using (var channel = _rabbitMqConnector.CreateChannel())
-            {
-                channel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey:eventName);
-
-                if (_subscriptionsManager.IsEmpty)
-                {
-                    _consumerChannel.Close();
-                }
-            }
-        }
 
         public void Publish(IntegrationEvent @event)
         {
             _rabbitMqConnector.KeepAalive();
-            
+
             var policy = Policy.Handle<BrokerUnreachableException>()
                 .Or<SocketException>()
-                .WaitAndRetry()
+                .WaitAndRetry(_publishRetries,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    (ex, time) =>
+                    {
+                        _logger.LogWarning(ex,
+                            "Could not publish event: {EventId} after {Timeout}s ({ExceptionMessage})", @event.Id,
+                            $"{time.TotalSeconds:n1}", ex.Message);
+                    });
+            var eventName = @event.GetType().Name;
+
+            _logger.LogTrace("Creating RabbitMQ channel to publish event: {EventId} ({EventName})", @event.Id,
+                eventName);
+            using (var channel = _rabbitMqConnector.CreateChannel())
+            {
+                _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Id);
+                channel.ExchangeDeclare(exchange: BROKER_NAME, ExchangeType.Direct);
+
+                var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(@event));
+
+                policy.Execute(() =>
+                {
+                    var properties = channel.CreateBasicProperties();
+                    properties.DeliveryMode = 2; // Non-persistent (1) or persistent (2).
+
+                    _logger.LogTrace("Publishing event to RabbitMQ: {EventId}", @event.Id);
+                    channel.BasicPublish(exchange: BROKER_NAME, routingKey: eventName, mandatory: true,
+                        basicProperties: properties, body: body);
+                });
+            }
         }
 
         public void Subscribe<TEvent, THandler>() where TEvent : IntegrationEvent
@@ -76,24 +92,23 @@ namespace XiaoLi.EventBus.RabbitMQ
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
 
-            DoSubscribe(eventName);
+            DoInternalSubscription(eventName);
+
+            _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName,
+                typeof(THandler).GetTypeName());
+            _subscriptionsManager.AddSubscription<TEvent, THandler>();
+
+            DoInternalSubscription(eventName);
         }
 
-        private void DoSubscribe(string eventName)
-        {
-            if(_subscriptionsManager.HasSubscriptions(eventName)) return;
 
-            if (!_rabbitMqConnector.IsConnected)
-            {
-                _rabbitMqConnector.ReConnect();
-            }
-            
-            _consumerChannel.QueueBind(_subscriptionOptions.QueueName);
-        }
-
-        public void Subscribe<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
+        public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName,
+                typeof(THandler).GetTypeName());
+            _subscriptionsManager.AddDynamicSubscription<THandler>(eventName);
+
+            DoInternalSubscription(eventName);
         }
 
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent
@@ -102,7 +117,7 @@ namespace XiaoLi.EventBus.RabbitMQ
             throw new NotImplementedException();
         }
 
-        public void Unsubscribe<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
+        public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
             throw new NotImplementedException();
         }
@@ -112,8 +127,41 @@ namespace XiaoLi.EventBus.RabbitMQ
             throw new NotImplementedException();
         }
 
+        #region private methods
 
-        private async Task ConsumerReceived(object sender, BasicDeliverEventArgs eventArgs)
+        private void DoInternalSubscription(string eventName)
+        {
+            if (_subscriptionsManager.HasSubscriptions(eventName)) return;
+
+            _rabbitMqConnector.KeepAalive();
+
+            _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+
+            _logger.LogTrace("Starting RabbitMQ basic consume");
+            // 创建异步消费者
+            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
+            consumer.Received += OnReceived;
+
+            _consumerChannel.BasicConsume(queue: _subscriptionQueueName, autoAck: false, consumer: consumer);
+        }
+
+        private void OnEventRemoved(object sender, string eventName)
+        {
+            _rabbitMqConnector.KeepAalive();
+
+            using (var channel = _rabbitMqConnector.CreateChannel())
+            {
+                channel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+
+                if (_subscriptionsManager.IsEmpty)
+                {
+                    // _subscriptionQueueName = string.Empty;
+                    _consumerChannel.Close();
+                }
+            }
+        }
+
+        private async Task OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             string eventName = eventArgs.RoutingKey;
             string message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
@@ -125,6 +173,12 @@ namespace XiaoLi.EventBus.RabbitMQ
             {
                 _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", message);
             }
+
+
+            // Even on exception we take the message off the queue.
+            // in a REAL WORLD app this should be handled with a Dead Letter Exchange (DLX). 
+            // For more information see: https://www.rabbitmq.com/dlx.html
+            _consumerChannel.BasicAck(eventArgs.DeliveryTag, multiple: false); // 手动确认
         }
 
 
@@ -154,7 +208,7 @@ namespace XiaoLi.EventBus.RabbitMQ
                     }
 
                     _logger.LogTrace("Processing RabbitMQ dynamic event: {EventName}", eventName);
-                    
+
                     await handler.Handle(message);
                 }
                 else
@@ -174,17 +228,15 @@ namespace XiaoLi.EventBus.RabbitMQ
                         .GetMethod(nameof(IIntegrationEventHandler<IntegrationEvent>.Handle));
 
                     // TODO: how to de-serialize a that not using System.Text.Json.Serializer or Newtonsoft.Json.JsonConvert
-                    var integrationEvent = JsonConvert.DeserializeObject(message,eventType); 
-                    // Activator.CreateInstance(eventType);
-                    // var stream = new MemoryStream(body.ToArray());
-                    // DataContractJsonSerializer serializer = new DataContractJsonSerializer(eventType);
-                    // serializer.ReadObject(stream);
-                    
+                    var integrationEvent = JsonConvert.DeserializeObject(message, eventType);
+
                     // see：https://stackoverflow.com/questions/22645024/when-would-i-use-task-yield
                     await Task.Yield();
                     handle?.Invoke(handler, new object[] { integrationEvent });
                 }
             }
         }
+
+        #endregion
     }
 }
