@@ -114,17 +114,26 @@ namespace XiaoLi.EventBus.RabbitMQ
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent
             where THandler : IIntegrationEventHandler<TEvent>
         {
-            throw new NotImplementedException();
+            var eventName = _subscriptionsManager.GetEventName<TEvent>();
+            
+            _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
+
+            _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
         }
 
         public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
-            throw new NotImplementedException();
+            _subscriptionsManager.RemoveDynamicSubscription<THandler>(eventName);
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            if (_consumerChannel != null)
+            {
+                _consumerChannel.Dispose();
+            }
+            
+            _subscriptionsManager.Clear();
         }
 
         #region private methods
