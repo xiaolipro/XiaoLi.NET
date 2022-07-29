@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XiaoLi.EventBus.Events
+namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
     /// 事件接口

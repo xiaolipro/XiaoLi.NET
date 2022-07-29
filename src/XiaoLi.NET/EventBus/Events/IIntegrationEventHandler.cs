@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XiaoLi.EventBus.Events
+namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
     /// 集成事件处理器

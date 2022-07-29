@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.EventBus.Subscriptions
+namespace XiaoLi.NET.EventBus.Subscriptions
 {
     public class SubscriptionInfo
     {

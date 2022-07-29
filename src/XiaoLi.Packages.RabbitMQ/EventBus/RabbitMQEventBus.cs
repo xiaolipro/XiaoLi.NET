@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using XiaoLi.EventBus.Events;
-using XiaoLi.EventBus.Subscriptions;
+using XiaoLi.NET.EventBus;
+using XiaoLi.NET.EventBus.Events;
+using XiaoLi.NET.EventBus.Subscriptions;
 using XiaoLi.NET.Extensions;
 using XiaoLi.Packages.RabbitMQ;
 
@@ -73,7 +74,10 @@ namespace XiaoLi.EventBus.RabbitMQ
                 _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Id);
                 channel.ExchangeDeclare(exchange: BROKER_NAME, ExchangeType.Direct);
 
-                var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(@event));
+                var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
 
                 policy.Execute(() =>
                 {
@@ -236,8 +240,7 @@ namespace XiaoLi.EventBus.RabbitMQ
                         .MakeGenericType(eventType)
                         .GetMethod(nameof(IIntegrationEventHandler<IntegrationEvent>.Handle));
 
-                    // TODO: how to de-serialize a that not using System.Text.Json.Serializer or Newtonsoft.Json.JsonConvert
-                    var integrationEvent = JsonConvert.DeserializeObject(message, eventType);
+                    var integrationEvent = JsonSerializer.Deserialize(message, eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
                     // see：https://stackoverflow.com/questions/22645024/when-would-i-use-task-yield
                     await Task.Yield();

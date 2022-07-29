@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using XiaoLi.EventBus.Events;
+using XiaoLi.NET.EventBus.Events;
 
-namespace XiaoLi.EventBus.Subscriptions
+namespace XiaoLi.NET.EventBus.Subscriptions
 {
     /// <summary>
     /// 基于内存的订阅管理器
