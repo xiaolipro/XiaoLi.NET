@@ -12,9 +12,13 @@ using XiaoLi.NET.RabbitMQ.Options;
 
 namespace XiaoLi.NET.RabbitMQ
 {
-    public class RabbitMqConnector : IRabbitMQConnector
+    /// <summary>
+    /// RabbitMQ链接器，Channel工厂
+    /// 复用同一个IConnection，减少连接的高昂开销
+    /// </summary>
+    public class RabbitMQConnector : IRabbitMQConnector
     {
-        private readonly ILogger<RabbitMqConnector> _logger;
+        private readonly ILogger<RabbitMQConnector> _logger;
         private readonly IConnectionFactory _connectionFactory;
         private readonly int _retries;
         private IConnection _connection;
@@ -22,7 +26,7 @@ namespace XiaoLi.NET.RabbitMQ
         private readonly object _lock = new object();
 
 
-        public RabbitMqConnector(ILogger<RabbitMqConnector> logger, IOptions<RabbitMQClientOptions> config, int retries = 5)
+        public RabbitMQConnector(ILogger<RabbitMQConnector> logger, IOptions<RabbitMQClientOptions> config, int retries = 5)
         {
             _logger = logger;
             var clientConfig = config.Value;
@@ -35,7 +39,7 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (!IsConnected)
             {
-                ConnectRabbitMq();
+                ConnectRabbitMQ();
             }
 
             return _connection.CreateModel();
@@ -68,7 +72,7 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (!IsConnected)
             {
-                ConnectRabbitMq();
+                ConnectRabbitMQ();
             }
         }
 
@@ -81,13 +85,13 @@ namespace XiaoLi.NET.RabbitMQ
         /// 重连
         /// </summary>
         /// <exception cref="Exception">RabbitMQ connections could not be created and opened</exception>
-        private void ConnectRabbitMq()
+        private void ConnectRabbitMQ()
         {
             _logger.LogInformation("正在尝试连接RabbitMQ客户端");
 
             lock (_lock)
             {
-                var policy = Policy.Handle<SocketException>() //socket异常时
+                var retryPolicy = Policy.Handle<SocketException>() //socket异常时
                     .Or<BrokerUnreachableException>() //broker不可达异常时
                     .WaitAndRetry(_retries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                         (ex, time) =>
@@ -96,7 +100,7 @@ namespace XiaoLi.NET.RabbitMQ
                         }
                     );
 
-                policy.Execute(() =>
+                retryPolicy.Execute(() =>
                 {
                     _connection = _connectionFactory.CreateConnection();
                 });
@@ -167,7 +171,7 @@ namespace XiaoLi.NET.RabbitMQ
 
             _logger.LogWarning("RabbitMQ连接被阻止，正在尝试重新连接。。。");
 
-            ConnectRabbitMq();
+            ConnectRabbitMQ();
         }
 
         /// <summary>
@@ -181,7 +185,7 @@ namespace XiaoLi.NET.RabbitMQ
 
             _logger.LogWarning("RabbitMQ连接发生异常：{Message}，正在尝试重新连接。。。", e.Exception.Message);
 
-            ConnectRabbitMq();
+            ConnectRabbitMQ();
         }
 
         /// <summary>
@@ -195,7 +199,7 @@ namespace XiaoLi.NET.RabbitMQ
 
             _logger.LogWarning("RabbitMQ连接已被关闭，正在尝试重新连接。。。");
 
-            ConnectRabbitMq();
+            ConnectRabbitMQ();
         }
 
     }

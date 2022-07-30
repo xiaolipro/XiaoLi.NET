@@ -99,7 +99,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
 
             if (_subscriptions[eventName].Any(x => x.HandlerType == handlerType))
             {
-                throw new ArgumentException($"Handler type {handlerType.Name} already registered for '{eventName}'", nameof(handlerType));
+                throw new ArgumentException($"{handlerType.Name}已经订阅过'{eventName}'", nameof(handlerType));
             }
 
             _subscriptions[eventName].Add(subscriptionInfo);
@@ -123,7 +123,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
             _subscriptions[eventName].Remove(subscriptionInfo);
 
 
-            // 事件没有任何订阅信息时，清除事件
+            // 事件没有任何订阅信息时，移除事件
             if (!_subscriptions[eventName].Any())
             {
                 RemoveEvent(eventName);

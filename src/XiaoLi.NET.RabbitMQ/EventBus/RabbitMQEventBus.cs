@@ -19,7 +19,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线
-    /// 直连交换机，路由模式，以eventName作为routeKey
+    /// 直连交换机，路由模式，以事件名称作为routeKey，一个客户端对应一个队列（以客户端命名）
     /// </summary> 
     public class RabbitMQEventBus : IEventBus
     {
@@ -29,25 +29,29 @@ namespace XiaoLi.EventBus.RabbitMQ
         private readonly ILogger<RabbitMQEventBus> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly ISubscriptionsManager _subscriptionsManager;
-        private readonly string _subscriptionQueueName;
         private readonly int _publishRetries;
-        private readonly IModel _consumerChannel;
+
+        // 订阅队列名称
+        private string _subscriptionQueueName;
+        // 消费者专用通道
+        private IModel _consumerChannel;
 
         public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector,
             ILogger<RabbitMQEventBus> logger,
             IServiceProvider serviceProvider,
             ISubscriptionsManager subscriptionsManager,
-            string subscriptionQueueName,
-            int publishRetries
+            string clientName,
+            int retries = 5
         )
         {
             _rabbitMqConnector = rabbitMqConnector;
             _logger = logger;
             _serviceProvider = serviceProvider;
             _subscriptionsManager = subscriptionsManager;
-            _subscriptionQueueName = subscriptionQueueName;
-            _publishRetries = publishRetries;
+            _subscriptionQueueName = clientName;
+            _publishRetries = retries;
             _subscriptionsManager.OnEventRemoved += OnEventRemoved;
+            _consumerChannel = CreateConsumerChannel();
         }
 
 
@@ -55,23 +59,24 @@ namespace XiaoLi.EventBus.RabbitMQ
         {
             _rabbitMqConnector.KeepAlive();
 
-            var policy = Policy.Handle<BrokerUnreachableException>()
-                .Or<SocketException>()
-                .WaitAndRetry(_publishRetries,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+            #region 定义重试策略
+            var retryPolicy = Policy.Handle<SocketException>() //socket异常时
+                .Or<BrokerUnreachableException>() //broker不可达异常时
+                .WaitAndRetry(_publishRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     (ex, time) =>
                     {
-                        _logger.LogWarning(ex,
-                            "Could not publish event: {EventId} after {Timeout}s ({ExceptionMessage})", @event.Id,
-                            $"{time.TotalSeconds:n1}", ex.Message);
-                    });
+                        _logger.LogWarning(ex, "在{TimeOut}s 后无法连接到RabbitMQ客户端，异常消息：{Message}", $"{time.TotalSeconds:f1}", ex.Message);
+                    }
+                );
+            #endregion
+
             var eventName = @event.GetType().Name;
 
-            _logger.LogTrace("Creating RabbitMQ channel to publish event: {EventId} ({EventName})", @event.Id,
-                eventName);
+            _logger.LogTrace("创建定义RabbitMQ通道以发布事件: {EventId}（{EventName}）", @event.Id, eventName);
             using (var channel = _rabbitMqConnector.CreateChannel())
             {
-                _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Id);
+                _logger.LogTrace("定义RabbitMQ Direct交换机（{ExchangeName}）以发布事件：{EventId}（{EventName}）", BROKER_NAME, @event.Id, eventName);
+
                 channel.ExchangeDeclare(exchange: BROKER_NAME, ExchangeType.Direct);
 
                 var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), new JsonSerializerOptions
@@ -79,12 +84,12 @@ namespace XiaoLi.EventBus.RabbitMQ
                     WriteIndented = true
                 });
 
-                policy.Execute(() =>
+                retryPolicy.Execute(() =>
                 {
                     var properties = channel.CreateBasicProperties();
                     properties.DeliveryMode = 2; // Non-persistent (1) or persistent (2).
 
-                    _logger.LogTrace("Publishing event to RabbitMQ: {EventId}", @event.Id);
+                    _logger.LogInformation("发布事件到RabbitMQ: {EventId}（{EventName}）", @event.Id, eventName);
                     channel.BasicPublish(exchange: BROKER_NAME, routingKey: eventName, mandatory: true,
                         basicProperties: properties, body: body);
                 });
@@ -96,37 +101,35 @@ namespace XiaoLi.EventBus.RabbitMQ
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
 
-            DoInternalSubscription(eventName);
-
-            _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName,
-                typeof(THandler).GetTypeName());
+            _logger.LogInformation("{EventHandler}订阅了事件{EventName}", typeof(THandler).GetTypeName(), eventName);
             _subscriptionsManager.AddSubscription<TEvent, THandler>();
 
-            DoInternalSubscription(eventName);
+            DoRabbitMQSubscription(eventName);
         }
 
 
         public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
-            _logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName,
-                typeof(THandler).GetTypeName());
+            _logger.LogInformation("{EventHandler}订阅了动态事件{EventName}", typeof(THandler).GetTypeName(), eventName);
             _subscriptionsManager.AddDynamicSubscription<THandler>(eventName);
 
-            DoInternalSubscription(eventName);
+            DoRabbitMQSubscription(eventName);
         }
 
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent
             where THandler : IIntegrationEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
-            
-            _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
+
+            _logger.LogInformation("{EventHandler}取消了对事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
 
             _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
         }
 
         public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
+            _logger.LogInformation("{EventHandler}取消了对动态事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
+
             _subscriptionsManager.RemoveDynamicSubscription<THandler>(eventName);
         }
 
@@ -136,13 +139,19 @@ namespace XiaoLi.EventBus.RabbitMQ
             {
                 _consumerChannel.Dispose();
             }
-            
+
+            _subscriptionQueueName = string.Empty;
+
             _subscriptionsManager.Clear();
         }
 
         #region private methods
 
-        private void DoInternalSubscription(string eventName)
+        /// <summary>
+        /// 处理RabbitMQ订阅
+        /// </summary>
+        /// <param name="eventName"></param>
+        private void DoRabbitMQSubscription(string eventName)
         {
             if (_subscriptionsManager.HasSubscriptions(eventName)) return;
 
@@ -150,12 +159,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 
             _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
 
-            _logger.LogTrace("Starting RabbitMQ basic consume");
-            // 创建异步消费者
-            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
-            consumer.Received += OnReceived;
-
-            _consumerChannel.BasicConsume(queue: _subscriptionQueueName, autoAck: false, consumer: consumer);
+            StartBasicConsume();
         }
 
         private void OnEventRemoved(object sender, string eventName)
@@ -164,12 +168,12 @@ namespace XiaoLi.EventBus.RabbitMQ
 
             using (var channel = _rabbitMqConnector.CreateChannel())
             {
+                // 解绑
                 channel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
 
                 if (_subscriptionsManager.IsEmpty)
                 {
-                    // _subscriptionQueueName = string.Empty;
-                    _consumerChannel.Close();
+                    Dispose();
                 }
             }
         }
@@ -184,7 +188,7 @@ namespace XiaoLi.EventBus.RabbitMQ
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", message);
+                _logger.LogWarning(ex, "----- 处理消息时出错 \"{Message}\"", message);
             }
 
 
@@ -195,12 +199,18 @@ namespace XiaoLi.EventBus.RabbitMQ
         }
 
 
+        /// <summary>
+        /// 处理消息
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         private async Task ProcessingBody(string eventName, string message)
         {
             // 空订阅
             if (!_subscriptionsManager.HasSubscriptions(eventName))
             {
-                _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
+                _logger.LogWarning("{EventName}没有任何订阅者", eventName);
                 return;
             }
 
@@ -210,29 +220,24 @@ namespace XiaoLi.EventBus.RabbitMQ
             {
                 if (subscriptionInfo.IsDynamic)
                 {
-                    var handler =
-                        _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
+                    var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
                     if (handler == null)
                     {
-                        _logger.LogWarning(
-                            "No implemented {IDynamicIntegrationEventHandler} for RabbitMQ event: {EventName}",
-                            nameof(IDynamicIntegrationEventHandler), eventName);
+                        _logger.LogWarning("{EventName}没有实现`{IDynamicIntegrationEventHandler}`", eventName, nameof(IDynamicIntegrationEventHandler));
                         continue;
                     }
 
-                    _logger.LogTrace("Processing RabbitMQ dynamic event: {EventName}", eventName);
+                    _logger.LogTrace("正在处理动态集成事件: {EventName}", eventName);
 
                     await handler.Handle(message);
                 }
                 else
                 {
                     var eventType = _subscriptionsManager.GetEventTypeByName(eventName);
-                    //var handler = _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType) as IIntegrationEventHandler<>;
                     var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType);
                     if (handler == null)
                     {
-                        _logger.LogWarning("No implemented IIntegrationEventHandler<> for RabbitMQ event: {EventName}",
-                            eventName);
+                        _logger.LogWarning("{EventName}没有实现`IIntegrationEventHandler`", eventName);
                         continue;
                     }
 
@@ -244,11 +249,61 @@ namespace XiaoLi.EventBus.RabbitMQ
 
                     // see：https://stackoverflow.com/questions/22645024/when-would-i-use-task-yield
                     await Task.Yield();
+                    _logger.LogTrace("正在处理集成事件: {EventName}", eventName);
                     handle?.Invoke(handler, new object[] { integrationEvent });
                 }
             }
         }
 
+        /// <summary>
+        /// 创建消费者通道
+        /// </summary>
+        /// <returns></returns>
+        private IModel CreateConsumerChannel()
+        {
+            _rabbitMqConnector.KeepAlive();
+
+            _logger.LogTrace("创建RabbitMQ消费者通道");
+
+            var consumerChannel = _rabbitMqConnector.CreateChannel();
+
+            // 定义直连交换机
+            consumerChannel.ExchangeDeclare(exchange: BROKER_NAME, type: ExchangeType.Direct);
+
+            // 绑定订阅队列
+            consumerChannel.QueueDeclare(queue: _subscriptionQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            // 当通道调用的回调中发生异常时发出信号
+            consumerChannel.CallbackException += (sender, args) =>
+            {
+                _logger.LogWarning(args.Exception, "重新创建RabbitMQ消费者通道");
+
+                // 销毁原有通道，重新创建
+                _consumerChannel.Dispose();
+                _consumerChannel = CreateConsumerChannel();
+                // 使得新的消费者通道依然能够正常的消费消息
+                StartBasicConsume();
+            };
+
+            return consumerChannel;
+        }
+
+        /// <summary>
+        /// 启动基本内容类消费
+        /// </summary>
+        private void StartBasicConsume()
+        {
+            _logger.LogTrace("开启RabbitMQ消费通道的基础消费");
+            // 创建异步消费者
+            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
+            consumer.Received += OnReceived;
+
+            _consumerChannel.BasicConsume(queue: _subscriptionQueueName, autoAck: false, consumer: consumer);
+        }
         #endregion
     }
 }
