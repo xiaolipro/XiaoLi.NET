@@ -13,11 +13,6 @@ namespace XiaoLi.NET.RabbitMQ
     public interface IRabbitMQConnector:IDisposable
     {
         /// <summary>
-        /// 连接还没断掉
-        /// </summary>
-        bool IsConnected { get; }
-
-        /// <summary>
         /// 保持活性
         /// </summary>
         void KeepAlive();

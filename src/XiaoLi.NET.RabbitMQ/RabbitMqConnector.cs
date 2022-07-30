@@ -31,9 +31,6 @@ namespace XiaoLi.NET.RabbitMQ
         }
 
 
-        public bool IsConnected => _connection != null && _connection.IsOpen && !_disposed;
-
-
         public IModel CreateChannel()
         {
             if (!IsConnected)
@@ -74,6 +71,11 @@ namespace XiaoLi.NET.RabbitMQ
                 ReConnect();
             }
         }
+        
+        /// <summary>
+        /// 是连接状态
+        /// </summary>
+        private bool IsConnected => _connection != null && _connection.IsOpen && !_disposed;
 
         /// <summary>
         /// 重连
