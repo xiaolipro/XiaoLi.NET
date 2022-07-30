@@ -39,7 +39,7 @@ namespace XiaoLi.NET.Polly
             var fallbackPolicy = Policy<HttpResponseMessage>.HandleInner<Exception>()
                 .FallbackAsync(options.HttpResponseMessage, async res => // The action to call asynchronously before invoking the fallback delegate.
                 {
-                    logger.LogWarning("{ServiceName}开始降级,异常消息：{Message}", serviceName, res.Exception.Message);
+                    logger.LogWarning("{ServiceName}开始降级，异常消息：{Message}", serviceName, res.Exception.Message);
                     await Task.CompletedTask;
                 });
 

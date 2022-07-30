@@ -35,7 +35,7 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (!IsConnected)
             {
-                ReConnect();
+                ConnectRabbitMq();
             }
 
             return _connection.CreateModel();
@@ -68,10 +68,10 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (!IsConnected)
             {
-                ReConnect();
+                ConnectRabbitMq();
             }
         }
-        
+
         /// <summary>
         /// 是连接状态
         /// </summary>
@@ -81,9 +81,9 @@ namespace XiaoLi.NET.RabbitMQ
         /// 重连
         /// </summary>
         /// <exception cref="Exception">RabbitMQ connections could not be created and opened</exception>
-        private void ReConnect()
+        private void ConnectRabbitMq()
         {
-            _logger.LogInformation("RabbitMQ Client is trying to connect");
+            _logger.LogInformation("正在尝试连接RabbitMQ客户端");
 
             lock (_lock)
             {
@@ -92,9 +92,7 @@ namespace XiaoLi.NET.RabbitMQ
                     .WaitAndRetry(_retries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                         (ex, time) =>
                         {
-                            _logger.LogWarning(ex,
-                                "RabbitMQ Client could not connect after {TimeOut}s ({ExceptionMessage})",
-                                $"{time.TotalSeconds:n1}", ex.Message);
+                            _logger.LogWarning(ex, "在{TimeOut}s 后无法连接到RabbitMQ客户端，异常消息：{Message}",$"{time.TotalSeconds:f1}", ex.Message);
                         }
                     );
 
@@ -103,7 +101,7 @@ namespace XiaoLi.NET.RabbitMQ
                     _connection = _connectionFactory.CreateConnection();
                 });
 
-                if (!IsConnected) throw new Exception("FATAL ERROR: RabbitMQ connections could not be created and opened");
+                if (!IsConnected) throw new Exception("致命错误：无法创建和打开RabbitMQ连接");
 
                 _connection.ConnectionShutdown += OnConnectionShutdown;
                 _connection.CallbackException += OnCallbackException;
@@ -112,9 +110,7 @@ namespace XiaoLi.NET.RabbitMQ
                 // 比若说CPU/IO/RAM资源下降，队列堆积，导致堵塞，就会触发这个事件
                 _connection.ConnectionBlocked += OnConnectionBlocked;
 
-                _logger.LogInformation(
-                    "RabbitMQ Client acquired a persistent connection to '{HostName}' and is subscribed to failure events",
-                    _connection.Endpoint.HostName);
+                _logger.LogInformation("{HostName}获得到了RabbitMQ客户端的持久连接", _connection.Endpoint.HostName);
             }
 
         }
@@ -169,9 +165,9 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (_disposed) return;
 
-            _logger.LogWarning("A RabbitMQ connection is blocked. Trying to re-connect...");
+            _logger.LogWarning("RabbitMQ连接被阻止，正在尝试重新连接。。。");
 
-            ReConnect();
+            ConnectRabbitMq();
         }
 
         /// <summary>
@@ -183,9 +179,9 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (_disposed) return;
 
-            _logger.LogWarning($"A RabbitMQ connection throw exception：{e.Exception.Message}. Trying to re-connect...");
+            _logger.LogWarning("RabbitMQ连接发生异常：{Message}，正在尝试重新连接。。。", e.Exception.Message);
 
-            ReConnect();
+            ConnectRabbitMq();
         }
 
         /// <summary>
@@ -197,9 +193,9 @@ namespace XiaoLi.NET.RabbitMQ
         {
             if (_disposed) return;
 
-            _logger.LogWarning("A RabbitMQ connection is on shutdown. Trying to re-connect...");
+            _logger.LogWarning("RabbitMQ连接已被关闭，正在尝试重新连接。。。");
 
-            ReConnect();
+            ConnectRabbitMq();
         }
 
     }
