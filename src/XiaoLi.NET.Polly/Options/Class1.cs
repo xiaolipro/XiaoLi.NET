@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XiaoLi.Packages.Polly
+namespace XiaoLi.NET.Polly.Options
 {
     public class Class1
     {

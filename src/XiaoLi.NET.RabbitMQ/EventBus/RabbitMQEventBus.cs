@@ -13,7 +13,7 @@ using XiaoLi.NET.EventBus;
 using XiaoLi.NET.EventBus.Events;
 using XiaoLi.NET.EventBus.Subscriptions;
 using XiaoLi.NET.Extensions;
-using XiaoLi.Packages.RabbitMQ;
+using XiaoLi.NET.RabbitMQ;
 
 namespace XiaoLi.EventBus.RabbitMQ
 {
@@ -53,7 +53,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 
         public void Publish(IntegrationEvent @event)
         {
-            _rabbitMqConnector.KeepAalive();
+            _rabbitMqConnector.KeepAlive();
 
             var policy = Policy.Handle<BrokerUnreachableException>()
                 .Or<SocketException>()
@@ -146,7 +146,7 @@ namespace XiaoLi.EventBus.RabbitMQ
         {
             if (_subscriptionsManager.HasSubscriptions(eventName)) return;
 
-            _rabbitMqConnector.KeepAalive();
+            _rabbitMqConnector.KeepAlive();
 
             _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
 
@@ -160,7 +160,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 
         private void OnEventRemoved(object sender, string eventName)
         {
-            _rabbitMqConnector.KeepAalive();
+            _rabbitMqConnector.KeepAlive();
 
             using (var channel = _rabbitMqConnector.CreateChannel())
             {

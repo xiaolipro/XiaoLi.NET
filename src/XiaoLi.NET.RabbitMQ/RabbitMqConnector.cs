@@ -8,9 +8,9 @@ using Polly.Retry;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using XiaoLi.Packages.RabbitMQ.Options;
+using XiaoLi.NET.RabbitMQ.Options;
 
-namespace XiaoLi.Packages.RabbitMQ
+namespace XiaoLi.NET.RabbitMQ
 {
     public class RabbitMqConnector : IRabbitMQConnector
     {
@@ -52,6 +52,7 @@ namespace XiaoLi.Packages.RabbitMQ
 
             try
             {
+                // 事件解绑
                 _connection.ConnectionBlocked -= OnConnectionBlocked;
                 _connection.CallbackException -= OnCallbackException;
                 _connection.ConnectionShutdown -= OnConnectionShutdown;
@@ -63,9 +64,15 @@ namespace XiaoLi.Packages.RabbitMQ
             }
         }
 
-        public void KeepAalive()
+        /// <summary>
+        /// 保持连接活性
+        /// </summary>
+        public void KeepAlive()
         {
-            if(!IsConnected) ReConnect();
+            if (!IsConnected)
+            {
+                ReConnect();
+            }
         }
 
         /// <summary>

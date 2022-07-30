@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.Packages.RabbitMQ.Options
+namespace XiaoLi.NET.RabbitMQ.Options
 {
     public class RabbitMQClientOptions
     {

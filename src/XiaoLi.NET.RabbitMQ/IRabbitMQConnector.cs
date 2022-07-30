@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 
-namespace XiaoLi.Packages.RabbitMQ
+namespace XiaoLi.NET.RabbitMQ
 {
     /// <summary>
     /// RabbitMQ--Channel工厂
@@ -20,7 +20,7 @@ namespace XiaoLi.Packages.RabbitMQ
         /// <summary>
         /// 保持活性
         /// </summary>
-        void KeepAalive();
+        void KeepAlive();
 
         /// <summary>
         /// 创建channel
