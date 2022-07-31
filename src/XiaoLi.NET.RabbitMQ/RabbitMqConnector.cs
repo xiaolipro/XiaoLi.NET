@@ -13,17 +13,18 @@ using XiaoLi.NET.RabbitMQ.Options;
 namespace XiaoLi.NET.RabbitMQ
 {
     /// <summary>
-    /// RabbitMQ链接器，Channel工厂
-    /// 复用同一个IConnection，减少连接的高昂开销
+    /// RabbitMQ连接器、Channel工厂
     /// </summary>
+    /// <remarks>复用同一个IConnection，减少连接的高昂开销</remarks>
     public class RabbitMQConnector : IRabbitMQConnector
     {
         private readonly ILogger<RabbitMQConnector> _logger;
         private readonly IConnectionFactory _connectionFactory;
         private readonly int _retries;
+        private readonly object _lock = new object();
+
         private IConnection _connection;
         private bool _disposed;
-        private readonly object _lock = new object();
 
 
         public RabbitMQConnector(ILogger<RabbitMQConnector> logger, IOptions<RabbitMQClientOptions> config, int retries = 5)

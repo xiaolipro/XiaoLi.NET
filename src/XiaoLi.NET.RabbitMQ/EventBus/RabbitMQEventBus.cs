@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -14,6 +15,7 @@ using XiaoLi.NET.EventBus.Events;
 using XiaoLi.NET.EventBus.Subscriptions;
 using XiaoLi.NET.Extensions;
 using XiaoLi.NET.RabbitMQ;
+using XiaoLi.NET.RabbitMQ.Options;
 
 namespace XiaoLi.EventBus.RabbitMQ
 {
@@ -21,39 +23,37 @@ namespace XiaoLi.EventBus.RabbitMQ
     /// 基于RabbitMessageQueue实现的事件总线
     /// </summary> 
     /// <remarks>
-    /// <para>直连交换机，路由模式，以事件名称作为routeKey</para>
+    /// <para>路由模式，直连交换机，以事件名称作为routeKey</para>
     /// <para>一个客户端对应一个队列（以客户端命名），一个队列一个指定消费者通道</para>
     /// </remarks>
     public class RabbitMQEventBus : IEventBus
     {
-        const string BROKER_NAME = "xiaoli_event_bus";
-
         private readonly IRabbitMQConnector _rabbitMqConnector;
         private readonly ILogger<RabbitMQEventBus> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly ISubscriptionsManager _subscriptionsManager;
-        private readonly int _publishRetries;
+        private readonly RabbitMQEventBusOptions _eventBusOptions;
 
-        // 客户端订阅队列名称
-        private string _subscriptionQueueName;
-        // 消费者专用通道
-        private IModel _consumerChannel;
+        private readonly string _brokerName; // 事件投递的交换机
+        private readonly string _subscriptionQueueName; // 客户端订阅队列名称
+        private IModel _consumerChannel; // 消费者专用通道
 
         public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector,
             ILogger<RabbitMQEventBus> logger,
             IServiceProvider serviceProvider,
             ISubscriptionsManager subscriptionsManager,
-            string clientName,
-            int retries = 5
+            IOptions<RabbitMQEventBusOptions> eventBusOptions
         )
         {
             _rabbitMqConnector = rabbitMqConnector;
             _logger = logger;
             _serviceProvider = serviceProvider;
             _subscriptionsManager = subscriptionsManager;
-            _subscriptionQueueName = clientName;
-            _publishRetries = retries;
             _subscriptionsManager.OnEventRemoved += OnEventRemoved;
+
+            _eventBusOptions = eventBusOptions.Value;
+            _brokerName = _eventBusOptions.BrokerName;
+            _subscriptionQueueName = _eventBusOptions.SubscriptionClientName;
             _consumerChannel = CreateConsumerChannel();
         }
 
@@ -65,7 +65,7 @@ namespace XiaoLi.EventBus.RabbitMQ
             #region 定义重试策略
             var retryPolicy = Policy.Handle<SocketException>() //socket异常时
                 .Or<BrokerUnreachableException>() //broker不可达异常时
-                .WaitAndRetry(_publishRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                .WaitAndRetry(_eventBusOptions.PublishFailureRetryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     (ex, time) =>
                     {
                         _logger.LogWarning(ex, "在{TimeOut}s 后无法连接到RabbitMQ客户端，异常消息：{Message}", $"{time.TotalSeconds:f1}", ex.Message);
@@ -78,9 +78,9 @@ namespace XiaoLi.EventBus.RabbitMQ
             _logger.LogTrace("创建定义RabbitMQ通道以发布事件: {EventId}（{EventName}）", @event.Id, eventName);
             using (var channel = _rabbitMqConnector.CreateChannel())
             {
-                _logger.LogTrace("定义RabbitMQ Direct交换机（{ExchangeName}）以发布事件：{EventId}（{EventName}）", BROKER_NAME, @event.Id, eventName);
+                _logger.LogTrace("定义RabbitMQ Direct交换机（{ExchangeName}）以发布事件：{EventId}（{EventName}）", _brokerName, @event.Id, eventName);
 
-                channel.ExchangeDeclare(exchange: BROKER_NAME, ExchangeType.Direct);
+                channel.ExchangeDeclare(exchange: _brokerName, ExchangeType.Direct);
 
                 var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), new JsonSerializerOptions
                 {
@@ -93,7 +93,7 @@ namespace XiaoLi.EventBus.RabbitMQ
                     properties.DeliveryMode = 2; // Non-persistent (1) or persistent (2).
 
                     _logger.LogInformation("发布事件到RabbitMQ: {EventId}（{EventName}）", @event.Id, eventName);
-                    channel.BasicPublish(exchange: BROKER_NAME, routingKey: eventName, mandatory: true,
+                    channel.BasicPublish(exchange: _brokerName, routingKey: eventName, mandatory: true,
                         basicProperties: properties, body: body);
                 });
             }
@@ -147,8 +147,6 @@ namespace XiaoLi.EventBus.RabbitMQ
                 _consumerChannel.Dispose();
             }
 
-            _subscriptionQueueName = string.Empty;
-
             _subscriptionsManager.Clear();
         }
 
@@ -164,7 +162,9 @@ namespace XiaoLi.EventBus.RabbitMQ
 
             _rabbitMqConnector.KeepAlive();
 
-            _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+            _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: _brokerName, routingKey: eventName);
+
+            StartBasicConsume();
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace XiaoLi.EventBus.RabbitMQ
         {
             _rabbitMqConnector.KeepAlive();
 
-            _consumerChannel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+            _consumerChannel.QueueUnbind(queue: _subscriptionQueueName, exchange: _brokerName, routingKey: eventName);
         }
 
         private void OnEventRemoved(object sender, string eventName)
@@ -186,7 +186,7 @@ namespace XiaoLi.EventBus.RabbitMQ
             using (var channel = _rabbitMqConnector.CreateChannel())
             {
                 // 解绑
-                channel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+                channel.QueueUnbind(queue: _subscriptionQueueName, exchange: _brokerName, routingKey: eventName);
 
                 if (_subscriptionsManager.IsEmpty)
                 {
@@ -278,24 +278,63 @@ namespace XiaoLi.EventBus.RabbitMQ
         /// <returns></returns>
         private IModel CreateConsumerChannel()
         {
-            _rabbitMqConnector.KeepAlive();
-
             _logger.LogTrace("创建RabbitMQ消费者通道");
 
+            _rabbitMqConnector.KeepAlive();
+
+            var arguments = new Dictionary<string, object>();
+
+            /*
+             * 死信来源
+             * 1.消息TTL过期
+             * 2.队列达到最大长度
+             * 3.消息被拒绝（BasicReject或BasicNack）并且不再重新入队（requeue=false）
+             */
+            if (_eventBusOptions.EnableDLX)
+            {
+                string DLXExchangeName = "DLX." + _brokerName;
+                string DLXQueueName = "DLX." + _subscriptionQueueName;
+                string DLXRouteKey = DLXQueueName;
+
+                _logger.LogTrace("创建RabbitMQ死信交换DLX");
+                using (var deadLetterChannel = _rabbitMqConnector.CreateChannel())
+                {
+                    // 声明死信交换机
+                    deadLetterChannel.ExchangeDeclare(exchange: DLXExchangeName, type: ExchangeType.Direct);
+                    // 声明死信队列
+                    deadLetterChannel.QueueDeclare(DLXQueueName, durable: true, exclusive: false, autoDelete: false);
+                    // 绑定死信交换机和死信队列
+                    deadLetterChannel.QueueBind(DLXQueueName, DLXExchangeName, DLXRouteKey);
+                }
+
+                arguments.Add("x-dead-letter-exchange", DLXExchangeName); // 设置当前队列的DLX
+                arguments.Add("x-dead-letter-routing-key", DLXRouteKey); // DLX会根据该值去找到死信消息存放的队列
+
+                if (_eventBusOptions.MessageTTL > 0)
+                {
+                    arguments.Add("x-message-ttl", _eventBusOptions.MessageTTL); // 设置消息的存活时间，实现延迟队列
+                }
+
+                if (_eventBusOptions.QueueMaxLength > 0)
+                {
+                    arguments.Add("x-max-length", _eventBusOptions.QueueMaxLength); // 设置队列最大长度，实现队列容量控制
+                }
+            }
+
             var consumerChannel = _rabbitMqConnector.CreateChannel();
+            // 声明直连交换机
+            consumerChannel.ExchangeDeclare(exchange: _brokerName, type: ExchangeType.Direct);
+            // 声明队列
+            consumerChannel.QueueDeclare(queue: _subscriptionQueueName, durable: true, exclusive: false, autoDelete: false, arguments: arguments);
 
-            // 定义直连交换机
-            consumerChannel.ExchangeDeclare(exchange: BROKER_NAME, type: ExchangeType.Direct);
-
-            // 绑定队列
-            consumerChannel.QueueDeclare(queue: _subscriptionQueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            // 启动基础消费
-            StartBasicConsume();
+            /*
+             * 消费者限流机制，防止开启客户端时，服务被巨量数据冲宕机
+             * 限流情况不能设置自动签收，一定要手动签收
+             * prefetchSize，消息体大小，如果设置为0，表示对消息本身的大小不限制
+             * prefetchCount，告诉RabbitMQ不要一次性给消费者推送大于N条消息
+             * global，是否将设置应用于整个通道，false表示只应用于当前消费者
+             */
+            _consumerChannel.BasicQos(_eventBusOptions.PrefetchSize, _eventBusOptions.PrefetchCount, false);
 
             // 当通道调用的回调中发生异常时发出信号
             consumerChannel.CallbackException += (sender, args) =>
@@ -317,13 +356,13 @@ namespace XiaoLi.EventBus.RabbitMQ
         /// </summary>
         private void StartBasicConsume()
         {
+            _logger.LogTrace("开启RabbitMQ消费通道的基础消费");
+
             if (_consumerChannel == null)
             {
                 _logger.LogError("RabbitMQ消费通道_consumerChannel==null，无法启动基本内容类消费");
                 return;
             }
-
-            _logger.LogTrace("开启RabbitMQ消费通道的基础消费");
 
             // 创建异步消费者
             var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
