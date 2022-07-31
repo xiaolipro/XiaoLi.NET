@@ -110,7 +110,6 @@ namespace XiaoLi.EventBus.RabbitMQ
             DoRabbitMQSubscription(eventName);
         }
 
-
         public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
             _logger.LogInformation("{EventHandler}订阅了动态事件{EventName}", typeof(THandler).GetTypeName(), eventName);
