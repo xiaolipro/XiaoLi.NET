@@ -31,9 +31,9 @@ namespace XiaoLi.EventBus.RabbitMQ
         private readonly ISubscriptionsManager _subscriptionsManager;
         private readonly int _publishRetries;
 
-        // 订阅队列名称
+        // 客户端订阅队列名称
         private string _subscriptionQueueName;
-        // 消费者专用通道
+        // 消费者专用通道，一个客户端一个队列，一个队列一个指定消费者
         private IModel _consumerChannel;
 
         public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector,
@@ -124,6 +124,8 @@ namespace XiaoLi.EventBus.RabbitMQ
             _logger.LogInformation("{EventHandler}取消了对事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
 
             _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
+
+            DoRabbitMQUnSubscription(eventName);
         }
 
         public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
@@ -131,6 +133,8 @@ namespace XiaoLi.EventBus.RabbitMQ
             _logger.LogInformation("{EventHandler}取消了对动态事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
 
             _subscriptionsManager.RemoveDynamicSubscription<THandler>(eventName);
+
+            DoRabbitMQUnSubscription(eventName);
         }
 
         public void Dispose()
@@ -148,7 +152,7 @@ namespace XiaoLi.EventBus.RabbitMQ
         #region private methods
 
         /// <summary>
-        /// 处理RabbitMQ订阅
+        /// 去RabbitMQ订阅
         /// </summary>
         /// <param name="eventName"></param>
         private void DoRabbitMQSubscription(string eventName)
@@ -158,8 +162,18 @@ namespace XiaoLi.EventBus.RabbitMQ
             _rabbitMqConnector.KeepAlive();
 
             _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
+        }
 
-            StartBasicConsume();
+        /// <summary>
+        /// 去RabbitMQ取消订阅
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void DoRabbitMQUnSubscription(string eventName)
+        {
+            _rabbitMqConnector.KeepAlive();
+
+            _consumerChannel.QueueUnbind(queue: _subscriptionQueueName, exchange: BROKER_NAME, routingKey: eventName);
         }
 
         private void OnEventRemoved(object sender, string eventName)
@@ -218,6 +232,7 @@ namespace XiaoLi.EventBus.RabbitMQ
             // 广播
             foreach (var subscriptionInfo in subscriptionInfos)
             {
+                // 处理动态集成事件
                 if (subscriptionInfo.IsDynamic)
                 {
                     var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
@@ -231,7 +246,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 
                     await handler.Handle(message);
                 }
-                else
+                else // 处理集成事件
                 {
                     var eventType = _subscriptionsManager.GetEventTypeByName(eventName);
                     var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType);
@@ -270,12 +285,15 @@ namespace XiaoLi.EventBus.RabbitMQ
             // 定义直连交换机
             consumerChannel.ExchangeDeclare(exchange: BROKER_NAME, type: ExchangeType.Direct);
 
-            // 绑定订阅队列
+            // 绑定队列
             consumerChannel.QueueDeclare(queue: _subscriptionQueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
+
+            // 启动基础消费
+            StartBasicConsume();
 
             // 当通道调用的回调中发生异常时发出信号
             consumerChannel.CallbackException += (sender, args) =>
@@ -297,7 +315,14 @@ namespace XiaoLi.EventBus.RabbitMQ
         /// </summary>
         private void StartBasicConsume()
         {
+            if (_consumerChannel == null)
+            {
+                _logger.LogError("RabbitMQ消费通道_consumerChannel==null，无法启动基本内容类消费");
+                return;
+            }
+
             _logger.LogTrace("开启RabbitMQ消费通道的基础消费");
+
             // 创建异步消费者
             var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
             consumer.Received += OnReceived;
