@@ -19,8 +19,11 @@ namespace XiaoLi.EventBus.RabbitMQ
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线
-    /// 直连交换机，路由模式，以事件名称作为routeKey，一个客户端对应一个队列（以客户端命名）
     /// </summary> 
+    /// <remarks>
+    /// <para>直连交换机，路由模式，以事件名称作为routeKey</para>
+    /// <para>一个客户端对应一个队列（以客户端命名），一个队列一个指定消费者通道</para>
+    /// </remarks>
     public class RabbitMQEventBus : IEventBus
     {
         const string BROKER_NAME = "xiaoli_event_bus";
@@ -33,7 +36,7 @@ namespace XiaoLi.EventBus.RabbitMQ
 
         // 客户端订阅队列名称
         private string _subscriptionQueueName;
-        // 消费者专用通道，一个客户端一个队列，一个队列一个指定消费者
+        // 消费者专用通道
         private IModel _consumerChannel;
 
         public RabbitMQEventBus(IRabbitMQConnector rabbitMqConnector,
@@ -211,7 +214,6 @@ namespace XiaoLi.EventBus.RabbitMQ
             // For more information see: https://www.rabbitmq.com/dlx.html
             _consumerChannel.BasicAck(eventArgs.DeliveryTag, multiple: false); // 手动确认
         }
-
 
         /// <summary>
         /// 处理消息
