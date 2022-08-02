@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XiaoLi.NET.Helpers
 {
-	public static partial class Helpers
+	public static partial class Helper
 	{
         /// <summary>
         /// 将 Stream 转成 byte[]

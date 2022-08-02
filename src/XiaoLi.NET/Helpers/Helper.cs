@@ -4,7 +4,7 @@ using System.Text;
 
 namespace XiaoLi.NET.Helpers
 {
-    public static partial class Helpers
+    public static partial class Helper
     {
     }
 }
