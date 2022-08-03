@@ -15,9 +15,9 @@ using XiaoLi.NET.EventBus.Events;
 using XiaoLi.NET.EventBus.Subscriptions;
 using XiaoLi.NET.Extensions;
 using XiaoLi.NET.RabbitMQ;
-using XiaoLi.NET.RabbitMQ.Options;
+using XiaoLi.NET.RabbitMQ.Connect;
 
-namespace XiaoLi.EventBus.RabbitMQ
+namespace XiaoLi.NET.RabbitMQ.EventBus
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线

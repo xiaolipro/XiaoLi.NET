@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XiaoLi.NET\XiaoLi.NET.csproj" />
+    <ProjectReference Include="..\XiaoLi.NET.Web\XiaoLi.NET.Web.csproj" />
   </ItemGroup>
 
 </Project>
