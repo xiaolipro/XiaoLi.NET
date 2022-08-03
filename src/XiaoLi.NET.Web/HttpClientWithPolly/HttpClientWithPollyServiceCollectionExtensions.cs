@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace XiaoLi.NET.Polly
+namespace XiaoLi.NET.Web.HttpClientWithPolly
 {
 
     /// <summary>

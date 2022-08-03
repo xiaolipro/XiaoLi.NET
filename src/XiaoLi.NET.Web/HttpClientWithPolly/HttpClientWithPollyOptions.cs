@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace XiaoLi.NET.Polly.Options
+namespace XiaoLi.NET.Web.HttpClientWithPolly
 {
     /// <summary>
     /// HttpClient降级，熔断，重试，超时配置类
