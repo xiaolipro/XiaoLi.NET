@@ -8,7 +8,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
     {
 
         /// <summary>
-        /// 用于接收事件的交换机
+        /// Broker
         /// </summary>
         public string BrokerName { get; set; } = "Exchange.EventBus";
 
@@ -26,7 +26,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
         #region Qos
 
         /// <summary>
-        /// 消息大小限制，默认0，无限制
+        /// 消息大小限制，默认0无限制
         /// </summary>
         public uint PrefetchSize { get; set; } = 0;
 
