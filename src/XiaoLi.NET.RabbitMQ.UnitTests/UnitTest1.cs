@@ -1,4 +1,4 @@
-namespace XiaoLi.NET.RabbitMQ.UnitTests
+namespace XiaoLi.NET.App.RabbitMQ.UnitTests
 {
     public class UnitTest1
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using XiaoLi.NET.EventBus.Events;
+using XiaoLi.NET.App.EventBus.Events;
 
-namespace XiaoLi.NET.EventBus.Subscriptions
+namespace XiaoLi.NET.App.EventBus.Subscriptions
 {
     /// <summary>
     /// 订阅管理器
