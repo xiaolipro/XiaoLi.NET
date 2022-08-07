@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 
-namespace XiaoLi.NET.UnitTests
+namespace XiaoLi.NET.App.UnitTests
 {
     public class UnitTest1
     {

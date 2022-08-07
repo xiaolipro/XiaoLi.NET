@@ -1,6 +1,6 @@
 ﻿
 
-namespace XiaoLi.NET.UnitTests.EventBus.IntegrationEvents.EventHandling
+namespace XiaoLi.NET.App.UnitTests.EventBus.IntegrationEvents.EventHandling
 {
     public class NumberChangeEventHandler:IIntegrationEventHandler<NumberChangeEvent>
     {
