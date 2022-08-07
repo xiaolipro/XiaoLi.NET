@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,7 +7,6 @@ using Polly;
 
 namespace XiaoLi.NET.Web.HttpClientWithPolly
 {
-
     /// <summary>
     /// Extension methods to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> for <see cref="T:Microsoft.Extensions.Http.Polly" />.
     /// </summary>
@@ -31,21 +28,26 @@ namespace XiaoLi.NET.Web.HttpClientWithPolly
             action(options);
 
             #region 降级，熔断，重试，超时策略
+
             var logger = services.BuildServiceProvider().GetRequiredService<ILogger>();
 
 
             // 定义降级策略
             var fallbackPolicy = Policy<HttpResponseMessage>.HandleInner<Exception>()
-                .FallbackAsync(options.HttpResponseMessage, async res => // The action to call asynchronously before invoking the fallback delegate.
-                {
-                    logger.LogWarning("{ServiceName}开始降级，异常消息：{Message}", clientName, res.Exception.Message);
-                    await Task.CompletedTask;
-                });
+                .FallbackAsync(options.HttpResponseMessage,
+                    async res => // The action to call asynchronously before invoking the fallback delegate.
+                    {
+                        logger.LogWarning("{ServiceName}开始降级，异常消息：{Message}", clientName, res.Exception.Message);
+                        await Task.CompletedTask;
+                    });
 
             // 定义熔断策略
             var circuitBreakerPolicy = Policy<HttpResponseMessage>.HandleInner<Exception>()
-                .CircuitBreakerAsync(options.CircuitBreakerOpenFailureCount, // The number of exceptions or handled results that are allowed before opening the circuit.
-                    TimeSpan.FromSeconds(options.CircuitBreakerDuration), // The duration the circuit will stay open before resetting.
+                .CircuitBreakerAsync(
+                    options
+                        .CircuitBreakerOpenFailureCount, // The number of exceptions or handled results that are allowed before opening the circuit.
+                    TimeSpan.FromSeconds(options
+                        .CircuitBreakerDuration), // The duration the circuit will stay open before resetting.
                     (res, ts) => // Polly.CircuitBreaker.CircuitState.Open
                     {
                         logger.LogWarning("{ServiceName}已开启断路器，持续时间：{TotalSeconds}秒，异常消息：{Message}", clientName,
@@ -65,7 +67,8 @@ namespace XiaoLi.NET.Web.HttpClientWithPolly
                 .RetryAsync(options.RetryCount);
 
             // 定义超时策略
-            var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeout: TimeSpan.FromSeconds(options.Timeout));
+            var timeoutPolicy =
+                Policy.TimeoutAsync<HttpResponseMessage>(timeout: TimeSpan.FromSeconds(options.Timeout));
 
             #endregion
 

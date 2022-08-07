@@ -1,11 +1,12 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 
 namespace XiaoLi.NET.Web.HttpClientWithPolly
 {
     /// <summary>
     /// HttpClient降级，熔断，重试，超时配置类
     /// </summary>
-    public sealed class HttpClientWithPollyOptions
+    public sealed class HttpClientWithPollyOptions : IDisposable
     {
         /// <summary>
         /// 超时时间设置，默认3秒
@@ -33,5 +34,15 @@ namespace XiaoLi.NET.Web.HttpClientWithPolly
         /// 将异常消息封装成为正常消息返回，然后进行响应处理，例如：系统正在繁忙，请稍后处理.....
         /// </summary>
         public HttpResponseMessage HttpResponseMessage { set; get; }
+
+        public HttpClientWithPollyOptions()
+        {
+            HttpResponseMessage = new HttpResponseMessage();
+        }
+        
+        public void Dispose()
+        {
+            HttpResponseMessage?.Dispose();
+        }
     }
 }

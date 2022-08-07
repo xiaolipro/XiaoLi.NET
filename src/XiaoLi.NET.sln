@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2-WebComponents", "2-WebCom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.NET.Consul", "XiaoLi.NET.Consul\XiaoLi.NET.Consul.csproj", "{9006204E-EB5C-4E0C-A4B9-4763EF67EA44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XiaoLi.NET.Web.UnitTest", "XiaoLi.NET.Web.UnitTest\XiaoLi.NET.Web.UnitTest.csproj", "{B006320D-76E2-48CD-84C3-EA2FEDFE02A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{9006204E-EB5C-4E0C-A4B9-4763EF67EA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9006204E-EB5C-4E0C-A4B9-4763EF67EA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9006204E-EB5C-4E0C-A4B9-4763EF67EA44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B006320D-76E2-48CD-84C3-EA2FEDFE02A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B006320D-76E2-48CD-84C3-EA2FEDFE02A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B006320D-76E2-48CD-84C3-EA2FEDFE02A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B006320D-76E2-48CD-84C3-EA2FEDFE02A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{1CCE3B64-B7CB-4EF2-928E-9A15B2C1AF3D} = {43234295-DC9C-48E2-BCEE-B311D6586010}
 		{2B7CECCB-F392-471D-95EB-C0484E55EF31} = {4768D4C4-7129-4032-BF0A-198350279536}
 		{9006204E-EB5C-4E0C-A4B9-4763EF67EA44} = {2B7CECCB-F392-471D-95EB-C0484E55EF31}
+		{B006320D-76E2-48CD-84C3-EA2FEDFE02A5} = {C83BD79F-C369-4CCB-AB62-57A589FC8920}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19BAA99A-8EF9-4729-87DD-C7F355929D74}
