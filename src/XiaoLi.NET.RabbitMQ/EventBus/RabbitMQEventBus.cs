@@ -10,14 +10,14 @@ using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using XiaoLi.NET.EventBus;
-using XiaoLi.NET.EventBus.Events;
-using XiaoLi.NET.EventBus.Subscriptions;
-using XiaoLi.NET.Extensions;
-using XiaoLi.NET.RabbitMQ;
-using XiaoLi.NET.RabbitMQ.Connect;
+using XiaoLi.NET.App.EventBus;
+using XiaoLi.NET.App.EventBus.Events;
+using XiaoLi.NET.App.EventBus.Subscriptions;
+using XiaoLi.NET.App.Extensions;
+using XiaoLi.NET.App.RabbitMQ;
+using XiaoLi.NET.App.RabbitMQ.Connect;
 
-namespace XiaoLi.NET.RabbitMQ.EventBus
+namespace XiaoLi.NET.App.RabbitMQ.EventBus
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线

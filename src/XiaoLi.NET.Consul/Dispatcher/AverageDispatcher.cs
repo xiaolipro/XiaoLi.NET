@@ -3,7 +3,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace XiaoLi.NET.Consul.Dispatcher
+namespace XiaoLi.NET.App.Consul.Dispatcher
 {
     /// <summary>
     /// 平均调度器

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace XiaoLi.NET.Consul.Register
+namespace XiaoLi.NET.App.Consul.Register
 {
     public interface IConsulRegister
     {

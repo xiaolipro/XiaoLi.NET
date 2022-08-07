@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XiaoLi.NET.Web\XiaoLi.NET.Web.csproj" />
+    <ProjectReference Include="..\XiaoLi.NET.App\XiaoLi.NET.App.csproj" />
   </ItemGroup>
 
 </Project>

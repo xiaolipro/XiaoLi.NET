@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 
-namespace XiaoLi.NET.RabbitMQ.Connect
+namespace XiaoLi.NET.App.RabbitMQ.Connect
 {
     /// <summary>
     /// RabbitMQ--Channel工厂

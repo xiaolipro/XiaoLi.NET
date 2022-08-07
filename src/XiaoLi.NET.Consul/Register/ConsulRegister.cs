@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace XiaoLi.NET.Consul.Register
+namespace XiaoLi.NET.App.Consul.Register
 {
     public class ConsulRegister : IConsulRegister
     {

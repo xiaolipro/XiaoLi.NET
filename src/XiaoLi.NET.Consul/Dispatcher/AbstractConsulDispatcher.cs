@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using XiaoLi.NET.Consul.Exceptions;
+using XiaoLi.NET.App.Consul.Exceptions;
 
-namespace XiaoLi.NET.Consul.Dispatcher
+namespace XiaoLi.NET.App.Consul.Dispatcher
 {
     /// <summary>
     /// ConsulDispatcher基类

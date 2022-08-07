@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System;
 
-namespace XiaoLi.NET.Consul.Exceptions
+namespace XiaoLi.NET.App.Consul.Exceptions
 {
     /// <summary>
     /// 
