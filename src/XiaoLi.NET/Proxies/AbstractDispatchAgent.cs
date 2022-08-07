@@ -6,6 +6,5 @@ namespace XiaoLi.NET.Proxies
 {
     public abstract class AbstractDispatchAgent
     {
-        public static TProxy
     }
 }
