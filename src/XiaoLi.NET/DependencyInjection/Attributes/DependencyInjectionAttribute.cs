@@ -3,6 +3,7 @@ using XiaoLi.NET.DependencyInjection.Enums;
 
 namespace XiaoLi.NET.DependencyInjection.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class DependencyInjectionAttribute:Attribute
     {
         /// <summary>
@@ -14,7 +15,7 @@ namespace XiaoLi.NET.DependencyInjection.Attributes
         /// 设置true则替换之前已经注册过的服务.使用IServiceCollection的Replace扩展方法.
         /// 设置false则只注册以前未注册的服务.使用IServiceCollection的TryAdd扩展方法.
         /// </summary>
-        public bool Replace { get; set; }
+        public bool ReplaceService { get; set; }
 
         /// <summary>
         /// 生命周期:Singleton,Transient或Scoped.
@@ -36,7 +37,7 @@ namespace XiaoLi.NET.DependencyInjection.Attributes
             
         }
 
-        public DependencyInjectionAttribute(ServiceLifecycle lifecycle) : this(lifecycle, RegisterPolicy.NamingConventions)
+        public DependencyInjectionAttribute(ServiceLifecycle lifecycle) : this(lifecycle, RegisterPolicy.NamingConventionsInterface)
         {
             
         }
@@ -46,11 +47,11 @@ namespace XiaoLi.NET.DependencyInjection.Attributes
             
         }
 
-        public DependencyInjectionAttribute(ServiceLifecycle lifecycle, RegisterPolicy registerPolicy, bool replace)
+        public DependencyInjectionAttribute(ServiceLifecycle lifecycle, RegisterPolicy registerPolicy, bool replaceService)
         {
             Lifecycle = lifecycle;
             RegisterPolicy = registerPolicy;
-            Replace = replace;
+            ReplaceService = replaceService;
         }
     }
 }

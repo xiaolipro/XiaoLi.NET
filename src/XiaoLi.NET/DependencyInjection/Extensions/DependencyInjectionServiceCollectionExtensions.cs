@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiaoLi.NET.Application;
 using XiaoLi.NET.ConfigurableOptions.Extensions;
 using XiaoLi.NET.DependencyInjection.Attributes;
@@ -29,48 +30,151 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
             services.AddInnerDependencyInjection();
             return services;
         }
-
+        
         private static IServiceCollection AddInnerDependencyInjection(this IServiceCollection services)
         {
-            // 获取所有需要注入的类型
-            var injectionTypes = App.PublicTypes
-                .Where(type => typeof(ISingletonDependency).IsAssignableFrom(type) ||
-                               typeof(IScopedDependency).IsAssignableFrom(type) ||
-                               typeof(ITransientDependency).IsAssignableFrom(type));
+            // 获取所有需要注入的实现类
+            var implementationTypes = App.PublicTypes
+                .Where(type =>
+                {
+                    if (!type.IsClass) return false;
+                    if (type.IsAbstract) return false;
+                    return typeof(ISingletonDependency).IsAssignableFrom(type) ||
+                           typeof(IScopedDependency).IsAssignableFrom(type) ||
+                           typeof(ITransientDependency).IsAssignableFrom(type);
+                });
 
-            
-            foreach (var type in injectionTypes)
+
+            foreach (var implementationType in implementationTypes)
             {
-                var interfaces = type.GetInterfaces();
+                var interfaces = implementationType.GetInterfaces();
 
                 var attr = new DependencyInjectionAttribute();
-                if (type.IsDefined(typeof(DependencyInjectionAttribute), false))
+                if (implementationType.IsDefined(typeof(DependencyInjectionAttribute), false))
                 {
-                    attr = type.GetCustomAttribute<DependencyInjectionAttribute>();
+                    attr = implementationType.GetCustomAttribute<DependencyInjectionAttribute>();
                 }
                 else
                 {
                     var lifecycleType = interfaces.Last(x => Enum.IsDefined(typeof(ServiceLifecycle), x.Name));
-                    attr.Lifecycle =(ServiceLifecycle)Enum.Parse(typeof(ServiceLifecycle),lifecycleType.Name);
+                    attr.Lifecycle = (ServiceLifecycle)Enum.Parse(typeof(ServiceLifecycle), lifecycleType.Name);
                 }
 
                 var injectableInterfaces = Enumerable.Empty<Type>();
-                if  (type.IsDefined(typeof(ExposeServicesAttribute), false))
+                if (implementationType.IsDefined(typeof(ExposeServicesAttribute), false))
                 {
-                    injectableInterfaces = type.GetCustomAttribute<ExposeServicesAttribute>().Interfaces;
+                    injectableInterfaces = implementationType.GetCustomAttribute<ExposeServicesAttribute>().Interfaces;
                 }
                 else
                 {
                     injectableInterfaces = interfaces.Where(x =>
                     {
                         if (Enum.IsDefined(typeof(ServiceLifecycle), x.Name)) return false;
-                        if (x.IsGenericType != type.IsGenericType) return false;
-                        return x.GetGenericArguments().Length == type.GetGenericArguments().Length;
+                        if (x.IsGenericType != implementationType.IsGenericType) return false;
+                        return x.GetGenericArguments().Length == implementationType.GetGenericArguments().Length;
                     });
                 }
+
+                services.RegisterService(implementationType, injectableInterfaces, attr);
             }
-            
-            services.RegisterService(type, injec)
+
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterService(this IServiceCollection services,
+            Type implementationType, IEnumerable<Type> serviceTypes,
+            DependencyInjectionAttribute attr)
+        {
+            var registerPolicy = attr.RegisterPolicy;
+            switch (registerPolicy)
+            {
+                case RegisterPolicy.OnlyImplement:
+                    services.RegisterService(implementationType, attr);
+                    break;
+                case RegisterPolicy.FirstInterface:
+                {
+                    var serviceType = serviceTypes.FirstOrDefault();
+                    services.RegisterService(implementationType, attr, serviceType);
+                    break;
+                }
+                case RegisterPolicy.NamingConventionsInterface:
+                {
+                    var serviceType = serviceTypes.FirstOrDefault(x => x.Name.Equals("I" + implementationType));
+                    services.RegisterService(implementationType, attr, serviceType);
+                    break;
+                }
+                case RegisterPolicy.AllInterfaces:
+                {
+                    foreach (var serviceType in serviceTypes)
+                    {
+                        services.RegisterService(implementationType, attr, serviceType);
+                    }
+                    break;
+                }
+                default:
+                    goto case RegisterPolicy.NamingConventionsInterface;
+            }
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterService(this IServiceCollection services,
+            Type implementationType,
+            DependencyInjectionAttribute attr, Type serviceType = null)
+        {
+            if (serviceType != null)
+            {
+                switch (attr.Lifecycle)
+                {
+                    case ServiceLifecycle.Transient when attr.ReplaceService:
+                        services.AddTransient(serviceType, implementationType);
+                        break;
+                    case ServiceLifecycle.Transient:
+                        services.TryAddTransient(serviceType, implementationType);
+                        break;
+                    case ServiceLifecycle.Scoped when attr.ReplaceService:
+                        services.AddScoped(serviceType, implementationType);
+                        break;
+                    case ServiceLifecycle.Scoped:
+                        services.TryAddScoped(serviceType, implementationType);
+                        break;
+                    case ServiceLifecycle.Singleton when attr.ReplaceService:
+                        services.AddSingleton(serviceType, implementationType);
+                        break;
+                    case ServiceLifecycle.Singleton:
+                        services.TryAddSingleton(serviceType, implementationType);
+                        break;
+                    default:
+                        goto case ServiceLifecycle.Transient;
+                }
+            }
+            else
+            {
+                switch (attr.Lifecycle)
+                {
+                    case ServiceLifecycle.Transient when attr.ReplaceService:
+                        services.AddTransient(implementationType);
+                        break;
+                    case ServiceLifecycle.Transient:
+                        services.TryAddTransient(implementationType);
+                        break;
+                    case ServiceLifecycle.Scoped when attr.ReplaceService:
+                        services.AddScoped(implementationType);
+                        break;
+                    case ServiceLifecycle.Scoped:
+                        services.TryAddScoped(implementationType);
+                        break;
+                    case ServiceLifecycle.Singleton when attr.ReplaceService:
+                        services.AddSingleton(implementationType);
+                        break;
+                    case ServiceLifecycle.Singleton:
+                        services.TryAddSingleton(implementationType);
+                        break;
+                    default:
+                        goto case ServiceLifecycle.Transient;
+                }
+            }
 
             return services;
         }
