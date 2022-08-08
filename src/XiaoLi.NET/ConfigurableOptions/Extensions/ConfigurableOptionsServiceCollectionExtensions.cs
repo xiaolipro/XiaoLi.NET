@@ -28,10 +28,9 @@ namespace XiaoLi.NET.ConfigurableOptions.Extensions
             where TOptions : class, IConfigurableOptions
         {
             var optionsType = typeof(TOptions);
-            var optionsSettings = optionsType.GetCustomAttribute<ConfigurableOptionsAttribute>(false);
 
             // 获取配置路径
-            var path = GetConfigurationPath(optionsSettings, optionsType);
+            var path = GetConfigurationPath(optionsType);
 
             // 配置选项（含验证信息）
             var configurationRoot = App.Configuration;
@@ -79,21 +78,23 @@ namespace XiaoLi.NET.ConfigurableOptions.Extensions
         /// <summary>
         /// 获取配置路径
         /// </summary>
-        /// <param name="optionsSettings">配置特性</param>
+        /// <param name="attr">配置特性</param>
         /// <param name="optionsType">配置类型</param>
         /// <returns></returns>
-        private static string GetConfigurationPath(ConfigurableOptionsAttribute optionsSettings, Type optionsType)
+        private static string GetConfigurationPath(Type optionsType)
         {
-            // 默认后缀：Options
-            string defaultStuffx = nameof(Options);
+            var attr = optionsType.GetCustomAttribute<ConfigurableOptionsAttribute>(false);
 
-            if (optionsSettings != null)
+            if (attr != null)
             {
-                if (!string.IsNullOrWhiteSpace(optionsSettings.Path))
+                if (!string.IsNullOrWhiteSpace(attr.Path))
                 {
-                    return optionsSettings.Path;
+                    return attr.Path;
                 }
             }
+            
+            // 默认后缀：Options
+            string defaultStuffx = nameof(Options);
 
             // 切除后缀
             return optionsType.Name.Substring(0, optionsType.Name.Length - defaultStuffx.Length);//.AsSpan().Slice(0, optionsType.Name.Length - defaultStuffx.Length).ToString();

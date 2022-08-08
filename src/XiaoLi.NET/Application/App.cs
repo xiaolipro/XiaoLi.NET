@@ -5,11 +5,14 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
 using XiaoLi.NET.ConfigurableOptions;
 using XiaoLi.NET.Helpers;
+using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
 
 namespace XiaoLi.NET.Application
 {
@@ -22,6 +25,11 @@ namespace XiaoLi.NET.Application
         /// 应用程序全局配置
         /// </summary>
         public static AppSettingsOptions Settings => GetConfiguration<AppSettingsOptions>("AppSettings");
+
+        /// <summary>
+        /// 获取宿主机环境
+        /// </summary>
+        public static IHostingEnvironment HostEnvironment => InternalApp.HostingEnvironment;
 
         /// <summary>
         /// 所有配置
@@ -67,21 +75,21 @@ namespace XiaoLi.NET.Application
 
 
             var externalAssemblies = Enumerable.Empty<Assembly>().ToList();
-            
+
             // 加载外部程序集
             foreach (var externalAssembly in Settings.ExternalAssemblies)
             {
                 // 物理路径
                 string path = Path.Combine(AppContext.BaseDirectory,
                     externalAssembly.EndsWith(".dll") ? externalAssembly : externalAssembly + ".dll");
-                
+
                 // 加载
                 var assembly = Helper.LoadAssembly(path);
                 if (assembly == default) continue;
 
                 externalAssemblies.Add(assembly);
             }
-            
+
             // 合并
             Assemblies = Assemblies.Concat(externalAssemblies);
             ExternalAssemblies = externalAssemblies;
@@ -93,7 +101,9 @@ namespace XiaoLi.NET.Application
     {
         internal static IHostingEnvironment HostingEnvironment;
         internal static IConfiguration Configuration;
-
+        internal static IServiceCollection Services;
+        internal static IServiceProvider ServiceProvider;
+        internal static List<IStartup> Startups;
 
         static InternalApp()
         {
@@ -102,43 +112,42 @@ namespace XiaoLi.NET.Application
         }
 
 
-        internal static void ConfigureApp(IHostBuilder builder)
+
+        internal static void Configure(IApplicationBuilder app)
         {
-            builder
-                .ConfigureAppConfiguration(((context, configurationBuilder) =>
-                {
-                    HostingEnvironment = context.HostingEnvironment;
-                    // 添加json配置文件
-                    AddJsonFiles(configurationBuilder);
-                }))
-                .ConfigureServices(((context, services) => { Configuration = context.Configuration; }));
+            ServiceProvider = app.ApplicationServices;
+            UseStartups(app);
         }
 
-        static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
+        private static void UseStartups(this IApplicationBuilder app)
         {
-            string executeDir = AppContext.BaseDirectory; //程序执行目录
-
-            // 获取执行目录下所有json文件，TopDirectoryOnly不递归
-            var jsonFiles = Directory.GetFiles(executeDir, "*.json", SearchOption.TopDirectoryOnly);
-
-            // jsonFiles.Where(file => )
-            foreach (var file in jsonFiles)
+            foreach (var startup in InternalApp.Startups)
             {
-                if (VaildateJsonFile(file))
+                // startup.Configure(app);
+
+                var startupType = startup.GetType();
+
+                // 公开的实例成员
+                var configureMethods = startupType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    // 返回void且第一个参数是IApplicationBuilder方法
+                    .Where(method =>
+                    {
+                        if (method.ReturnType != typeof(void)) return false;
+                        var parameters = method.GetParameters();
+                        if (parameters.Length < 1) return false;
+                        // if (parameters.Length == 1 && method.Name.Equals(nameof(Configure))) return false;
+                        return parameters.First().ParameterType == typeof(IApplicationBuilder);
+                    });
+
+                // 调用Configure
+                foreach (var configure in configureMethods)
                 {
-                    configurationBuilder.AddJsonFile(file, true, true);
+                    var parameters = configure.GetParameters()
+                        .Select(parameter => InternalApp.ServiceProvider.GetRequiredService(parameter.ParameterType));
+                    configure.Invoke(startup, parameters.ToArray());
                 }
             }
         }
-
-        static bool VaildateJsonFile(string file)
-        {
-            var arr = file.Split('.');
-            if (arr.Length == 2) return true;
-            if (arr.Any(x => string.IsNullOrWhiteSpace(x))) return false;
-            return file.EndsWith($".{HostingEnvironment.EnvironmentName}.json");
-        }
-
 
         static void ResolveEnvironmentVariables()
         {
