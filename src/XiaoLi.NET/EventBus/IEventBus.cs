@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using XiaoLi.NET.App.EventBus.Events;
+using XiaoLi.NET.EventBus.Events;
 
-namespace XiaoLi.NET.App.EventBus
+namespace XiaoLi.NET.EventBus
 {
     /// <summary>
     /// 事件总线

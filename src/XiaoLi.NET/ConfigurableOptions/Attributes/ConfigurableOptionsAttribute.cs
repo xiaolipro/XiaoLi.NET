@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace XiaoLi.NET.App.ConfigurableOptions.Attributes
+namespace XiaoLi.NET.ConfigurableOptions.Attributes
 {
     /// <summary>
     /// 配置项特性

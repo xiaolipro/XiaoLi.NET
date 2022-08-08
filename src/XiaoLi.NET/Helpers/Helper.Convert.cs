@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XiaoLi.NET.App.Helpers
+namespace XiaoLi.NET.Helpers
 {
 	public static partial class Helper
 	{

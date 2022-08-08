@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XiaoLi.NET.App.EventBus.Events
+namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
-    /// 集成事件处理器
+    /// 强类型集成事件处理器
     /// </summary>
     /// <typeparam name="TIntegrationEvent">集成事件</typeparam>
     public interface IIntegrationEventHandler<in TIntegrationEvent> where TIntegrationEvent:IntegrationEvent

@@ -1,7 +1,7 @@
 ﻿
 using System.Reflection;
 
-namespace XiaoLi.NET.App.Consul.Register
+namespace XiaoLi.NET.Consul.Register
 {
     public class ConsulRegisterOptions
     {

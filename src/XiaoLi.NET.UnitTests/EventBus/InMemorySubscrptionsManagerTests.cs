@@ -1,5 +1,5 @@
 ﻿
-namespace XiaoLi.NET.App.UnitTests.EventBus
+namespace XiaoLi.NET.UnitTests.EventBus
 {
     public class InMemorySubscrptionsManagerTests
     {

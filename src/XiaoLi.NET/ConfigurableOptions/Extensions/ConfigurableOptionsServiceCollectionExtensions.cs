@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using XiaoLi.NET.App.ConfigurableOptions.Attributes;
+using XiaoLi.NET.Application;
+using XiaoLi.NET.ConfigurableOptions.Attributes;
 
-namespace XiaoLi.NET.App.ConfigurableOptions.Extensions
+namespace XiaoLi.NET.ConfigurableOptions.Extensions
 {
     /// <summary>
     /// 可配置项拓展类
@@ -16,9 +19,9 @@ namespace XiaoLi.NET.App.ConfigurableOptions.Extensions
     public static class ConfigurableOptionsServiceCollectionExtensions
     {
         /// <summary>
-        /// 添加选项配置
+        /// 添加配置项
         /// </summary>
-        /// <typeparam name="TOptions">选项类型</typeparam>
+        /// <typeparam name="TOptions">配置项类型</typeparam>
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddConfigurableOptions<TOptions>(this IServiceCollection services)
@@ -34,49 +37,39 @@ namespace XiaoLi.NET.App.ConfigurableOptions.Extensions
             var configurationRoot = App.Configuration;
             var optionsConfiguration = configurationRoot.GetSection(path);
 
-            // 配置选项监听
-            if (typeof(IConfigurableOptionsListener<TOptions>).IsAssignableFrom(optionsType))
+            if (typeof(IConfigurableMonitorOptions<TOptions>).IsAssignableFrom(optionsType))
             {
-                var onListenerMethod = optionsType.GetMethod(nameof(IConfigurableOptionsListener<TOptions>.OnListener));
-                if (onListenerMethod != null)
+                var onChangeMethod = optionsType.GetMethod(nameof(IConfigurableMonitorOptions<TOptions>.OnChange));
+                if (onChangeMethod != null)
                 {
-                    // 这里监听的是全局配置（总感觉不对头）
+                    // 监听配置文件变化
                     ChangeToken.OnChange(() => configurationRoot.GetReloadToken(), () =>
                     {
                         var options = optionsConfiguration.Get<TOptions>();
-                        if (options != null) onListenerMethod.Invoke(options, new object[] { options, optionsConfiguration });
+                        if (options != null) onChangeMethod.Invoke(options, new object[] { options });
                     });
                 }
             }
 
-            var optionsConfigure = services.AddOptions<TOptions>()
-                  .Bind(optionsConfiguration, options =>
-                  {
-                      options.BindNonPublicProperties = true; // 绑定私有变量
-                  })
-                  .ValidateDataAnnotations();
-
-            // 配置复杂验证后后期配置
-            var validateInterface = optionsType.GetInterfaces()
-                .FirstOrDefault(u => u.IsGenericType && typeof(IConfigurableOptions).IsAssignableFrom(u.GetGenericTypeDefinition()));
-            if (validateInterface != null)
+            var genericOptionsType = optionsType.GetInterfaces()
+                .FirstOrDefault(x => x.IsGenericType && typeof(IConfigurableOptions).IsAssignableFrom(x.GetGenericTypeDefinition()));
+            if (genericOptionsType != null)
             {
-                var genericArguments = validateInterface.GenericTypeArguments;
+                // 泛型参数
+                var genericArguments = genericOptionsType.GenericTypeArguments;
 
-                // 配置复杂验证
+                // 验证
                 if (genericArguments.Length > 1)
                 {
+                    // 注册验证器
                     services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IValidateOptions<TOptions>), genericArguments.Last()));
                 }
 
-                // 配置后期配置
+                // 配置后
                 var postConfigureMethod = optionsType.GetMethod(nameof(IConfigurableOptions<TOptions>.PostConfigure));
                 if (postConfigureMethod != null)
                 {
-                    if (optionsSettings?.PostConfigureAll != true)
-                        optionsConfigure.PostConfigure(options => postConfigureMethod.Invoke(options, new object[] { options, optionsConfiguration }));
-                    else
-                        services.PostConfigureAll<TOptions>(options => postConfigureMethod.Invoke(options, new object[] { options, optionsConfiguration }));
+                    services.PostConfigureAll<TOptions>(options => postConfigureMethod.Invoke(options, new object[] { options, optionsConfiguration }));
                 }
             }
 
@@ -102,6 +95,7 @@ namespace XiaoLi.NET.App.ConfigurableOptions.Extensions
                 }
             }
 
+            // 切除后缀
             return optionsType.Name.Substring(0, optionsType.Name.Length - defaultStuffx.Length);//.AsSpan().Slice(0, optionsType.Name.Length - defaultStuffx.Length).ToString();
         }
     }

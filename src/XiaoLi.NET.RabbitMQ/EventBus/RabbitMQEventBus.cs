@@ -10,14 +10,14 @@ using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using XiaoLi.NET.App.EventBus;
-using XiaoLi.NET.App.EventBus.Events;
-using XiaoLi.NET.App.EventBus.Subscriptions;
-using XiaoLi.NET.App.Extensions;
-using XiaoLi.NET.App.RabbitMQ;
-using XiaoLi.NET.App.RabbitMQ.Connect;
+using XiaoLi.NET.EventBus;
+using XiaoLi.NET.EventBus.Events;
+using XiaoLi.NET.EventBus.Subscriptions;
+using XiaoLi.NET.Extensions;
+using XiaoLi.NET.RabbitMQ;
+using XiaoLi.NET.RabbitMQ.Connect;
 
-namespace XiaoLi.NET.App.RabbitMQ.EventBus
+namespace XiaoLi.NET.RabbitMQ.EventBus
 {
     /// <summary>
     /// 基于RabbitMessageQueue实现的事件总线
@@ -63,14 +63,18 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
             _rabbitMqConnector.KeepAlive();
 
             #region 定义重试策略
+
             var retryPolicy = Policy.Handle<SocketException>() //socket异常时
                 .Or<BrokerUnreachableException>() //broker不可达异常时
-                .WaitAndRetry(_eventBusOptions.PublishFailureRetryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                .WaitAndRetry(_eventBusOptions.PublishFailureRetryCount,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     (ex, time) =>
                     {
-                        _logger.LogWarning(ex, "在{TimeOut}s 后无法连接到RabbitMQ客户端，异常消息：{Message}", $"{time.TotalSeconds:f1}", ex.Message);
+                        _logger.LogWarning(ex, "在{TimeOut}s 后无法连接到RabbitMQ客户端，异常消息：{Message}",
+                            $"{time.TotalSeconds:f1}", ex.Message);
                     }
                 );
+
             #endregion
 
             var eventName = @event.GetType().Name;
@@ -78,7 +82,8 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
             _logger.LogTrace("创建定义RabbitMQ通道以发布事件: {EventId}（{EventName}）", @event.Id, eventName);
             using (var channel = _rabbitMqConnector.CreateChannel())
             {
-                _logger.LogTrace("定义RabbitMQ Direct交换机（{ExchangeName}）以发布事件：{EventId}（{EventName}）", _brokerName, @event.Id, eventName);
+                _logger.LogTrace("定义RabbitMQ Direct交换机（{ExchangeName}）以发布事件：{EventId}（{EventName}）", _brokerName,
+                    @event.Id, eventName);
 
                 channel.ExchangeDeclare(exchange: _brokerName, ExchangeType.Direct);
 
@@ -204,7 +209,8 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "----- 处理消息时出错 \"{Message}\"", message);
+                _logger.LogWarning(ex, "----- 处理消息时发生异常：\"{Message}\"", message);
+                // _consumerChannel.BasicReject(eventArgs.DeliveryTag, requeue: false);
             }
 
 
@@ -236,10 +242,12 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
                 // 处理动态集成事件
                 if (subscriptionInfo.IsDynamic)
                 {
-                    var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
+                    var handler =
+                        _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
                     if (handler == null)
                     {
-                        _logger.LogWarning("{EventName}没有实现`{IDynamicIntegrationEventHandler}`", eventName, nameof(IDynamicIntegrationEventHandler));
+                        _logger.LogWarning("{EventName}没有实现`{IDynamicIntegrationEventHandler}`", eventName,
+                            nameof(IDynamicIntegrationEventHandler));
                         continue;
                     }
 
@@ -261,7 +269,8 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
                         .MakeGenericType(eventType)
                         .GetMethod(nameof(IIntegrationEventHandler<IntegrationEvent>.Handle));
 
-                    var integrationEvent = JsonSerializer.Deserialize(message, eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                    var integrationEvent = JsonSerializer.Deserialize(message, eventType,
+                        new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
                     // see：https://stackoverflow.com/questions/22645024/when-would-i-use-task-yield
                     await Task.Yield();
@@ -284,10 +293,9 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
             var arguments = new Dictionary<string, object>();
 
             /*
-             * 死信来源
-             * 1.消息TTL过期
-             * 2.队列达到最大长度
-             * 3.消息被拒绝（BasicReject或BasicNack）并且不再重新入队（requeue=false）
+             * The message is negatively acknowledged by a consumer using basic.reject or basic.nack with requeue parameter set to false.
+             * The message expires due to per-message TTL; or
+             * The message is dropped because its queue exceeded a length limit
              */
             if (_eventBusOptions.EnableDLX)
             {
@@ -306,7 +314,7 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
                     deadLetterChannel.QueueBind(DLXQueueName, DLXExchangeName, DLXRouteKey);
                 }
 
-                arguments.Add("x-dead-letter-exchange", DLXExchangeName); // 设置当前队列的DLX
+                arguments.Add("x-dead-letter-exchange", DLXExchangeName); // 设置DLX
                 arguments.Add("x-dead-letter-routing-key", DLXRouteKey); // DLX会根据该值去找到死信消息存放的队列
 
                 if (_eventBusOptions.MessageTTL > 0)
@@ -324,7 +332,8 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
             // 声明直连交换机
             consumerChannel.ExchangeDeclare(exchange: _brokerName, type: ExchangeType.Direct);
             // 声明队列
-            consumerChannel.QueueDeclare(queue: _subscriptionQueueName, durable: true, exclusive: false, autoDelete: false, arguments: arguments);
+            consumerChannel.QueueDeclare(queue: _subscriptionQueueName, durable: true, exclusive: false,
+                autoDelete: false, arguments: arguments);
 
             /*
              * 消费者限流机制，防止开启客户端时，服务被巨量数据冲宕机
@@ -369,6 +378,7 @@ namespace XiaoLi.NET.App.RabbitMQ.EventBus
 
             _consumerChannel.BasicConsume(queue: _subscriptionQueueName, autoAck: false, consumer: consumer);
         }
+
         #endregion
     }
 }

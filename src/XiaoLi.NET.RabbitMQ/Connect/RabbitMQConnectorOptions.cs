@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.NET.App.RabbitMQ.Connect
+namespace XiaoLi.NET.RabbitMQ.Connect
 {
     /// <summary>
     /// RabbitMQ连接器配置

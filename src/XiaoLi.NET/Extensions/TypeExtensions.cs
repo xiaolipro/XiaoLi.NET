@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace XiaoLi.NET.App.Extensions
+namespace XiaoLi.NET.Extensions
 {
     public static class TypeExtensions
     {

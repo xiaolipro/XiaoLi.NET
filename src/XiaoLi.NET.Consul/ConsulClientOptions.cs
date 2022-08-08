@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XiaoLi.NET.App.Consul
+namespace XiaoLi.NET.Consul
 {
     /// <summary>
     /// Consul配置

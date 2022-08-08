@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.NET.App.ConfigurableOptions
+namespace XiaoLi.NET.ConfigurableOptions
 {
 	/// <summary>
     /// 可热更新的配置项

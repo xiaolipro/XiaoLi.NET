@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization.Json;
 
-namespace XiaoLi.NET.App.Text
+namespace XiaoLi.NET.Text
 {
     public class JsonSerializer
     {

@@ -1,4 +1,4 @@
-﻿namespace XiaoLi.NET.App.DependencyInjection
+﻿namespace XiaoLi.NET.DependencyInjection
 {
     public interface ISingletonDependency
     {

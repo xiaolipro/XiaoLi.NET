@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace XiaoLi.NET.App.Helpers
+namespace XiaoLi.NET.Helpers
 {
     /// <summary>
     /// 反射辅助类

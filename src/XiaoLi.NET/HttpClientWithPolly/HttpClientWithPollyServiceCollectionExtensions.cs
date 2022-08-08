@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace XiaoLi.NET.App.HttpClientWithPolly
+namespace XiaoLi.NET.HttpClientWithPolly
 {
     /// <summary>
     /// Extension methods to configure an <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> for <see cref="T:Microsoft.Extensions.Http.Polly" />.

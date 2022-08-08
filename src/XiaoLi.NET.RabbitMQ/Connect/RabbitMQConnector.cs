@@ -9,7 +9,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 
-namespace XiaoLi.NET.App.RabbitMQ.Connect
+namespace XiaoLi.NET.RabbitMQ.Connect
 {
     /// <summary>
     /// RabbitMQ连接器、Channel工厂

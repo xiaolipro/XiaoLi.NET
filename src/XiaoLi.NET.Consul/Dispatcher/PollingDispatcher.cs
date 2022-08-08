@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace XiaoLi.NET.App.Consul.Dispatcher
+namespace XiaoLi.NET.Consul.Dispatcher
 {
     /// <summary>
     /// 轮询调度器

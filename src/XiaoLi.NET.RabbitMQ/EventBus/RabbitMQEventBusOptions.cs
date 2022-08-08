@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.NET.App.RabbitMQ.EventBus
+namespace XiaoLi.NET.RabbitMQ.EventBus
 {
     public class RabbitMQEventBusOptions
     {

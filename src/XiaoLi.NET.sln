@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32519.111
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.NET.App", "XiaoLi.NET\XiaoLi.NET.App.csproj", "{527B4A06-2C0D-4461-9FFB-067D5215FFAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.NET", "XiaoLi.NET\XiaoLi.NET.csproj", "{527B4A06-2C0D-4461-9FFB-067D5215FFAF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XiaoLi.NET.RabbitMQ", "XiaoLi.NET.RabbitMQ\XiaoLi.NET.RabbitMQ.csproj", "{AA97E63A-4B64-4D3D-A75F-349CAF24A68B}"
 EndProject

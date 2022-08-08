@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XiaoLi.NET.App.Helpers
+namespace XiaoLi.NET.Helpers
 {
     public static partial class Helper
     {

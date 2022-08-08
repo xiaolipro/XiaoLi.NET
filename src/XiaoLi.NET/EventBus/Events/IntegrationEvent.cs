@@ -1,26 +1,26 @@
 ﻿using System;
 
-namespace XiaoLi.NET.App.EventBus.Events
+namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
-    /// 事件接口
+    /// 集成事件
     /// </summary>
     public class IntegrationEvent
     {
+        /// <summary>
+        /// 唯一标识
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreationTime { get; }
+        
         public IntegrationEvent()
         {
             Id = Guid.NewGuid();
             CreationTime = DateTime.UtcNow;
         }
-
-        /// <summary>
-        /// 事件唯一标识
-        /// </summary>
-        public Guid Id { get; }
-
-        /// <summary>
-        /// 事件创建时间
-        /// </summary>
-        public DateTime CreationTime { get; }
     }
 }

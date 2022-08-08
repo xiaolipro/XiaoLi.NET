@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XiaoLi.NET.App.EventBus.Events
+namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
-    /// 动态集成事件处理器
+    /// 动态类型集成事件处理器
     /// </summary>
     public interface IDynamicIntegrationEventHandler
     {

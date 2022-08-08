@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using XiaoLi.NET.App.EventBus.Events;
+using XiaoLi.NET.EventBus.Events;
 
-namespace XiaoLi.NET.App.EventBus.Subscriptions
+namespace XiaoLi.NET.EventBus.Subscriptions
 {
     /// <summary>
     /// 基于内存的订阅管理器
     /// </summary>
     public class InMemorySubscriptionsManager : ISubscriptionsManager
     {
-        // 内存字典
         // 数据格式：{事件名称:[订阅信息]}
         private readonly Dictionary<string, List<SubscriptionInfo>> _subscriptions;
 
