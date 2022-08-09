@@ -16,5 +16,15 @@ namespace XiaoLi.NET.UnitTests
                 item = 'a';
             }
         }
+        
+        [Fact]
+        public void IEnumerable_Where_Test()
+        {
+            var items = Enumerable.Range(1, 2);
+            var new_items = items.Where(x => x > 3);
+            var res = new_items.Count();
+            
+            Assert.Equal(0, res);
+        }
     }
 }

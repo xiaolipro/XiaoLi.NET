@@ -1,4 +1,5 @@
-﻿using XiaoLi.NET.DependencyInjection;
+﻿
+using XiaoLi.NET.DependencyInjection.LifecycleInterfaces;
 
 namespace XiaoLi.NET.UnitTests.DependencyInjection;
 
@@ -7,7 +8,7 @@ public class OrderService:IOrderService
     
 }
 
-public interface IOrderService:ITransientDependency
+public interface IOrderService:ITransient
 {
     
 }

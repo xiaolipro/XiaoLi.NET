@@ -8,7 +8,7 @@ namespace XiaoLi.NET.ConfigurableOptions
     /// 可热更新的配置项
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public interface IConfigurableMonitorOptions<TOptions> : IConfigurableOptions<TOptions>
+    public interface IMonitorConfigurableOptions<TOptions> : IConfigurableOptions<TOptions>
         where TOptions : class, IConfigurableOptions
     {
         /// <summary>

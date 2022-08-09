@@ -12,14 +12,13 @@ namespace XiaoLi.NET.Helpers
     public partial class Helper
     {
         /// <summary>
-        /// 根据物理路径加载程序集，并将其返回
+        /// 根据物理路径加载程序集
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        internal static Assembly LoadAssembly(string path)
+        /// <param name="path">物理路径</param>
+        /// <returns>程序集</returns>
+        public static Assembly LoadAssemblyByPath(string path)
         {
-            if (!File.Exists(path)) return default;
-            return Assembly.LoadFrom(path);
+            return !File.Exists(path) ? default : Assembly.LoadFrom(path);
         }
     }
 }

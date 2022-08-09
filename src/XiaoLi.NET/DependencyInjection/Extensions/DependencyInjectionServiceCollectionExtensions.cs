@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiaoLi.NET.Application;
 using XiaoLi.NET.ConfigurableOptions.Extensions;
 using XiaoLi.NET.DependencyInjection.Attributes;
 using XiaoLi.NET.DependencyInjection.Enums;
+using XiaoLi.NET.DependencyInjection.LifecycleInterfaces;
 
 namespace XiaoLi.NET.DependencyInjection.Extensions
 {
@@ -33,16 +33,18 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
         
         private static IServiceCollection AddInnerDependencyInjection(this IServiceCollection services)
         {
+            var lifecycleInterfaces = new[] { typeof(ISingleton), typeof(IScoped), typeof(ITransient) };
+            
             // 获取所有需要注入的实现类
             var implementationTypes = App.PublicTypes
                 .Where(type =>
                 {
                     if (!type.IsClass) return false;
                     if (type.IsAbstract) return false;
-                    return typeof(ISingletonDependency).IsAssignableFrom(type) ||
-                           typeof(IScopedDependency).IsAssignableFrom(type) ||
-                           typeof(ITransientDependency).IsAssignableFrom(type);
+
+                    return lifecycleInterfaces.Any(lifecycleInterface => lifecycleInterface.IsAssignableFrom(type));
                 });
+
 
 
             foreach (var implementationType in implementationTypes)
@@ -56,11 +58,11 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
                 }
                 else
                 {
-                    var lifecycleType = interfaces.Last(x => Enum.IsDefined(typeof(ServiceLifecycle), x.Name));
-                    attr.Lifecycle = (ServiceLifecycle)Enum.Parse(typeof(ServiceLifecycle), lifecycleType.Name);
+                    var lifecycleType = interfaces.Last(x => lifecycleInterfaces.Contains(x));
+                    attr.Lifecycle = (ServiceLifecycle)Enum.Parse(typeof(ServiceLifecycle), lifecycleType.Name.TrimStart('I'));
                 }
 
-                var injectableInterfaces = Enumerable.Empty<Type>();
+                IEnumerable<Type> injectableInterfaces;
                 if (implementationType.IsDefined(typeof(ExposeServicesAttribute), false))
                 {
                     injectableInterfaces = implementationType.GetCustomAttribute<ExposeServicesAttribute>().Interfaces;
@@ -69,7 +71,7 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
                 {
                     injectableInterfaces = interfaces.Where(x =>
                     {
-                        if (Enum.IsDefined(typeof(ServiceLifecycle), x.Name)) return false;
+                        if (lifecycleInterfaces.Contains(x)) return false;
                         if (x.IsGenericType != implementationType.IsGenericType) return false;
                         return x.GetGenericArguments().Length == implementationType.GetGenericArguments().Length;
                     });
@@ -100,7 +102,7 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
                 }
                 case RegisterPolicy.NamingConventionsInterface:
                 {
-                    var serviceType = serviceTypes.FirstOrDefault(x => x.Name.Equals("I" + implementationType));
+                    var serviceType = serviceTypes.FirstOrDefault(x => x.Name.Equals("I" + implementationType.Name));
                     services.RegisterService(implementationType, attr, serviceType);
                     break;
                 }
@@ -123,50 +125,45 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
             Type implementationType,
             DependencyInjectionAttribute attr, Type serviceType = null)
         {
+            
             if (serviceType != null)
             {
-                switch (attr.Lifecycle)
+                if (attr.ReplaceService)
                 {
-                    case ServiceLifecycle.Transient when attr.ReplaceService:
-                        services.AddTransient(serviceType, implementationType);
-                        break;
-                    case ServiceLifecycle.Transient:
-                        services.TryAddTransient(serviceType, implementationType);
-                        break;
-                    case ServiceLifecycle.Scoped when attr.ReplaceService:
-                        services.AddScoped(serviceType, implementationType);
-                        break;
-                    case ServiceLifecycle.Scoped:
-                        services.TryAddScoped(serviceType, implementationType);
-                        break;
-                    case ServiceLifecycle.Singleton when attr.ReplaceService:
-                        services.AddSingleton(serviceType, implementationType);
-                        break;
-                    case ServiceLifecycle.Singleton:
-                        services.TryAddSingleton(serviceType, implementationType);
-                        break;
-                    default:
-                        goto case ServiceLifecycle.Transient;
+                    services.Replace(new ServiceDescriptor(serviceType, implementationType,(ServiceLifetime)attr.Lifecycle));
+                }
+                else
+                {
+                    switch (attr.Lifecycle)
+                    {
+                        case ServiceLifecycle.Transient:
+                            services.TryAddTransient(serviceType, implementationType);
+                            break;
+                        case ServiceLifecycle.Scoped:
+                            services.TryAddScoped(serviceType, implementationType);
+                            break;
+                        case ServiceLifecycle.Singleton:
+                            services.TryAddSingleton(serviceType, implementationType);
+                            break;
+                        default:
+                            goto case ServiceLifecycle.Transient;
+                    }
                 }
             }
             else
             {
+                if (attr.ReplaceService)
+                {
+                    services.Replace(new ServiceDescriptor(implementationType, implementationType,(ServiceLifetime)attr.Lifecycle));
+                }
                 switch (attr.Lifecycle)
                 {
-                    case ServiceLifecycle.Transient when attr.ReplaceService:
-                        services.AddTransient(implementationType);
-                        break;
+                  
                     case ServiceLifecycle.Transient:
                         services.TryAddTransient(implementationType);
                         break;
-                    case ServiceLifecycle.Scoped when attr.ReplaceService:
-                        services.AddScoped(implementationType);
-                        break;
                     case ServiceLifecycle.Scoped:
                         services.TryAddScoped(implementationType);
-                        break;
-                    case ServiceLifecycle.Singleton when attr.ReplaceService:
-                        services.AddSingleton(implementationType);
                         break;
                     case ServiceLifecycle.Singleton:
                         services.TryAddSingleton(implementationType);

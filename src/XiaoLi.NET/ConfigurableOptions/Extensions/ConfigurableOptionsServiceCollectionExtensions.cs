@@ -36,9 +36,9 @@ namespace XiaoLi.NET.ConfigurableOptions.Extensions
             var configurationRoot = App.Configuration;
             var optionsConfiguration = configurationRoot.GetSection(path);
 
-            if (typeof(IConfigurableMonitorOptions<TOptions>).IsAssignableFrom(optionsType))
+            if (typeof(IMonitorConfigurableOptions<TOptions>).IsAssignableFrom(optionsType))
             {
-                var onChangeMethod = optionsType.GetMethod(nameof(IConfigurableMonitorOptions<TOptions>.OnChange));
+                var onChangeMethod = optionsType.GetMethod(nameof(IMonitorConfigurableOptions<TOptions>.OnChange));
                 if (onChangeMethod != null)
                 {
                     // 监听配置文件变化
