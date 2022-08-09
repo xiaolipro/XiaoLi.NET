@@ -52,7 +52,7 @@ namespace XiaoLi.NET.Application
         {
             // 解析程序集
             ResolveAssemblies();
-            // 解析类型
+            // 解析程序集所有public类型
             PublicTypes = Assemblies.SelectMany(x => x.GetTypes()).Where(x => x.IsPublic);
         }
 
