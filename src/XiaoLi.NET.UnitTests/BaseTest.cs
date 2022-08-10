@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 namespace XiaoLi.NET.UnitTests
 {
-    public class UnitTest1
+    public class BaseTest
     {
         [Fact]
         public void Test1()
@@ -25,6 +25,24 @@ namespace XiaoLi.NET.UnitTests
             var res = new_items.Count();
             
             Assert.Equal(0, res);
+        }
+        
+        [Fact]
+        public void GOTO_Test()
+        {
+            string str = "123";
+
+            switch (str)
+            {
+                case "1":
+                    Console.WriteLine(1);
+                    break;
+                case "2":
+                    Console.WriteLine(2);
+                    break;
+                default:
+                    goto case "1";
+            }
         }
     }
 }

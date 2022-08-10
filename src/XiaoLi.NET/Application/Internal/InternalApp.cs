@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
 using XiaoLi.NET.Application.Extensions;
 using XiaoLi.NET.Helpers;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
-namespace XiaoLi.NET.Application
+namespace XiaoLi.NET.Application.Internal
 {
     internal static class InternalApp
     {
         internal static IHostEnvironment HostEnvironment;
+        internal static IHostingEnvironment HostingEnvironment;
         internal static IConfiguration Configuration;
         internal static IServiceCollection Services;
         internal static IServiceProvider ServiceProvider;
@@ -36,20 +39,60 @@ namespace XiaoLi.NET.Application
             builder
                 .ConfigureAppConfiguration(((context, configurationBuilder) =>
                 {
-                    HostEnvironment = context.HostingEnvironment;
+                    // 解析环境变量
+                    HostEnvironment = ResolveEnvironmentVariables(context.HostingEnvironment);
+                    
                     // 添加json配置文件
                     AddJsonFiles(configurationBuilder);
                 }))
                 .ConfigureServices(((context, services) =>
                 {
+                    // 服务配置
                     Configuration = context.Configuration;
+                    
+                    // 服务存储容器
                     Services = services;
-                    ServiceProvider = services.BuildServiceProvider(false);
+                    
+                    // 初始化根服务
+                    services.AddHostedService<HostedService>();
 
                     // 初始化App
                     services.AddApp();
                 }));
         }
+        
+        
+        /// <summary>
+        /// 框架配置
+        /// </summary>
+        /// <param name="builder"></param>
+        internal static void ConfigureApp(IWebHostBuilder builder)
+        {
+            builder
+                .ConfigureAppConfiguration(((context, configurationBuilder) =>
+                {
+                    // 解析环境变量
+                    HostingEnvironment = ResolveEnvironmentVariables(context.HostingEnvironment);
+                    
+                    // 添加json配置文件
+                    AddJsonFiles(configurationBuilder);
+                }))
+                .ConfigureServices(((context, services) =>
+                {
+                    // 服务配置
+                    Configuration = context.Configuration;
+                    
+                    // 服务存储容器
+                    Services = services;
+                    
+                    // 初始化根服务
+                    services.AddHostedService<HostedService>();
+
+                    // 初始化App
+                    services.AddApp();
+                }));
+        }
+       
 
         private static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
         {
@@ -59,7 +102,7 @@ namespace XiaoLi.NET.Application
             var scanDirs = configuration.GetSection("ConfigFileScanDirs").Get<string[]>() ?? Enumerable.Empty<string>();
             scanDirs = scanDirs.Append(AppContext.BaseDirectory);
             
-            // 过滤后缀
+            // 过滤前缀
             var prefixes = configuration.GetSection("ExcludePrefixes").Get<string[]>() ??
                            Enumerable.Empty<string>();
             prefixes = prefixes.Concat(excludePrefixes);
@@ -84,6 +127,36 @@ namespace XiaoLi.NET.Application
                     configurationBuilder.AddJsonFile(file, true, true);
                 }
             }
+        }
+        
+        private static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
+        {
+            string env = hostEnvironment.EnvironmentName;
+            if (string.IsNullOrWhiteSpace(env))
+            {
+                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
+
+                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
+
+                hostEnvironment.EnvironmentName = env;
+            }
+
+            return hostEnvironment;
+        }
+        
+        private static IHostingEnvironment ResolveEnvironmentVariables(IHostingEnvironment hostEnvironment)
+        {
+            string env = hostEnvironment.EnvironmentName;
+            if (string.IsNullOrWhiteSpace(env))
+            {
+                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
+
+                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
+
+                hostEnvironment.EnvironmentName = env;
+            }
+
+            return hostEnvironment;
         }
 
         private static readonly string[] excludePrefixes = new[] { "appsettings" };
@@ -118,7 +191,7 @@ namespace XiaoLi.NET.Application
             if (arr.Length == 2) return true;
             if (arr.Any(string.IsNullOrWhiteSpace)) return false;
 
-            return file.EndsWith($".{App.HostEnvironment.EnvironmentName}.json");
+            return file.EndsWith($".{HostEnvironment.EnvironmentName}.json");
         }
 
         // private static void UseStartups(this IApplicationBuilder app)

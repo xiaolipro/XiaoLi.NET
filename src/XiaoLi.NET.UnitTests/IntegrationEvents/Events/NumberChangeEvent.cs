@@ -1,5 +1,5 @@
 ﻿
-namespace XiaoLi.NET.UnitTests.EventBus.IntegrationEvents.Events
+namespace XiaoLi.NET.UnitTests.IntegrationEvents.Events
 {
     public class NumberChangeEvent:IntegrationEvent
     {

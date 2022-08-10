@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.EventLog;
-using Microsoft.Extensions.Options;
-using XiaoLi.NET.Application.Extensions;
+using XiaoLi.NET.Application.Internal;
 using XiaoLi.NET.ConfigurableOptions;
 using XiaoLi.NET.Helpers;
 
@@ -74,9 +70,6 @@ namespace XiaoLi.NET.Application
 
         static App()
         {
-            // 解析环境变量
-            ResolveEnvironmentVariables();
-
             // 解析程序集
             var (assemblies, externalAssemblies) = ResolveAssemblies();
             Assemblies = assemblies;
@@ -117,17 +110,6 @@ namespace XiaoLi.NET.Application
         }
         
         
-        private static void ResolveEnvironmentVariables()
-        {
-            string env = HostEnvironment.EnvironmentName;
-            if (string.IsNullOrWhiteSpace(env))
-            {
-                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
-
-                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
-
-                HostEnvironment.EnvironmentName = env;
-            }
-        }
+        
     }
 }

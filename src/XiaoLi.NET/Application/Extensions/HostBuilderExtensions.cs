@@ -1,5 +1,7 @@
 ﻿
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using XiaoLi.NET.Application.Internal;
 
 namespace XiaoLi.NET.Application.Extensions
 {
@@ -20,13 +22,20 @@ namespace XiaoLi.NET.Application.Extensions
 
             return builder;
         }
-        // public static IHostBuilder CreateAppHostBuilder() => CreateAppHostBuilder(null);
-        // public static IHostBuilder CreateAppHostBuilder(string[] args)
-        // {
-        //     return Host.CreateDefaultBuilder().ConfigureApp();
-        // }
         
-
+        /// <summary>
+        /// 使用框架App
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IWebHostBuilder ConfigureApp(this IWebHostBuilder builder)
+        {
+            InternalApp.ConfigureApp(builder);
         
+            return builder;
+        }
+        
+        
+        // public static IWebHostBuilder
     }
 }
