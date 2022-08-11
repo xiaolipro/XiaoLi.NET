@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Winton.Extensions.Configuration.Consul;
+using XiaoLi.NET.Application;
 
 namespace XiaoLi.NET.Consul.Extensions
 {
@@ -11,11 +12,11 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <summary>
         /// 加载Consul上的配置文件
         /// </summary>
-        /// <param name="consulClientOptions">配置</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">未配置</exception>
-        public static IConfigurationRoot AddConsulAppsettings(this IConfigurationBuilder builder, ConsulClientOptions consulClientOptions)
+        public static IConfigurationRoot AddConsulConfiguration(this IConfigurationBuilder builder)
         {
+            var consulClientOptions = App.GetConfiguration<ConsulClientOptions>();
             Uri addrUri = consulClientOptions.Address??throw new ArgumentNullException(nameof(consulClientOptions.Address));
             string configFileName = consulClientOptions.ConfigFileName ?? throw new ArgumentNullException(nameof(consulClientOptions.ConfigFileName));
 

@@ -18,8 +18,8 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <param name="configuration"></param>
         public static void AddConsulRegister(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<ConsulClientOptions>(configuration.GetSection("ConsulClientOptions"));
-            services.Configure<ConsulRegisterOptions>(configuration.GetSection("ConsulRegisterOptions"));
+            services.Configure<ConsulClientOptions>(configuration.GetSection("ConsulClient"));
+            services.Configure<ConsulRegisterOptions>(configuration.GetSection("ConsulRegister"));
             services.AddTransient<IConsulRegister, ConsulRegister>();
         }
 
