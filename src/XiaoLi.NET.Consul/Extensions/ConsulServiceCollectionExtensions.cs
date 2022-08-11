@@ -15,10 +15,11 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <summary>
         /// 添加Consul注册机加入到IOC容器
         /// </summary>
-        public static void AddConsulRegister(this IServiceCollection services)
+        /// <param name="configuration"></param>
+        public static void AddConsulRegister(this IServiceCollection services, IConfiguration configuration)
         {
-            App.GetConfiguration<ConsulClientOptions>();
-            App.GetConfiguration<ConsulRegisterOptions>();
+            services.Configure<ConsulClientOptions>(configuration.GetSection("ConsulClientOptions"));
+            services.Configure<ConsulRegisterOptions>(configuration.GetSection("ConsulRegisterOptions"));
             services.AddTransient<IConsulRegister, ConsulRegister>();
         }
 
