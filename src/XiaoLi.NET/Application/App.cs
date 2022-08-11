@@ -6,8 +6,11 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using XiaoLi.NET.Application.Internal;
 using XiaoLi.NET.ConfigurableOptions;
+using XiaoLi.NET.ConfigurableOptions.Attributes;
+using XiaoLi.NET.Extensions;
 using XiaoLi.NET.Helpers;
 
 namespace XiaoLi.NET.Application
@@ -20,7 +23,7 @@ namespace XiaoLi.NET.Application
         /// <summary>
         /// 基础配置AppSettings
         /// </summary>
-        public static AppSettingsOptions Settings =>  GetConfiguration<AppSettingsOptions>("AppSettings");
+        public static AppSettingsOptions Settings => GetConfiguration<AppSettingsOptions>("AppSettings");
 
         /// <summary>
         /// 获取主机环境
@@ -36,7 +39,7 @@ namespace XiaoLi.NET.Application
         /// 所有程序集
         /// </summary>
         public static readonly IEnumerable<Assembly> Assemblies;
-        
+
         /// <summary>
         /// 外部程序集
         /// </summary>
@@ -53,8 +56,12 @@ namespace XiaoLi.NET.Application
         /// <param name="path"></param>
         /// <typeparam name="TOptions"></typeparam>
         /// <returns></returns>
-        public static TOptions GetConfiguration<TOptions>(string path)
+        public static TOptions GetConfiguration<TOptions>(string path = "")
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = GetConfigurationPath<TOptions>();
+            }
             var options = Configuration.GetSection(path).Get<TOptions>();
 
             if (options == null) options = Activator.CreateInstance<TOptions>();
@@ -67,6 +74,32 @@ namespace XiaoLi.NET.Application
             return options;
         }
 
+        /// <summary>
+        /// 获取配置路径
+        /// </summary>
+        /// <param name="attr">配置特性</param>
+        /// <param name="optionsType">配置类型</param>
+        /// <returns></returns>
+        internal static string GetConfigurationPath<TOptions>()
+        {
+            var optionsType = typeof(TOptions);
+            var attr = optionsType.GetCustomAttribute<ConfigurableOptionsAttribute>(false);
+
+            if (attr != null)
+            {
+                if (!string.IsNullOrWhiteSpace(attr.Path))
+                {
+                    return attr.Path;
+                }
+            }
+
+            // 默认后缀：Options
+            string defaultStuffx = nameof(Options);
+
+            // 切除后缀
+            return optionsType.Name.Substring(0, optionsType.Name.Length - defaultStuffx.Length);//.AsSpan().Slice(0, optionsType.Name.Length - defaultStuffx.Length).ToString();
+        }
+
 
         static App()
         {
@@ -77,8 +110,8 @@ namespace XiaoLi.NET.Application
             // 解析程序集所有public类型
             PublicTypes = assemblies.SelectMany(x => x.GetTypes()).Where(x => x.IsPublic);
         }
-        
-        
+
+
         private static (IEnumerable<Assembly> assemblies, IEnumerable<Assembly> externalAssemblies) ResolveAssemblies()
         {
             // 扫描项目程序集
@@ -96,7 +129,7 @@ namespace XiaoLi.NET.Application
                     return false;
                 })
 
-                .Select(lib =>Assembly.Load(lib.Name));
+                .Select(lib => Assembly.Load(lib.Name));
             // 加载外部程序集
             var externalAssemblies = Settings.ExternalAssemblies
                 .Select(externalAssembly
@@ -108,8 +141,8 @@ namespace XiaoLi.NET.Application
 
             return (assemblies, externalAssemblies);
         }
-        
-        
-        
+
+
+
     }
 }
