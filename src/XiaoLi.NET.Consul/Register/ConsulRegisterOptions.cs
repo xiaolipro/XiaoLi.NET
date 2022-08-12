@@ -24,9 +24,13 @@ namespace XiaoLi.NET.Consul.Register
         /// </summary>
         public string[] Tags { get; set; }
         /// <summary>
-        /// 心跳检查Url
+        /// 心跳检查路由
         /// </summary>
-        public string HealthCheckUrl { get; set; }
+        public string HealthCheckRoute { get; set; }
+        /// <summary>
+        /// 心跳接口是grpc
+        /// </summary>
+        public bool GrpcHelthCheck { get; set; }
         /// <summary>
         /// 心跳检测间隔(s)
         /// </summary>
