@@ -5,12 +5,17 @@ using System.Threading.Tasks;
 
 namespace XiaoLi.NET.LoadBalancers
 {
-    public interface IGrpcLoadBalancer
+    public interface ILoadBalancer
     {
         /// <summary>
         /// 均衡器名称
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// 刷新间隔
+        /// </summary>
+        TimeSpan RefreshInterval { get; }
         
         /// <summary>
         /// 均衡结果
@@ -19,10 +24,10 @@ namespace XiaoLi.NET.LoadBalancers
         int GetBalancedIndex(int serviceCount);
 
         /// <summary>
-        /// 均衡目标
+        /// 解析服务（服务发现）
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        Task<List<Uri>> GetServiceUris(string serviceName);
+        Task<List<Uri>> ResolutionService(string serviceName);
     }
 }

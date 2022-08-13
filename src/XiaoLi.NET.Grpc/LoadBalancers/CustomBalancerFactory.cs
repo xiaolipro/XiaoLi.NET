@@ -1,4 +1,5 @@
-﻿using Grpc.Net.Client.Balancer;
+﻿using System;
+using Grpc.Net.Client.Balancer;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using XiaoLi.NET.LoadBalancers;
@@ -7,49 +8,51 @@ namespace XiaoLi.NET.Grpc.LoadBalancers
 {
     public class CustomBalancerFactory : LoadBalancerFactory
     {
-        private readonly IGrpcLoadBalancer _grpcLoadBalancer;
+        private readonly ILoadBalancer _loadBalancer;
 
-        public override string Name => string.IsNullOrWhiteSpace(_grpcLoadBalancer.Name)?"grpc":_grpcLoadBalancer.Name;
-        public CustomBalancerFactory(IGrpcLoadBalancer grpcLoadBalancer)
+        public override string Name => string.IsNullOrWhiteSpace(_loadBalancer.Name)?"grpc":_loadBalancer.Name;
+        public CustomBalancerFactory(ILoadBalancer loadBalancer)
         {
-            _grpcLoadBalancer = grpcLoadBalancer;
+            _loadBalancer = loadBalancer;
         }
         public override LoadBalancer Create(LoadBalancerOptions options)
         {
-            return new CustomBalancer(options.Controller, options.LoggerFactory, _grpcLoadBalancer);
+            return new CustomBalancer(options.Controller, options.LoggerFactory, _loadBalancer);
         }
+        
+       
 
 
         internal class CustomBalancer : SubchannelsLoadBalancer
         {
-            private readonly IGrpcLoadBalancer _grpcLoadBalancer;
+            private readonly ILoadBalancer _loadBalancer;
 
-            public CustomBalancer(IChannelControlHelper controller, ILoggerFactory loggerFactory, IGrpcLoadBalancer grpcLoadBalancer)
+            public CustomBalancer(IChannelControlHelper controller, ILoggerFactory loggerFactory, ILoadBalancer loadBalancer)
                 : base(controller, loggerFactory)
             {
-                _grpcLoadBalancer = grpcLoadBalancer;
+                _loadBalancer = loadBalancer;
             }
 
 
             protected override SubchannelPicker CreatePicker(IReadOnlyList<Subchannel> readySubchannels)
             {
-                return new ConsulPicker(readySubchannels, _grpcLoadBalancer);
+                return new CustomPicker(readySubchannels, _loadBalancer);
             }
 
-            private class ConsulPicker : SubchannelPicker
+            private class CustomPicker : SubchannelPicker
             {
                 private readonly IReadOnlyList<Subchannel> _subchannels;
-                private readonly IGrpcLoadBalancer _grpcLoadBalancer;
+                private readonly ILoadBalancer _loadBalancer;
 
-                public ConsulPicker(IReadOnlyList<Subchannel> subchannels, IGrpcLoadBalancer grpcLoadBalancer)
+                public CustomPicker(IReadOnlyList<Subchannel> subchannels, ILoadBalancer loadBalancer)
                 {
                     _subchannels = subchannels;
-                    _grpcLoadBalancer = grpcLoadBalancer;
+                    _loadBalancer = loadBalancer;
                 }
 
                 public override PickResult Pick(PickContext context)
                 {
-                    int index = _grpcLoadBalancer.GetBalancedIndex(_subchannels.Count);
+                    int index = _loadBalancer.GetBalancedIndex(_subchannels.Count);
                     // Pick a random subchannel.
                     return PickResult.ForSubchannel(_subchannels[index]);
                 }

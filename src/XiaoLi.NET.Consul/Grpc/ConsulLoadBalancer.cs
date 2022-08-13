@@ -11,27 +11,28 @@ using XiaoLi.NET.LoadBalancers;
 
 namespace XiaoLi.NET.Consul.Grpc
 {
-    public class ConsulGrpcLoadBalancer: IGrpcLoadBalancer
+    public class ConsulLoadBalancer: ILoadBalancer
     {
         private readonly ILogger<AbstractConsulDispatcher> _logger;
         private readonly AbstractConsulDispatcher _abstractConsulDispatcher;
         private readonly ConsulClientOptions _consulClientOptions;
 
-        public ConsulGrpcLoadBalancer(ILogger<AbstractConsulDispatcher> logger, AbstractConsulDispatcher abstractConsulDispatcher,IOptions<ConsulClientOptions> options) 
+        public ConsulLoadBalancer(ILogger<AbstractConsulDispatcher> logger, AbstractConsulDispatcher abstractConsulDispatcher,IOptions<ConsulClientOptions> options) 
         {
             _logger = logger;
             _abstractConsulDispatcher = abstractConsulDispatcher;
             _consulClientOptions = options.Value;
         }
 
-        public string Name { get; } = "consul";
+        public string Name { get; } = nameof(ConsulLoadBalancer);
+        public TimeSpan RefreshInterval { get; } = TimeSpan.FromSeconds(15);
 
         public int GetBalancedIndex(int serviceCount)
         {
             return _abstractConsulDispatcher.GetBalancedIndex(serviceCount);
         }
 
-        public async Task<List<Uri>> GetServiceUris(string serviceName)
+        public async Task<List<Uri>> ResolutionService(string serviceName)
         {
             using (ConsulClient client = new ConsulClient(c =>
                    {
@@ -42,7 +43,7 @@ namespace XiaoLi.NET.Consul.Grpc
                 var entrys = await client.Health.Service(serviceName);
 
                 _logger.LogInformation(
-                    $"{serviceName} form consul takes time：{entrys.RequestTime.TotalMilliseconds}ms");
+                    $"解析服务：{serviceName} 成功，共发现{entrys.Response.Length}个ip，耗时：{entrys.RequestTime.TotalMilliseconds}ms");
                 var uris = entrys.Response.Select(entry =>
                 {
                     var service = entry.Service;

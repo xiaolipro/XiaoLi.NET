@@ -67,14 +67,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
             WriteLog(context);
             AddCallerMetadata(ref context);
 
-            var call = continuation(request, context);
-
-            return new AsyncUnaryCall<TResponse>(
-                HandleResponse(call.ResponseAsync),
-                call.ResponseHeadersAsync,
-                call.GetStatus,
-                call.GetTrailers,
-                call.Dispose);
+            return continuation(request, context);
         }
 
         /// <summary>
@@ -166,35 +159,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
             where TRequest : class
             where TResponse : class
         {
-            _logger.LogInformation($"开始调用，主机{context.Host}，类型：{context.Method.Type}，方法：{context.Method.Name}，" +
-                         $"请求：{typeof(TRequest)}，响应：{typeof(TResponse)}");
-        }
-
-
-
-
-        /// <summary>
-        /// 处理异步调用
-        /// </summary>
-        /// <typeparam name="TResponse"></typeparam>
-        /// <param name="responseAsync"></param>
-        /// <returns></returns>
-        private async Task<TResponse> HandleResponse<TResponse>(Task<TResponse> responseAsync)
-            where TResponse : class
-        {
-            try
-            {
-                var response = await responseAsync;
-
-                _logger.LogInformation($"接收响应：{response}");
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"调用发生异常：{ex.Message}\n {ex.StackTrace}");
-                throw;
-            }
+            _logger.LogInformation($"开始Grpc调用，主机{context.Host}，类型：{context.Method.Type}，方法：{context.Method.Name}，" +
+                         $"请求模型：{typeof(TRequest)}，响应模型：{typeof(TResponse)}");
         }
     }
 }
