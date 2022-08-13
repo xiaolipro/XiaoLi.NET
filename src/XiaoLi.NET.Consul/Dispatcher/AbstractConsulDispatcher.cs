@@ -7,6 +7,7 @@ using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Consul.Exceptions;
+using XiaoLi.NET.LoadBalancers;
 
 namespace XiaoLi.NET.Consul.Dispatcher
 {
@@ -17,17 +18,16 @@ namespace XiaoLi.NET.Consul.Dispatcher
     {
         private readonly ConsulClientOptions _consulClientOptions;
         private readonly ILogger<AbstractConsulDispatcher> _logger;
-
-        public AbstractConsulDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptionsMonitor<ConsulClientOptions> options)
+        public AbstractConsulDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options)
         {
             _logger = logger;
-            _consulClientOptions = options.CurrentValue;
+            _consulClientOptions = options.Value;
         }
 
         protected List<AgentService> AgentServices;
 
         /// <summary>
-        /// 根据组名称
+        /// 根据服务名称获取调度后的真实地址
         /// </summary>
         /// <param name="serivceName"></param>
         /// <returns></returns>
@@ -45,18 +45,17 @@ namespace XiaoLi.NET.Consul.Dispatcher
         protected virtual async Task<string> ChooseHostAsync(string serviceName)
         {
             AgentServices = await GetAgentServicesAsync(serviceName);
-
             int count = AgentServices.Count;
             if (count == 0) throw new NotFindServiceException();
 
-            int index = GetAgentServiceIndex();
+            int index = GetBalancedIndex(count);
             if (index >= count) throw new IndexOutOfRangeException();
 
             var service = AgentServices[index];
             return $"{service.Address}:{service.Port}";
         }
 
-        protected abstract int GetAgentServiceIndex();
+        internal abstract int GetBalancedIndex(int serviceCount);
 
         private async Task<List<AgentService>> GetAgentServicesAsync(string serviceName)
         {

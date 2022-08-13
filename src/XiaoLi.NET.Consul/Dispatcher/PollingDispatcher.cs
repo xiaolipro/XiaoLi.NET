@@ -10,14 +10,14 @@ namespace XiaoLi.NET.Consul.Dispatcher
     public class PollingDispatcher : AbstractConsulDispatcher
     {
         private static int _counter;
-        public PollingDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptionsMonitor<ConsulClientOptions> options) : base(logger, options) { }
+        public PollingDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options) : base(logger, options) { }
 
-        protected override int GetAgentServiceIndex()
+        internal override int GetBalancedIndex(int serviceCount)
         {
             lock (this)
             {
-                _counter = _counter == int.MaxValue? 0: _counter++;
-                return _counter % AgentServices.Count;
+                _counter = _counter == int.MaxValue? 0: ++_counter;
+                return _counter % serviceCount;
             }
         }
     }

@@ -26,7 +26,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// 截获一元 RPC 的阻塞调用。
         /// </summary>
         /// <remarks>
-        /// TODO: 尽管 BlockingUnaryCall 和 AsyncUnaryCall 都是指一元 RPC，但二者不可互换。 
+        /// Tips: 尽管 BlockingUnaryCall 和 AsyncUnaryCall 都是指一元 RPC，但二者不可互换。 
         /// 阻塞调用不会被 AsyncUnaryCall 截获，异步调用不会被 BlockingUnaryCall 截获。
         /// </remarks>
         /// <typeparam name="TRequest"></typeparam>
@@ -192,7 +192,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
             }
             catch (Exception ex)
             {
-                _logger.LogError($"调用发生异常：{ex.Message}");
+                _logger.LogError($"调用发生异常：{ex.Message}\n {ex.StackTrace}");
                 throw;
             }
         }

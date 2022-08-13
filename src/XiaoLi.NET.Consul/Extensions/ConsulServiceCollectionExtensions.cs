@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiaoLi.NET.Application;
 using XiaoLi.NET.Consul.Dispatcher;
 using XiaoLi.NET.Consul.Register;
+using XiaoLi.NET.LoadBalancers;
 
 namespace XiaoLi.NET.Consul.Extensions
 {
@@ -31,5 +32,6 @@ namespace XiaoLi.NET.Consul.Extensions
         {
             services.TryAddTransient(typeof(AbstractConsulDispatcher),typeof(TDispatcher));
         }
+
     }
 }

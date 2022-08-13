@@ -10,15 +10,15 @@ namespace XiaoLi.NET.Consul.Dispatcher
     public class WeightDispatcher : AbstractConsulDispatcher
     {
         private static int _seed;
-        public WeightDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptionsMonitor<ConsulClientOptions> options) : base(logger, options)
+        public WeightDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options) : base(logger, options)
         {
         }
 
-        protected override int GetAgentServiceIndex()
+        internal override int GetBalancedIndex(int serviceCount)
         {
             var targets = new List<int>();
 
-            for (int i = 0; i < AgentServices.Count; i++)
+            for (int i = 0; i < serviceCount; i++)
             {
                 int.TryParse(AgentServices[i].Meta["Weight"], out int count);
                 targets.AddRange(Enumerable.Repeat(i, count));

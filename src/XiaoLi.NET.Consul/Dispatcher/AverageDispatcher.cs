@@ -11,14 +11,14 @@ namespace XiaoLi.NET.Consul.Dispatcher
     public class AverageDispatcher:AbstractConsulDispatcher
     {
         private static int _seed;
-        public AverageDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptionsMonitor<ConsulClientOptions> options) : base(logger, options) { }
+        public AverageDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options) : base(logger, options) { }
 
-        protected override int GetAgentServiceIndex()
+        internal override int GetBalancedIndex(int serviceCount)
         {
             lock (this)
             {
-                _seed = _seed == int.MaxValue ? 0 : _seed++;
-                return new Random(_seed).Next(0, AgentServices.Count);
+                _seed = _seed == int.MaxValue ? 0 : ++_seed;
+                return new Random(_seed).Next(0, serviceCount);
             }
         }
     }

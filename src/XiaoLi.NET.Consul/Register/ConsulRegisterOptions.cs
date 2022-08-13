@@ -47,5 +47,9 @@ namespace XiaoLi.NET.Consul.Register
         /// 权重(使用权重调度器时有效)
         /// </summary>
         public int Weight { get; set; }
+        /// <summary>
+        /// Grpc端口
+        /// </summary>
+        public int GrpcPort { get; set; }
     }
 }

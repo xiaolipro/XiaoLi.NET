@@ -67,14 +67,17 @@ namespace XiaoLi.NET.Consul.Register
                 Tags = _consulRegisterOptions.Tags, // 一组标签
                 Check = httpHealthCheck,
                 Meta = new Dictionary<string, string>()
-                    { { "Weight", _consulRegisterOptions.Weight.ToString() } } // 元数据
+                {
+                    { "Weight", _consulRegisterOptions.Weight.ToString() },
+                    { "GrpcPort", _consulRegisterOptions.GrpcPort.ToString() }
+                } // 元数据
             };
 
             // grpc心跳
             if (_consulRegisterOptions.GrpcHelthCheck)
             {
                 registration.Check.GRPC = healthCheckUrl;
-                registration.Check.GRPCUseTLS = false; // 是否同时支持http
+                registration.Check.GRPCUseTLS = false; // 支持http
             }
 
             return registration;
