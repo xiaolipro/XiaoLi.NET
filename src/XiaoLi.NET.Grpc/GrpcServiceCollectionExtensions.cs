@@ -43,6 +43,21 @@ namespace XiaoLi.NET.Grpc
         }
 
         /// <summary>
+        /// 添加Grpc服务端
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddGrpcServer(this ServiceCollection services)
+        {
+            return services.AddGrpc(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.Interceptors.Add<ServerExceptionInterceptor>();
+                options.Interceptors.Add<ServerLogInterceptor>();
+            }).Services;
+        }
+
+        /// <summary>
         /// 添加Grpc客户端负载均衡器
         /// </summary>
         /// <param name="services"></param>

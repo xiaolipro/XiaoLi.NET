@@ -39,16 +39,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             WriteLog<TRequest, TResponse>(MethodType.Unary, context);
 
-            try
-            {
-                return await base.UnaryServerHandler(request, context, continuation);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"调用发生异常：{ex.Message}");
-                throw;
-            }
-            
+            return await base.UnaryServerHandler(request, context, continuation);
         }
 
         /// <summary>
