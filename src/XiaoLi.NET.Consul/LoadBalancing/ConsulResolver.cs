@@ -6,32 +6,32 @@ using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Consul.Dispatcher;
-using XiaoLi.NET.LoadBalancers;
+using XiaoLi.NET.LoadBalancing;
 
-namespace XiaoLi.NET.Consul.Grpc
+namespace XiaoLi.NET.Consul.LoadBalancing
 {
-    public class ConsulLoadBalancer: ILoadBalancer
+    public class ConsulResolver:IGrpcResolver
     {
-        private readonly ILogger<ConsulLoadBalancer> _logger;
-        private readonly AbstractConsulDispatcher _abstractConsulDispatcher;
+        private readonly ILogger<ConsulResolver> _logger;
         private readonly ConsulClientOptions _consulClientOptions;
 
-        public ConsulLoadBalancer(ILogger<ConsulLoadBalancer> logger, AbstractConsulDispatcher abstractConsulDispatcher,IOptions<ConsulClientOptions> options) 
+        public ConsulResolver(ILogger<ConsulResolver> logger, IOptions<ConsulClientOptions> options) 
         {
             _logger = logger;
-            _abstractConsulDispatcher = abstractConsulDispatcher;
             _consulClientOptions = options.Value;
         }
-
-        public string Name { get; } = nameof(ConsulLoadBalancer);
+        
+        public string Name { get; } = nameof(ConsulResolver);
         public TimeSpan RefreshInterval { get; } = TimeSpan.FromSeconds(15);
-
-        public int GetBalancedIndex(int serviceCount)
+        public async Task<List<Uri>> ResolutionGrpcService(string serviceName)
         {
-            return _abstractConsulDispatcher.GetBalancedIndex(serviceCount);
+            var agentServices =await InternalResolutionService(serviceName);
+
+            return agentServices.Select(service => new Uri($"http://{service.Address}:{service.Meta["GrpcPort"]}"))
+                .ToList();
         }
 
-        public async Task<List<Uri>> ResolutionService(string serviceName)
+        internal async Task<List<AgentService>> InternalResolutionService(string serviceName)
         {
             using (ConsulClient client = new ConsulClient(c =>
                    {
@@ -42,15 +42,9 @@ namespace XiaoLi.NET.Consul.Grpc
                 var entrys = await client.Health.Service(serviceName);
 
                 _logger.LogInformation("解析服务：{ServiceName} 成功，共发现{ResponseLength}个ip，耗时：{RequestTimeTotalMilliseconds}ms", serviceName, entrys.Response.Length, entrys.RequestTime.TotalMilliseconds);
-                var uris = entrys.Response.Select(entry =>
-                {
-                    var service = entry.Service;
-                    return new Uri($"http://{service.Address}:{service.Meta["GrpcPort"]}");
-                });
-
-                return uris.ToList();
+                
+                return entrys.Response.Select(entry => entry.Service).ToList();
             }
         }
-        
     }
 }

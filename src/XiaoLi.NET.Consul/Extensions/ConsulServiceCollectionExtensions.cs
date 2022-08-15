@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using XiaoLi.NET.Application;
 using XiaoLi.NET.Consul.Dispatcher;
 using XiaoLi.NET.Consul.Register;
-using XiaoLi.NET.LoadBalancers;
 
 namespace XiaoLi.NET.Consul.Extensions
 {

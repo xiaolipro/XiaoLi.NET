@@ -2,6 +2,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using XiaoLi.NET.Consul.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.Dispatcher
 {
@@ -11,7 +12,7 @@ namespace XiaoLi.NET.Consul.Dispatcher
     public class AverageDispatcher:AbstractConsulDispatcher
     {
         private static int _seed;
-        public AverageDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options) : base(logger, options) { }
+        public AverageDispatcher(ILogger<AbstractConsulDispatcher> logger, ConsulResolver consulResolver) : base(logger, consulResolver) { }
 
         internal override int GetBalancedIndex(int serviceCount)
         {

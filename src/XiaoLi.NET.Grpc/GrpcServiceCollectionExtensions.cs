@@ -3,11 +3,10 @@ using Grpc.Net.Client.Balancer;
 using Grpc.Net.Client.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using XiaoLi.NET.Grpc.Interceptors;
-using XiaoLi.NET.Grpc.LoadBalancers;
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using XiaoLi.NET.LoadBalancers;
-using Microsoft.Extensions.Configuration;
+using XiaoLi.NET.Grpc.LoadBalancingFactories;
+using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Grpc
 {
@@ -17,25 +16,30 @@ namespace XiaoLi.NET.Grpc
         /// 添加Grpc负载均衡客户端
         /// </summary>
         /// <typeparam name="TClient"></typeparam>
+        /// <typeparam name="TResolver"></typeparam>
+        /// <typeparam name="TBalancer"></typeparam>
         /// <param name="services"></param>
         /// <param name="address"></param>
-        public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient,TLoadBalancer>(this IServiceCollection services, string address) 
+        public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient, TResolver, TBalancer>(
+            this IServiceCollection services, string address)
             where TClient : class
-            where TLoadBalancer : ILoadBalancer
+            where TResolver : IGrpcResolver
+            where TBalancer : IBalancer
         {
-            services.AddGrpcClientLoadBalancer<TLoadBalancer>();
-            
+            services.AddGrpcClientLoadBalancer<TResolver,TBalancer>();
+
             services.TryAddSingleton(typeof(ClientLogInterceptor));
             services.TryAddSingleton(typeof(ClientExceptionInterceptor));
             return services
                 .AddGrpcClient<TClient>(options =>
                 {
-                    options.Address = new Uri($"{typeof(TLoadBalancer).Name}://" + address);
+                    options.Address = new Uri($"{typeof(TResolver).Name}://" + address);
                 })
                 .ConfigureChannel(options =>
                 {
                     options.Credentials = ChannelCredentials.Insecure;
-                    options.ServiceConfig = new ServiceConfig { LoadBalancingConfigs = { new LoadBalancingConfig(typeof(TLoadBalancer).Name) } };
+                    options.ServiceConfig = new ServiceConfig
+                        { LoadBalancingConfigs = { new RoundRobinConfig() } };
                     options.ServiceProvider = services.BuildServiceProvider();
                 })
                 .AddInterceptor<ClientExceptionInterceptor>()
@@ -61,14 +65,18 @@ namespace XiaoLi.NET.Grpc
         /// 添加Grpc客户端负载均衡器
         /// </summary>
         /// <param name="services"></param>
-        /// <typeparam name="TLoadBalancer"></typeparam>
+        /// <typeparam name="TResolver"></typeparam>
+        /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
-        public static IServiceCollection AddGrpcClientLoadBalancer<TLoadBalancer>(this IServiceCollection services)
-            where TLoadBalancer : ILoadBalancer
+        public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(this IServiceCollection services)
+            where TResolver : IGrpcResolver
+            where TBalancer : IBalancer
         {
-            services.Replace(new ServiceDescriptor(typeof(ILoadBalancer), typeof(TLoadBalancer),
+            services.Replace(new ServiceDescriptor(typeof(IBalancer), typeof(TBalancer),
                 ServiceLifetime.Singleton));
-            
+            services.Replace(new ServiceDescriptor(typeof(IGrpcResolver), typeof(TResolver),
+                ServiceLifetime.Singleton));
+
             services.TryAddSingleton<ResolverFactory, CustomResolverFactory>();
             services.TryAddSingleton<LoadBalancerFactory, CustomBalancerFactory>();
 

@@ -7,7 +7,7 @@ using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Consul.Exceptions;
-using XiaoLi.NET.LoadBalancers;
+using XiaoLi.NET.Consul.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.Dispatcher
 {
@@ -16,12 +16,13 @@ namespace XiaoLi.NET.Consul.Dispatcher
     /// </summary>
     public abstract class AbstractConsulDispatcher
     {
-        private readonly ConsulClientOptions _consulClientOptions;
         private readonly ILogger<AbstractConsulDispatcher> _logger;
-        public AbstractConsulDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options)
+        private readonly ConsulResolver _consulResolver;
+
+        public AbstractConsulDispatcher(ILogger<AbstractConsulDispatcher> logger, ConsulResolver consulResolver)
         {
             _logger = logger;
-            _consulClientOptions = options.Value;
+            _consulResolver = consulResolver;
         }
 
         protected List<AgentService> AgentServices;
@@ -29,7 +30,7 @@ namespace XiaoLi.NET.Consul.Dispatcher
         /// <summary>
         /// 根据服务名称获取调度后的真实地址
         /// </summary>
-        /// <param name="serivceName"></param>
+        /// <param name="serviceName"></param>
         /// <returns></returns>
         public async Task<string> GetRealHostAsync(string serviceName)
         {
@@ -44,7 +45,7 @@ namespace XiaoLi.NET.Consul.Dispatcher
         /// <exception cref="IndexOutOfRangeException"></exception>
         protected virtual async Task<string> ChooseHostAsync(string serviceName)
         {
-            AgentServices = await GetAgentServicesAsync(serviceName);
+            AgentServices = await _consulResolver.InternalResolutionService(serviceName);
             int count = AgentServices.Count;
             if (count == 0) throw new NotFindServiceException();
 
@@ -56,22 +57,6 @@ namespace XiaoLi.NET.Consul.Dispatcher
         }
 
         internal abstract int GetBalancedIndex(int serviceCount);
-
-        private async Task<List<AgentService>> GetAgentServicesAsync(string serviceName)
-        {
-            using (ConsulClient client = new ConsulClient(c =>
-            {
-                c.Address = _consulClientOptions.Address;
-                c.Datacenter = _consulClientOptions.Datacenter;
-            }))
-            {
-                var entrys = await client.Health.Service(serviceName);
-
-                _logger.LogInformation($"{serviceName} form consul takes time：{entrys.RequestTime.TotalMilliseconds}ms");
-                var serviceList = entrys.Response.Select(entry => entry.Service);
-
-                return serviceList.ToList();
-            }
-        }
     }
+
 }

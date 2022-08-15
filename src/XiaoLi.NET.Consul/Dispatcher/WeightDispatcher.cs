@@ -4,15 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using XiaoLi.NET.Consul.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.Dispatcher
 {
     public class WeightDispatcher : AbstractConsulDispatcher
     {
         private static int _seed;
-        public WeightDispatcher(ILogger<AbstractConsulDispatcher> logger, IOptions<ConsulClientOptions> options) : base(logger, options)
-        {
-        }
+        public WeightDispatcher(ILogger<AbstractConsulDispatcher> logger,ConsulResolver consulResolver) : base(logger, consulResolver) { }
 
         internal override int GetBalancedIndex(int serviceCount)
         {
