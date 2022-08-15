@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Consul;
 using Microsoft.Extensions.Logging;
@@ -13,11 +12,11 @@ namespace XiaoLi.NET.Consul.Grpc
 {
     public class ConsulLoadBalancer: ILoadBalancer
     {
-        private readonly ILogger<AbstractConsulDispatcher> _logger;
+        private readonly ILogger<ConsulLoadBalancer> _logger;
         private readonly AbstractConsulDispatcher _abstractConsulDispatcher;
         private readonly ConsulClientOptions _consulClientOptions;
 
-        public ConsulLoadBalancer(ILogger<AbstractConsulDispatcher> logger, AbstractConsulDispatcher abstractConsulDispatcher,IOptions<ConsulClientOptions> options) 
+        public ConsulLoadBalancer(ILogger<ConsulLoadBalancer> logger, AbstractConsulDispatcher abstractConsulDispatcher,IOptions<ConsulClientOptions> options) 
         {
             _logger = logger;
             _abstractConsulDispatcher = abstractConsulDispatcher;
@@ -42,8 +41,7 @@ namespace XiaoLi.NET.Consul.Grpc
             {
                 var entrys = await client.Health.Service(serviceName);
 
-                _logger.LogInformation(
-                    $"解析服务：{serviceName} 成功，共发现{entrys.Response.Length}个ip，耗时：{entrys.RequestTime.TotalMilliseconds}ms");
+                _logger.LogInformation("解析服务：{ServiceName} 成功，共发现{ResponseLength}个ip，耗时：{RequestTimeTotalMilliseconds}ms", serviceName, entrys.Response.Length, entrys.RequestTime.TotalMilliseconds);
                 var uris = entrys.Response.Select(entry =>
                 {
                     var service = entry.Service;
