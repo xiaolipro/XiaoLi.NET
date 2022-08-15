@@ -11,9 +11,9 @@ namespace XiaoLi.NET.Grpc.Interceptors;
 /// </summary>
 public class ServerExceptionInterceptor:Interceptor
 {
-    private readonly ILogger<ServerLogInterceptor> _logger;
+    private readonly ILogger<ServerExceptionInterceptor> _logger;
 
-    public ServerExceptionInterceptor(ILogger<ServerLogInterceptor> logger)
+    public ServerExceptionInterceptor(ILogger<ServerExceptionInterceptor> logger)
     {
         _logger = logger;
     }
