@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XiaoLi.NET.Consul
 {
     /// <summary>
-    /// Consul配置
+    /// Consul客户端连接配置
     /// </summary>
     public class ConsulClientOptions
     {
