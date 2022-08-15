@@ -10,7 +10,7 @@ using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.LoadBalancing
 {
-    public class ConsulResolver:IGrpcResolver
+    public class ConsulResolver:IResolver
     {
         private readonly ILogger<ConsulResolver> _logger;
         private readonly ConsulClientOptions _consulClientOptions;
@@ -23,15 +23,8 @@ namespace XiaoLi.NET.Consul.LoadBalancing
         
         public string Name { get; } = nameof(ConsulResolver);
         public TimeSpan RefreshInterval { get; } = TimeSpan.FromSeconds(15);
-        public async Task<List<Uri>> ResolutionGrpcService(string serviceName)
-        {
-            var agentServices =await InternalResolutionService(serviceName);
 
-            return agentServices.Select(service => new Uri($"http://{service.Address}:{service.Meta["GrpcPort"]}"))
-                .ToList();
-        }
-
-        internal async Task<List<AgentService>> InternalResolutionService(string serviceName)
+        public async Task<List<dynamic>> ResolutionService(string serviceName)
         {
             using (ConsulClient client = new ConsulClient(c =>
                    {
@@ -43,7 +36,7 @@ namespace XiaoLi.NET.Consul.LoadBalancing
 
                 _logger.LogInformation("解析服务：{ServiceName} 成功，共发现{ResponseLength}个ip，耗时：{RequestTimeTotalMilliseconds}ms", serviceName, entrys.Response.Length, entrys.RequestTime.TotalMilliseconds);
                 
-                return entrys.Response.Select(entry => entry.Service).ToList();
+                return entrys.Response.Select(entry => entry.Service as dynamic).ToList();
             }
         }
     }

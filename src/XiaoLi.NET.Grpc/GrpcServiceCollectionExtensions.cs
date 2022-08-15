@@ -23,7 +23,7 @@ namespace XiaoLi.NET.Grpc
         public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient, TResolver, TBalancer>(
             this IServiceCollection services, string address)
             where TClient : class
-            where TResolver : IGrpcResolver
+            where TResolver : IResolver
             where TBalancer : IBalancer
         {
             services.AddGrpcClientLoadBalancer<TResolver,TBalancer>();
@@ -39,7 +39,7 @@ namespace XiaoLi.NET.Grpc
                 {
                     options.Credentials = ChannelCredentials.Insecure;
                     options.ServiceConfig = new ServiceConfig
-                        { LoadBalancingConfigs = { new RoundRobinConfig() } };
+                        { LoadBalancingConfigs = { new LoadBalancingConfig(typeof(TBalancer).Name) } };
                     options.ServiceProvider = services.BuildServiceProvider();
                 })
                 .AddInterceptor<ClientExceptionInterceptor>()
@@ -69,16 +69,16 @@ namespace XiaoLi.NET.Grpc
         /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
         public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(this IServiceCollection services)
-            where TResolver : IGrpcResolver
+            where TResolver : IResolver
             where TBalancer : IBalancer
         {
             services.Replace(new ServiceDescriptor(typeof(IBalancer), typeof(TBalancer),
                 ServiceLifetime.Singleton));
-            services.Replace(new ServiceDescriptor(typeof(IGrpcResolver), typeof(TResolver),
+            services.Replace(new ServiceDescriptor(typeof(IResolver), typeof(TResolver),
                 ServiceLifetime.Singleton));
 
-            services.TryAddSingleton<ResolverFactory, CustomResolverFactory>();
-            services.TryAddSingleton<LoadBalancerFactory, CustomBalancerFactory>();
+            services.TryAddSingleton<ResolverFactory, ConsulResolverFactory>();
+            services.TryAddSingleton<LoadBalancerFactory, ConsulBalancerFactory>();
 
             return services;
         }

@@ -23,9 +23,9 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <summary>
         /// 添加Consul调度器，提供服务发现
         /// </summary>
-        public static void AddConsulDispatcher<TDispatcher>(this IServiceCollection services) where TDispatcher : AbstractConsulDispatcher
+        public static void AddConsulDispatcher<TDispatcher>(this IServiceCollection services) where TDispatcher : ConsulDispatcher
         {
-            services.TryAddTransient(typeof(AbstractConsulDispatcher),typeof(TDispatcher));
+            services.TryAddTransient(typeof(ConsulDispatcher),typeof(TDispatcher));
         }
 
     }

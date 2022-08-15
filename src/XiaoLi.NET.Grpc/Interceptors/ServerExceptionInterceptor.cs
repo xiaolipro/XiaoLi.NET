@@ -38,7 +38,7 @@ public class ServerExceptionInterceptor:Interceptor
         }
         catch (RpcException e)
         {
-            _logger.LogError("通过Grpc调用时发生异常: {Status} - {Message}", e.Status, e.Message);
+            _logger.LogError("Grpc服务端处理时发生异常: {Status} - {Message}", e.Status, e.Message);
             return default;
         }
             

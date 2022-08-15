@@ -159,7 +159,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
             where TRequest : class
             where TResponse : class
         {
-            _logger.LogInformation($"开始Grpc调用，主机{context.Host}，类型：{context.Method.Type}，方法：{context.Method.Name}，" +
+            _logger.LogInformation($"Grpc客户端开始调用，主机{context.Host}，类型：{context.Method.Type}，方法：{context.Method.Name}，" +
                          $"请求模型：{typeof(TRequest)}，响应模型：{typeof(TResponse)}");
         }
     }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace XiaoLi.NET.LoadBalancing
 {
-    public interface IGrpcResolver
+    public interface IResolver
     {
         /// <summary>
         /// 解析器名称
@@ -21,6 +21,6 @@ namespace XiaoLi.NET.LoadBalancing
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        Task<List<Uri>> ResolutionGrpcService(string serviceName);
+        Task<List<dynamic>> ResolutionService(string serviceName);
     }
 }

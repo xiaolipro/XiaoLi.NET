@@ -8,24 +8,25 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Consul.Exceptions;
 using XiaoLi.NET.Consul.LoadBalancing;
+using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.Dispatcher
 {
     /// <summary>
     /// ConsulDispatcher基类
     /// </summary>
-    public abstract class AbstractConsulDispatcher
+    public abstract class ConsulDispatcher:IDispatcher
     {
-        private readonly ILogger<AbstractConsulDispatcher> _logger;
-        private readonly ConsulResolver _consulResolver;
+        private readonly ILogger<ConsulDispatcher> _logger;
+        private readonly IResolver _resolver;
+        private readonly IBalancer _balancer;
 
-        public AbstractConsulDispatcher(ILogger<AbstractConsulDispatcher> logger, ConsulResolver consulResolver)
+        public ConsulDispatcher(ILogger<ConsulDispatcher> logger, IResolver resolver, IBalancer balancer)
         {
             _logger = logger;
-            _consulResolver = consulResolver;
+            _resolver = resolver;
+            _balancer = balancer;
         }
-
-        protected List<AgentService> AgentServices;
 
         /// <summary>
         /// 根据服务名称获取调度后的真实地址
@@ -43,20 +44,16 @@ namespace XiaoLi.NET.Consul.Dispatcher
         /// <param name="serviceName">服务名称</param>
         /// <returns>主机：IP+Port</returns>
         /// <exception cref="IndexOutOfRangeException"></exception>
-        protected virtual async Task<string> ChooseHostAsync(string serviceName)
+        private async Task<string> ChooseHostAsync(string serviceName)
         {
-            AgentServices = await _consulResolver.InternalResolutionService(serviceName);
-            int count = AgentServices.Count;
-            if (count == 0) throw new NotFindServiceException();
+            var agentServices = await _resolver.ResolutionService(serviceName);
 
-            int index = GetBalancedIndex(count);
-            if (index >= count) throw new IndexOutOfRangeException();
+            int index = _balancer.Pick(agentServices);
+            if (index >= agentServices.Count) throw new IndexOutOfRangeException();
 
-            var service = AgentServices[index];
+            var service = agentServices[index];
             return $"{service.Address}:{service.Port}";
         }
-
-        internal abstract int GetBalancedIndex(int serviceCount);
     }
 
 }

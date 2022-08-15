@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace XiaoLi.NET.LoadBalancing
 {
+    /// <summary>
+    /// 均衡器
+    /// </summary>
     public interface IBalancer
     {
         /// <summary>
@@ -14,10 +17,10 @@ namespace XiaoLi.NET.LoadBalancing
 
         
         /// <summary>
-        /// 均衡结果
+        /// 均衡算法
         /// </summary>
-        /// <param name="serviceCount">服务数量</param>
+        /// <param name="services">服务数量</param>
         /// <returns></returns>
-        int Pick(int serviceCount);
+        int Pick(List<dynamic> services);
     }
 }
