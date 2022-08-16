@@ -20,8 +20,7 @@ public class Worker : BackgroundService
         {
             count++;
 
-            var reply = await _client.SayHelloUnaryAsync(
-                new HelloRequest { Name = $"Worker {count}" });
+            var reply = await _client.SayHelloUnaryAsync(new HelloRequest { Name = $"Worker {count}" }, cancellationToken: stoppingToken);
 
             _greetRepository.SaveGreeting(reply.Message);
 

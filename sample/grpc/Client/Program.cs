@@ -11,7 +11,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<Worker>();
         services.AddSingleton<IGreetRepository, GreetRepository>();
         services.Configure<ConsulClientOptions>(hostContext.Configuration.GetSection("ConsulClient"));
-        services.AddGrpcLoadBalancingClient<Tester.TesterClient, ConsulResolver, RandomBalancer>("");
+        services.AddGrpcLoadBalancingClient<Tester.TesterClient, ConsulResolver, RandomBalancer>("TestService");
     })
     .Build();
 

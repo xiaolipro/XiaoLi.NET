@@ -33,6 +33,7 @@ public class CustomResolverFactory: ResolverFactory
         {
             _logger = loggerFactory.CreateLogger(typeof(CustomResolver));
             _resolver = resolver;
+            if (string.IsNullOrWhiteSpace(address.Host)) throw new ArgumentNullException(nameof(address));
             _address = address;
         }
 
@@ -41,8 +42,11 @@ public class CustomResolverFactory: ResolverFactory
         {
             // 获取服务对应的所有主机
             var (uris, metaData) = await _resolver.ResolutionService(_address.Host);
-
-            var addresses = uris.Select(service => new BalancerAddress(service.Host, service.Port)).ToArray();
+            
+            // 空的balancer-address会引发internal崩溃
+            if (uris == null || uris.Count < 1) return;
+            
+            var addresses = uris.Select(uri => new BalancerAddress(uri.Host, uri.Port)).ToArray();
 
             // 将结果传递回通道。
             Listener(ResolverResult.ForResult(addresses));
@@ -62,6 +66,7 @@ public class CustomResolverFactory: ResolverFactory
         {
             try
             {
+                _logger.LogInformation("重新解析服务", _resolver.RefreshInterval.TotalSeconds);
                 Refresh();
             }
             catch (Exception)

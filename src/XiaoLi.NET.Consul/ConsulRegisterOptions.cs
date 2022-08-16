@@ -1,7 +1,7 @@
 ﻿
 using System.Reflection;
 
-namespace XiaoLi.NET.Consul.Register
+namespace XiaoLi.NET.Consul
 {
     public class ConsulRegisterOptions
     {
@@ -14,11 +14,14 @@ namespace XiaoLi.NET.Consul.Register
         /// 服务端口
         /// </summary>
         public int Port { get; set; }
-
+        /// <summary>
+        /// Grpc端口
+        /// </summary>
+        public int GrpcPort { get; set; }
         /// <summary>
         /// 服务组名称
         /// </summary>
-        public string ServiceName { get; set; } = Assembly.GetEntryAssembly().GetName().Name;
+        public string ServiceName { get; set; }
         /// <summary>
         /// 服务标签
         /// </summary>
@@ -47,9 +50,5 @@ namespace XiaoLi.NET.Consul.Register
         /// 权重(使用权重调度器时有效)
         /// </summary>
         public int Weight { get; set; }
-        /// <summary>
-        /// Grpc端口
-        /// </summary>
-        public int GrpcPort { get; set; }
     }
 }

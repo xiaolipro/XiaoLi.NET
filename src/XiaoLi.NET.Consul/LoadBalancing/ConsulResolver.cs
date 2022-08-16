@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using XiaoLi.NET.Consul.Dispatcher;
 using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.LoadBalancing
@@ -18,7 +17,7 @@ namespace XiaoLi.NET.Consul.LoadBalancing
         public ConsulResolver(ILogger<ConsulResolver> logger, IOptions<ConsulClientOptions> options)
         {
             _logger = logger;
-            _consulClientOptions = options.Value;
+            _consulClientOptions = options.Value?? throw new ArgumentNullException(nameof(ConsulClientOptions));
         }
 
         public string Name { get; } = nameof(ConsulResolver);
@@ -34,10 +33,10 @@ namespace XiaoLi.NET.Consul.LoadBalancing
             {
                 var entrys = await client.Health.Service(serviceName);
 
-                var uris = entrys.Response.Select(x => new Uri($"{x.Service.Address}:{x.Service.Port}"));
+                var uris = entrys.Response.Select(x => new Uri($"http://{x.Service.Address}:{x.Service.Meta["GrpcPort"]}"));
                 _logger.LogInformation(
                     "解析服务：{ServiceName} 成功：{Uris}，耗时：{RequestTimeTotalMilliseconds}ms", serviceName,
-                    entrys.Response.Length,string.Join(",", uris) ,entrys.RequestTime.TotalMilliseconds);
+                    string.Join(",", uris) ,entrys.RequestTime.TotalMilliseconds);
 
                 return (uris.ToList(), entrys.Response.Select(entry => entry.Service.Meta as dynamic).ToList());
             }

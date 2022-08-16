@@ -9,7 +9,7 @@ using XiaoLi.NET.Consul.Exceptions;
 using XiaoLi.NET.Consul.LoadBalancing;
 using XiaoLi.NET.LoadBalancing;
 
-namespace XiaoLi.NET.Consul.Dispatcher
+namespace XiaoLi.NET.Consul.LoadBalancing
 {
     /// <summary>
     /// ConsulDispatcher基类
