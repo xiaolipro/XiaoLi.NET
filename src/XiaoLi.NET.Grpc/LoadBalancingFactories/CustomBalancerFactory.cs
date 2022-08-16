@@ -5,12 +5,12 @@ using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Grpc.LoadBalancingFactories;
 
-public class ConsulBalancerFactory:LoadBalancerFactory
+public class CustomBalancerFactory:LoadBalancerFactory
 {
     private readonly IBalancer _balancer;
     public override string Name => _balancer.Name;
     
-    public ConsulBalancerFactory(IBalancer balancer)
+    public CustomBalancerFactory(IBalancer balancer)
     {
         _balancer = balancer;
     }
@@ -54,7 +54,7 @@ public class ConsulBalancerFactory:LoadBalancerFactory
                 int index = _balancer.Pick(_subchannels.Count);
                 var channel = _subchannels[index];
                 
-                _logger.LogInformation($"来自{_balancer.Name}均衡器的选取结果：{channel.CurrentAddress}");
+                _logger.LogInformation("来自{BalancerName}均衡器的选取结果：{ChannelCurrentAddress}", _balancer.Name, channel.CurrentAddress);
                 // Pick a random subchannel.
                 return PickResult.ForSubchannel(channel);
             }

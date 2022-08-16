@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using XiaoLi.NET.Extensions;
-using XiaoLi.NET.LoadBalancing;
 
-namespace XiaoLi.NET.Consul.Dispatcher
+namespace XiaoLi.NET.LoadBalancing
 {
+    /// <summary>
+    /// Note: 实验阶段，随时可能修改
+    /// </summary>
     public class WeightBalancer : IBalancer
     {
         private static int _seed;

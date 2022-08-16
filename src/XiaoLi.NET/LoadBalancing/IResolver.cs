@@ -21,6 +21,6 @@ namespace XiaoLi.NET.LoadBalancing
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        Task<List<dynamic>> ResolutionService(string serviceName);
+        Task<(List<Uri> serviceUris, dynamic metaData)> ResolutionService(string serviceName);
     }
 }

@@ -45,21 +45,21 @@ namespace XiaoLi.NET.Consul.Dispatcher
         /// <exception cref="IndexOutOfRangeException"></exception>
         private async Task<string> ChooseHostAsync(string serviceName)
         {
-            var agentServices = await _resolver.ResolutionService(serviceName);
+            var (uris, metaData) = await _resolver.ResolutionService(serviceName);
 
             IEnumerable<int> weights = default;
             if (_balancer.Name == nameof(WeightBalancer))
             {
-                weights = agentServices.Select(x => int.TryParse(x.Meta["Weight"], out int count) ? count : 1);
+                weights = (metaData as List<Dictionary<string,string>>)?.Select(x => int.TryParse(x["Weight"], out int count) ? count : 1);
             }
 
-            int index = _balancer.Pick(agentServices.Count, weights);
+            int index = _balancer.Pick(uris.Count, weights);
 
 
-            if (index >= agentServices.Count) throw new IndexOutOfRangeException();
+            if (index >= uris.Count) throw new IndexOutOfRangeException();
 
-            var service = agentServices[index];
-            return $"{service.Address}:{service.Port}";
+            var service = uris[index];
+            return $"{service.Host}:{service.Port}";
         }
     }
 }

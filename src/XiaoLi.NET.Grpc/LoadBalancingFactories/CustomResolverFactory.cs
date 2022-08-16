@@ -8,12 +8,12 @@ using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Grpc.LoadBalancingFactories;
 
-public class ConsulResolverFactory: ResolverFactory
+public class CustomResolverFactory: ResolverFactory
 {
     private readonly IResolver _resolver;
 
     public override string Name => _resolver.Name;
-    public ConsulResolverFactory(IResolver resolver)
+    public CustomResolverFactory(IResolver resolver)
     {
         _resolver = resolver;
     }
@@ -40,9 +40,9 @@ public class ConsulResolverFactory: ResolverFactory
         protected override async Task ResolveAsync(CancellationToken cancellationToken)
         {
             // 获取服务对应的所有主机
-            var agentServices = await _resolver.ResolutionService(_address.Host);
+            var (uris, metaData) = await _resolver.ResolutionService(_address.Host);
 
-            var addresses = agentServices.Select(service => new BalancerAddress(service.Address, service.Port)).ToArray();
+            var addresses = uris.Select(service => new BalancerAddress(service.Host, service.Port)).ToArray();
 
             // 将结果传递回通道。
             Listener(ResolverResult.ForResult(addresses));
