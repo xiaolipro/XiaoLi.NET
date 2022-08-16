@@ -51,7 +51,7 @@ namespace XiaoLi.NET.Grpc
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddGrpcServer(this ServiceCollection services)
+        public static IServiceCollection AddGrpcServer(this IServiceCollection services)
         {
             return services.AddGrpc(options =>
             {
@@ -68,7 +68,7 @@ namespace XiaoLi.NET.Grpc
         /// <typeparam name="TResolver"></typeparam>
         /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
-        public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
+        private static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
             this IServiceCollection services)
             where TResolver : class, IResolver
             where TBalancer : class, IBalancer

@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace XiaoLi.NET.Grpc.Interceptors
 {
-
     /// <summary>
     /// Grpc服务端日志拦截器
     /// </summary>
@@ -14,7 +13,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
     /// <para>Description see: https://docs.microsoft.com/zh-cn/aspnet/core/grpc/interceptors?view=aspnetcore-6.0</para>
     /// <para>Impl see: https://github.com/grpc/grpc-dotnet/blob/master/examples/Interceptor/Server/ServerLoggerInterceptor.cs</para>
     /// </remarks>
-    public class ServerLogInterceptor:Interceptor
+    public class ServerLogInterceptor : Interceptor
     {
         private readonly ILogger<ServerLogInterceptor> _logger;
 
@@ -22,7 +21,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             _logger = logger;
         }
-        
+
         /// <summary>
         /// 截获一元 RPC。
         /// </summary>
@@ -33,8 +32,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
-            TRequest request, 
-            ServerCallContext context, 
+            TRequest request,
+            ServerCallContext context,
             UnaryServerMethod<TRequest, TResponse> continuation)
         {
             WriteLog<TRequest, TResponse>(MethodType.Unary, context);
@@ -52,8 +51,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override Task<TResponse> ClientStreamingServerHandler<TRequest, TResponse>(
-            IAsyncStreamReader<TRequest> requestStream, 
-            ServerCallContext context, 
+            IAsyncStreamReader<TRequest> requestStream,
+            ServerCallContext context,
             ClientStreamingServerMethod<TRequest, TResponse> continuation)
         {
             WriteLog<TRequest, TResponse>(MethodType.ClientStreaming, context);
@@ -71,9 +70,9 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override Task ServerStreamingServerHandler<TRequest, TResponse>(
-            TRequest request, 
+            TRequest request,
             IServerStreamWriter<TResponse> responseStream,
-            ServerCallContext context, 
+            ServerCallContext context,
             ServerStreamingServerMethod<TRequest, TResponse> continuation)
         {
             WriteLog<TRequest, TResponse>(MethodType.ServerStreaming, context);
@@ -91,15 +90,14 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override Task DuplexStreamingServerHandler<TRequest, TResponse>(
-            IAsyncStreamReader<TRequest> requestStream, 
-            IServerStreamWriter<TResponse> responseStream, 
-            ServerCallContext context, 
+            IAsyncStreamReader<TRequest> requestStream,
+            IServerStreamWriter<TResponse> responseStream,
+            ServerCallContext context,
             DuplexStreamingServerMethod<TRequest, TResponse> continuation)
         {
             WriteLog<TRequest, TResponse>(MethodType.DuplexStreaming, context);
             return base.DuplexStreamingServerHandler(requestStream, responseStream, context, continuation);
         }
-
 
 
         /// <summary>
@@ -113,7 +111,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
             where TRequest : class
             where TResponse : class
         {
-            _logger.LogInformation($"Grpc服务端开始处理，类型：{methodType}， 请求类型：{typeof(TRequest)}，响应类型：{typeof(TResponse)}");
+            _logger.LogInformation("Grpc服务端开始处理，类型：{MethodType}， 请求类型：{Unknown}，响应类型：{Unknown}", methodType,
+                typeof(TRequest), typeof(TResponse));
             WriteMetadata(context.RequestHeaders, "caller-user");
             WriteMetadata(context.RequestHeaders, "caller-machine");
             WriteMetadata(context.RequestHeaders, "caller-os");
