@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiaoLi.NET.Consul.Dispatcher;
+using XiaoLi.NET.Consul.LoadBalancing;
 using XiaoLi.NET.Consul.Register;
+using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.Extensions
 {
@@ -21,11 +23,13 @@ namespace XiaoLi.NET.Consul.Extensions
 
 
         /// <summary>
-        /// 添加Consul调度器，提供服务发现
+        /// 添加Consul负载均衡调度器
         /// </summary>
-        public static void AddConsulDispatcher<TDispatcher>(this IServiceCollection services) where TDispatcher : ConsulDispatcher
+        public static void AddConsulDispatcher<TBalancer>(this IServiceCollection services) where TBalancer : class, IBalancer
         {
-            services.TryAddTransient(typeof(ConsulDispatcher),typeof(TDispatcher));
+            services.TryAddSingleton<IBalancer,TBalancer>();
+            services.TryAddSingleton<IResolver, ConsulResolver>();
+            services.TryAddSingleton<IDispatcher,ConsulDispatcher>();
         }
 
     }

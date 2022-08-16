@@ -19,8 +19,9 @@ namespace XiaoLi.NET.LoadBalancing
         /// <summary>
         /// 均衡算法
         /// </summary>
-        /// <param name="services">服务数量</param>
+        /// <param name="serviceCount">服务数量</param>
+        /// <param name="metaData">元数据</param>
         /// <returns></returns>
-        int Pick(List<dynamic> services);
+        int Pick(int serviceCount,dynamic metaData = default);
     }
 }

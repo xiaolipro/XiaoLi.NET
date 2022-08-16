@@ -10,12 +10,12 @@ namespace XiaoLi.NET.LoadBalancing
     {
         private static int _counter;
         public string Name { get; } = nameof(PollingBalancer);
-        public int Pick(List<dynamic> services)
+        public int Pick(int serviceCount, dynamic metaData = default)
         {
             lock (this)
             {
                 if (_counter > 0x3fffffff) _counter = 0;
-                return _counter ++ % services.Count;
+                return _counter ++ % serviceCount;
             }
         }
     }

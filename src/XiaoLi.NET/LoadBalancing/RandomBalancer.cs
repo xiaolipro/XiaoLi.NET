@@ -12,12 +12,12 @@ namespace XiaoLi.NET.LoadBalancing
         private static int _seed;
         public string Name { get; } = nameof(RandomBalancer);
 
-        public int Pick(List<dynamic> services)
+        public int Pick(int serviceCount, dynamic metaData = default)
         {
             lock (this)
             {
                 if (_seed > 0x3fffffff) _seed = 0;
-                return new Random(_seed ++).Next(0, services.Count);
+                return new Random(_seed ++).Next(0, serviceCount);
             }
         }
     }

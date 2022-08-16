@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ namespace XiaoLi.NET.Consul.Dispatcher
     /// <summary>
     /// ConsulDispatcher基类
     /// </summary>
-    public abstract class ConsulDispatcher:IDispatcher
+    public abstract class ConsulDispatcher : IDispatcher
     {
         private readonly ILogger<ConsulDispatcher> _logger;
         private readonly IResolver _resolver;
@@ -48,12 +47,19 @@ namespace XiaoLi.NET.Consul.Dispatcher
         {
             var agentServices = await _resolver.ResolutionService(serviceName);
 
-            int index = _balancer.Pick(agentServices);
+            IEnumerable<int> weights = default;
+            if (_balancer.Name == nameof(WeightBalancer))
+            {
+                weights = agentServices.Select(x => int.TryParse(x.Meta["Weight"], out int count) ? count : 1);
+            }
+
+            int index = _balancer.Pick(agentServices.Count, weights);
+
+
             if (index >= agentServices.Count) throw new IndexOutOfRangeException();
 
             var service = agentServices[index];
             return $"{service.Address}:{service.Port}";
         }
     }
-
 }
