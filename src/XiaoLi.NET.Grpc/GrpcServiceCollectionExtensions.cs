@@ -23,10 +23,10 @@ namespace XiaoLi.NET.Grpc
         public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient, TResolver, TBalancer>(
             this IServiceCollection services, string address)
             where TClient : class
-            where TResolver : IResolver
-            where TBalancer : IBalancer
+            where TResolver : class, IResolver
+            where TBalancer : class, IBalancer
         {
-            services.AddGrpcClientLoadBalancer<TResolver,TBalancer>();
+            services.AddGrpcClientLoadBalancer<TResolver, TBalancer>();
 
             services.TryAddSingleton(typeof(ClientLogInterceptor));
             services.TryAddSingleton(typeof(ClientExceptionInterceptor));
@@ -68,9 +68,10 @@ namespace XiaoLi.NET.Grpc
         /// <typeparam name="TResolver"></typeparam>
         /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
-        public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(this IServiceCollection services)
-            where TResolver : IResolver
-            where TBalancer : IBalancer
+        public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
+            this IServiceCollection services)
+            where TResolver : class, IResolver
+            where TBalancer : class, IBalancer
         {
             services.Replace(new ServiceDescriptor(typeof(IBalancer), typeof(TBalancer),
                 ServiceLifetime.Singleton));
