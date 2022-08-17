@@ -42,7 +42,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
             catch (RpcException e)
             {
                 _logger.LogError("客户端通过Grpc调用时发生异常: {Status} - {Message}", e.Status, e.Message);
-                return default;
+                // 不能返回null
+                return Activator.CreateInstance<TResponse>();
             }
         }
     }

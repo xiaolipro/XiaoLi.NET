@@ -8,18 +8,22 @@ using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Grpc.LoadBalancingFactories;
 
-public class CustomResolverFactory: ResolverFactory
+public class CustomResolverFactory : ResolverFactory
 {
     private readonly IResolver _resolver;
+    private readonly IBackoffPolicyFactory _backoffPolicyFactory;
 
     public override string Name => _resolver.Name;
-    public CustomResolverFactory(IResolver resolver)
+
+    public CustomResolverFactory(IResolver resolver, IBackoffPolicyFactory backoffPolicyFactory)
     {
         _resolver = resolver;
+        _backoffPolicyFactory = backoffPolicyFactory;
     }
+
     public override Resolver Create(ResolverOptions options)
     {
-        return new CustomResolver(options.LoggerFactory, _resolver, options.Address);
+        return new CustomResolver(options.LoggerFactory,_backoffPolicyFactory, _resolver, options.Address);
     }
 
     internal class CustomResolver : PollingResolver
@@ -29,7 +33,8 @@ public class CustomResolverFactory: ResolverFactory
         private readonly IResolver _resolver;
         private Timer _timer;
 
-        public CustomResolver(ILoggerFactory loggerFactory, IResolver resolver, Uri address) : base(loggerFactory)
+        public CustomResolver(ILoggerFactory loggerFactory, IBackoffPolicyFactory backoffPolicyFactory,
+            IResolver resolver, Uri address) : base(loggerFactory, backoffPolicyFactory)
         {
             _logger = loggerFactory.CreateLogger(typeof(CustomResolver));
             _resolver = resolver;
@@ -42,16 +47,16 @@ public class CustomResolverFactory: ResolverFactory
         {
             // 获取服务对应的所有主机
             var (uris, metaData) = await _resolver.ResolutionService(_address.Host);
-            
-            // 空的balancer-address会引发internal崩溃
+
+            // 防止服务端没起的时候重复请求服务解析
             if (uris == null || uris.Count < 1) return;
-            
+
             var addresses = uris.Select(uri => new BalancerAddress(uri.Host, uri.Port)).ToArray();
 
             // 将结果传递回通道。
             Listener(ResolverResult.ForResult(addresses));
         }
-            
+
         protected override void OnStarted()
         {
             base.OnStarted();
@@ -62,6 +67,7 @@ public class CustomResolverFactory: ResolverFactory
                 _timer.Change(_resolver.RefreshInterval, _resolver.RefreshInterval);
             }
         }
+
         private void OnTimerCallback(object state)
         {
             try
@@ -75,5 +81,4 @@ public class CustomResolverFactory: ResolverFactory
             }
         }
     }
-
 }

@@ -39,7 +39,7 @@ public class ServerExceptionInterceptor:Interceptor
         catch (RpcException e)
         {
             _logger.LogError("Grpc服务端处理时发生异常: {Status} - {Message}", e.Status, e.Message);
-            return default;
+            return Activator.CreateInstance<TResponse>();
         }
             
     }

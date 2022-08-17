@@ -78,6 +78,7 @@ namespace XiaoLi.NET.Grpc
             services.Replace(new ServiceDescriptor(typeof(IResolver), typeof(TResolver),
                 ServiceLifetime.Singleton));
 
+            services.TryAddSingleton<IBackoffPolicyFactory,CustomBackoffPolicyFactory>();
             services.TryAddSingleton<ResolverFactory, CustomResolverFactory>();
             services.TryAddSingleton<LoadBalancerFactory, CustomBalancerFactory>();
 
