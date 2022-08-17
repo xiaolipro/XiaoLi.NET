@@ -83,8 +83,8 @@ namespace XiaoLi.NET.Consul
                 Check = httpHealthCheck,
                 Meta = new Dictionary<string, string>()
                 {
-                    { "Weight", _consulRegisterOptions.Weight.ToString() },
-                    { "GrpcPort", _consulRegisterOptions.GrpcPort.ToString() }
+                    { nameof(_consulRegisterOptions.Weight), _consulRegisterOptions.Weight.ToString() },
+                    { nameof(_consulRegisterOptions.GrpcPort), _consulRegisterOptions.GrpcPort.ToString() }
                 } // 元数据
             };
 
