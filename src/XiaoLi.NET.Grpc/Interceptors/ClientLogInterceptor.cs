@@ -1,7 +1,6 @@
 ﻿using Grpc.Core.Interceptors;
 using Grpc.Core;
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace XiaoLi.NET.Grpc.Interceptors
@@ -21,7 +20,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             _logger = logger;
         }
-        
+
         /// <summary>
         /// 截获一元 RPC 的阻塞调用。
         /// </summary>
@@ -36,8 +35,8 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override TResponse BlockingUnaryCall<TRequest, TResponse>(
-            TRequest request, 
-            ClientInterceptorContext<TRequest, TResponse> context, 
+            TRequest request,
+            ClientInterceptorContext<TRequest, TResponse> context,
             BlockingUnaryCallContinuation<TRequest, TResponse> continuation)
         {
             WriteLog(context);
@@ -47,8 +46,6 @@ namespace XiaoLi.NET.Grpc.Interceptors
             return base.BlockingUnaryCall(request, context, continuation);
         }
 
-
-       
 
         /// <summary>
         /// 截获一元 RPC 的异步调用。
@@ -60,7 +57,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest, TResponse>(
-            TRequest request, 
+            TRequest request,
             ClientInterceptorContext<TRequest, TResponse> context,
             AsyncUnaryCallContinuation<TRequest, TResponse> continuation)
         {
@@ -79,7 +76,7 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="continuation"></param>
         /// <returns></returns>
         public override AsyncClientStreamingCall<TRequest, TResponse> AsyncClientStreamingCall<TRequest, TResponse>(
-            ClientInterceptorContext<TRequest, TResponse> context, 
+            ClientInterceptorContext<TRequest, TResponse> context,
             AsyncClientStreamingCallContinuation<TRequest, TResponse> continuation)
         {
             WriteLog(context);
@@ -97,7 +94,9 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="context"></param>
         /// <param name="continuation"></param>
         /// <returns></returns>
-        public override AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, AsyncServerStreamingCallContinuation<TRequest, TResponse> continuation)
+        public override AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(
+            TRequest request, ClientInterceptorContext<TRequest, TResponse> context,
+            AsyncServerStreamingCallContinuation<TRequest, TResponse> continuation)
         {
             WriteLog(context);
             AddCallerMetadata(ref context);
@@ -113,7 +112,9 @@ namespace XiaoLi.NET.Grpc.Interceptors
         /// <param name="context"></param>
         /// <param name="continuation"></param>
         /// <returns></returns>
-        public override AsyncDuplexStreamingCall<TRequest, TResponse> AsyncDuplexStreamingCall<TRequest, TResponse>(ClientInterceptorContext<TRequest, TResponse> context, AsyncDuplexStreamingCallContinuation<TRequest, TResponse> continuation)
+        public override AsyncDuplexStreamingCall<TRequest, TResponse> AsyncDuplexStreamingCall<TRequest, TResponse>(
+            ClientInterceptorContext<TRequest, TResponse> context,
+            AsyncDuplexStreamingCallContinuation<TRequest, TResponse> continuation)
         {
             WriteLog(context);
             AddCallerMetadata(ref context);
@@ -159,8 +160,9 @@ namespace XiaoLi.NET.Grpc.Interceptors
             where TRequest : class
             where TResponse : class
         {
-            _logger.LogInformation($"Grpc客户端开始调用，主机{context.Host}，类型：{context.Method.Type}，方法：{context.Method.Name}，" +
-                         $"请求模型：{typeof(TRequest)}，响应模型：{typeof(TResponse)}");
+            _logger.LogInformation(
+                "Grpc客户端开始调用，主机{Host}，类型：{MethodType}，方法：{MethodName}，请求模型：{TRequest}，响应模型：{TResponse}",
+                context.Host, context.Method.Type, context.Method.Name, typeof(TRequest), typeof(TResponse));
         }
     }
 }
