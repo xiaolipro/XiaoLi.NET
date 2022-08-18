@@ -8,9 +8,7 @@ using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Application.Internal;
-using XiaoLi.NET.ConfigurableOptions;
-using XiaoLi.NET.ConfigurableOptions.Attributes;
-using XiaoLi.NET.Extensions;
+using XiaoLi.NET.Configuration.Attributes;
 using XiaoLi.NET.Helpers;
 
 namespace XiaoLi.NET.Application
@@ -66,7 +64,7 @@ namespace XiaoLi.NET.Application
 
             if (options == null) options = Activator.CreateInstance<TOptions>();
 
-            if (typeof(IConfigurableOptions).IsAssignableFrom(typeof(TOptions)))
+            if (typeof(IConfiguration).IsAssignableFrom(typeof(TOptions)))
             {
                 typeof(TOptions).GetMethod("PostConfigure")?.Invoke(options, new object[] { options });
             }
@@ -83,7 +81,12 @@ namespace XiaoLi.NET.Application
         internal static string GetConfigurationPath<TOptions>()
         {
             var optionsType = typeof(TOptions);
-            var attr = optionsType.GetCustomAttribute<ConfigurableOptionsAttribute>(false);
+            return GetConfigurationPath(optionsType);
+        }
+        
+        internal static string GetConfigurationPath(Type optionsType)
+        {
+            var attr = optionsType.GetCustomAttribute<AutoOptionsAttribute>(false);
 
             if (attr != null)
             {
@@ -97,7 +100,8 @@ namespace XiaoLi.NET.Application
             string defaultStuffx = nameof(Options);
 
             // 切除后缀
-            return optionsType.Name.Substring(0, optionsType.Name.Length - defaultStuffx.Length);//.AsSpan().Slice(0, optionsType.Name.Length - defaultStuffx.Length).ToString();
+            //.AsSpan().Slice(0, optionsType.Name.Length - defaultStuffx.Length).ToString();
+            return optionsType.Name.Substring(0, optionsType.Name.Length - defaultStuffx.Length);
         }
 
 

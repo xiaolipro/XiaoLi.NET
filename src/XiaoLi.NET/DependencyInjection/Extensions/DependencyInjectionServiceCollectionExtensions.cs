@@ -5,7 +5,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiaoLi.NET.Application;
-using XiaoLi.NET.ConfigurableOptions.Extensions;
+using XiaoLi.NET.Configuration.Extensions;
 using XiaoLi.NET.DependencyInjection.Attributes;
 using XiaoLi.NET.DependencyInjection.Enums;
 using XiaoLi.NET.DependencyInjection.LifecycleInterfaces;
@@ -25,7 +25,7 @@ namespace XiaoLi.NET.DependencyInjection.Extensions
         public static IServiceCollection AddDependencyInjection(this IServiceCollection services)
         {
             // 添加外部程序集配置
-            services.AddConfigurableOptions<DependencyInjectionOptions>();
+            // services.AddConfiguration<DependencyInjectionOptions>();
 
             services.AddInnerDependencyInjection();
             return services;

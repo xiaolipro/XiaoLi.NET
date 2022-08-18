@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using XiaoLi.NET.Application.Internal;
 
-namespace XiaoLi.NET.Application.Extensions
+namespace XiaoLi.NET.Application
 {
     /// <summary>
     /// 框架主机构建拓展
     /// </summary>
-    public static class HostBuilderExtensions
+    public static class AppHostBuilderExtensions
     {
         
         /// <summary>

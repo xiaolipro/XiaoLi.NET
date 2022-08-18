@@ -4,19 +4,20 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace XiaoLi.NET.ConfigurableOptions
+namespace XiaoLi.NET.Configuration
 {
     /// <summary>
     /// 配置项
     /// </summary>
-    public interface IConfigurableOptions
+    public interface IAutoOptions
     {
+        string Path { get; }
     }
 
     /// <summary>
     /// 配置项
     /// </summary>
-    public interface IConfigurableOptions<TOptions> : IConfigurableOptions where TOptions : class,IConfigurableOptions
+    public interface IAutoOptions<TOptions> : IAutoOptions where TOptions : class,IAutoOptions
     {
         /// <summary>
         /// 读取完配置文件后执行
@@ -30,8 +31,8 @@ namespace XiaoLi.NET.ConfigurableOptions
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
     /// <typeparam name="TOptionsValidation"></typeparam>
-    public interface IConfigurableOptions<TOptions, TOptionsValidation> : IConfigurableOptions<TOptions>
-        where TOptions : class, IConfigurableOptions
+    public interface IAutoOptions<TOptions, TOptionsValidation> : IAutoOptions<TOptions>
+        where TOptions : class, IAutoOptions
         where TOptionsValidation : IValidateOptions<TOptions>
     {
     }

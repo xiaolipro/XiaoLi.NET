@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using XiaoLi.NET.ConfigurableOptions;
+﻿using System.Collections.Generic;
+using XiaoLi.NET.Configuration;
 using XiaoLi.NET.DependencyInjection.Enums;
 
 namespace XiaoLi.NET.DependencyInjection
@@ -9,8 +7,9 @@ namespace XiaoLi.NET.DependencyInjection
     /// <summary>
     /// 依赖注入配置项
     /// </summary>
-    public sealed class DependencyInjectionOptions :IConfigurableOptions
+    public sealed class DependencyInjectionOptions :IAutoOptions
     {
+        public string Path { get; }
         public IEnumerable<ExternalInject> ExternalServices { get; set; }
     }
 

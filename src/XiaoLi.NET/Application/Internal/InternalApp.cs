@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
-using XiaoLi.NET.Application.Extensions;
-using XiaoLi.NET.Helpers;
+using XiaoLi.NET.Configuration.Extensions;
+using XiaoLi.NET.DependencyInjection.Extensions;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace XiaoLi.NET.Application.Internal
@@ -54,10 +51,13 @@ namespace XiaoLi.NET.Application.Internal
                     Services = services;
                     
                     // 初始化根服务
-                    services.AddHostedService<HostedService>();
+                    services.AddHostedService<InternalHostedService>();
 
-                    // 初始化App
-                    services.AddApp();
+                    // 添加Options
+                    services.AddAutoOptions(Configuration);
+                    
+                    // 添加依赖注入
+                    services.AddDependencyInjection();
                 }));
         }
         
@@ -86,10 +86,7 @@ namespace XiaoLi.NET.Application.Internal
                     Services = services;
                     
                     // 初始化根服务
-                    services.AddHostedService<HostedService>();
-
-                    // 初始化App
-                    services.AddApp();
+                    services.AddHostedService<InternalHostedService>();
                 }));
         }
        

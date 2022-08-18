@@ -9,11 +9,11 @@ namespace XiaoLi.NET.Application.Internal
     /// <summary>
     /// 主机托管服务
     /// </summary>
-    internal class HostedService : IHostedService
+    internal class InternalHostedService : IHostedService
     {
-        private readonly ILogger<HostedService> _logger;
+        private readonly ILogger<InternalHostedService> _logger;
 
-        public HostedService(IHost host, ILogger<HostedService> logger)
+        public InternalHostedService(IHost host, ILogger<InternalHostedService> logger)
         {
             Debug.Assert(host.Services != null);
             // 初始化根服务
