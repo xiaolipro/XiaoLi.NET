@@ -21,7 +21,7 @@ namespace XiaoLi.NET.Configuration.Extensions
         public static IServiceCollection AddAutoOptions(this IServiceCollection service, IConfiguration configuration)
         {
             var types = App.PublicTypes
-                .Where(type => typeof(IAutoOptions).IsAssignableFrom(type));
+                .Where(type => typeof(IAutoOptions).IsAssignableFrom(type) && !type.GetTypeInfo().IsAbstract);
             foreach (var type in types)
             {
                 // 获取配置路径
@@ -32,7 +32,7 @@ namespace XiaoLi.NET.Configuration.Extensions
                 var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
                     .GetMethod(nameof(OptionsConfigurationServiceCollectionExtensions.Configure),
                         new Type[] { typeof(IServiceCollection), typeof(IConfiguration) })
-                    ?.MakeGenericMethod();
+                    ?.MakeGenericMethod(type);
 
                 
                 // 静态方法忽略obj参数
