@@ -1,0 +1,75 @@
+﻿# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: '3.8'
+services:
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION}
+    container_name: skywalking-elasticsearch
+    ports:
+      - "9500:9200"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  oap:
+    image: ${OAP_IMAGE}
+    container_name: skywalking-oap
+    depends_on:
+      es:
+        condition: service_healthy
+    links:
+      - es
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    healthcheck:
+      test: [ "CMD-SHELL", "/skywalking/bin/swctl ch" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      SW_STORAGE: elasticsearch
+      SW_STORAGE_ES_CLUSTER_NODES: es:9200
+      SW_HEALTH_CHECKER: default
+      SW_TELEMETRY: prometheus
+      JAVA_OPTS: "-Xms1024m -Xmx2048m"
+
+  ui:
+    image: ${UI_IMAGE}
+    container_name: skywalking-ui
+    depends_on:
+      oap:
+        condition: service_healthy
+    links:
+      - oap
+    ports:
+      - "8081:8080"
+    environment:
+      SW_OAP_ADDRESS: http://oap:12800
