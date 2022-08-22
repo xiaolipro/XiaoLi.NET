@@ -17,7 +17,7 @@ namespace XiaoLi.NET.Consul.LoadBalancing
         public ConsulResolver(ILogger<ConsulResolver> logger, IOptions<ConsulClientOptions> options)
         {
             _logger = logger;
-            _consulClientOptions = options.Value?? throw new ArgumentNullException(nameof(ConsulClientOptions));
+            _consulClientOptions = options.Value ?? throw new ArgumentNullException(nameof(ConsulClientOptions));
         }
 
         public string Name { get; } = nameof(ConsulResolver);
@@ -33,12 +33,22 @@ namespace XiaoLi.NET.Consul.LoadBalancing
             {
                 var entrys = await client.Health.Service(serviceName);
 
-                var uris = entrys.Response.Select(x => new Uri($"http://{x.Service.Address}:{x.Service.Meta["GrpcPort"]}"));
-                _logger.LogInformation(
-                    "解析服务：{ServiceName} 成功：{Uris}，耗时：{RequestTimeTotalMilliseconds}ms", serviceName,
-                    string.Join(",", uris) ,entrys.RequestTime.TotalMilliseconds);
+                var uris = entrys.Response
+                    .Select(x => new Uri($"http://{x.Service.Address}:{x.Service.Meta["GrpcPort"]}")).ToList();
 
-                return (uris.ToList(), entrys.Response.Select(entry => entry.Service.Meta as dynamic).ToList());
+                if (uris.Count < 1)
+                {
+                    _logger.LogWarning("未能从服务：{ServiceName} 中解析到任何实例，耗时：{RequestTimeTotalMilliseconds}ms", serviceName,
+                        entrys.RequestTime.TotalMilliseconds);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "解析服务：{ServiceName} 成功：{Uris}，耗时：{RequestTimeTotalMilliseconds}ms", serviceName,
+                        string.Join(",", uris), entrys.RequestTime.TotalMilliseconds);
+                }
+
+                return (uris, entrys.Response.Select(entry => entry.Service.Meta as dynamic).ToList());
             }
         }
     }

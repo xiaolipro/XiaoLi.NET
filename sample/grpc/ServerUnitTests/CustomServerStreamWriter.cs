@@ -1,5 +1,6 @@
 ﻿using System.Threading.Channels;
 using Grpc.Core;
+using Channel = System.Threading.Channels.Channel;
 
 namespace ServerUnitTests;
 

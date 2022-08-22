@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ namespace XiaoLi.NET.Consul.Extensions
         /// </remarks>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseConsul(this IApplicationBuilder app)
+        public static IApplicationBuilder UseHealthCheckForConsul(this IApplicationBuilder app)
         {
             var consulRegisterOptions =
                 app.ApplicationServices.GetRequiredService<IOptions<ConsulRegisterOptions>>().Value ??
@@ -27,7 +28,7 @@ namespace XiaoLi.NET.Consul.Extensions
             {
                 builder.Run(async context =>
                 {
-                    context.Response.StatusCode = 200;
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
                     await context.Response.WriteAsync(
                         $"{consulRegisterOptions.ServiceName} {DateTime.Now:yyyy-MM-dd HH:mm:ss fff}");
                 });

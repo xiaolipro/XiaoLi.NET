@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using XiaoLi.NET.Grpc.Interceptors;
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SkyApm.Diagnostics.Grpc.Client;
+using SkyApm.Diagnostics.Grpc.Server;
 using XiaoLi.NET.Grpc.LoadBalancingFactories;
 using XiaoLi.NET.LoadBalancing;
 
@@ -42,8 +44,9 @@ namespace XiaoLi.NET.Grpc
                         { LoadBalancingConfigs = { new LoadBalancingConfig(typeof(TBalancer).Name) } };
                     options.ServiceProvider = services.BuildServiceProvider();
                 })
+                .AddInterceptor<ClientLogInterceptor>()
                 .AddInterceptor<ClientExceptionInterceptor>()
-                .AddInterceptor<ClientLogInterceptor>();
+                .AddInterceptor<ClientDiagnosticInterceptor>();
         }
 
         /// <summary>
@@ -56,8 +59,9 @@ namespace XiaoLi.NET.Grpc
             return services.AddGrpc(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.Interceptors.Add<ServerExceptionInterceptor>();
                 options.Interceptors.Add<ServerLogInterceptor>();
+                options.Interceptors.Add<ServerExceptionInterceptor>();
+                options.Interceptors.Add<ServerDiagnosticInterceptor>();
             }).Services;
         }
 

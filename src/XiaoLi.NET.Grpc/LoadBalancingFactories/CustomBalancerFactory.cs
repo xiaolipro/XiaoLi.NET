@@ -63,7 +63,7 @@ public class CustomBalancerFactory : LoadBalancerFactory
                 // Pick a sub-channel.
                 var res= PickResult.ForSubchannel(channel);
                 
-                _logger.LogInformation("Status----{Status}",res.Status.ToString());
+                //_logger.LogInformation("Status----{Status}",res.Status.ToString());
 
                 return res;
             }
