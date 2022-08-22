@@ -14,4 +14,7 @@
 - [x]skywalking分布式链路追踪
 
 ### Grpc设计
-![输入图片说明](img/%E6%9C%AA%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6.jpg)
+![输入图片说明](img/grpc.jpg)
+
+### Skywalking效果图
+![输入图片说明](img/skywalking.png)
