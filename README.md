@@ -1,5 +1,7 @@
 # XiaoLi.NET
 
+git clone https://gitee.com/antinew/XiaoLi.NET.git
+
 #### 介绍
 一点点关于点net的学习
 - [v]依赖注入
