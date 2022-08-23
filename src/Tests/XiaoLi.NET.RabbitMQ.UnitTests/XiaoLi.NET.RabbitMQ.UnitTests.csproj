@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XiaoLi.NET\XiaoLi.NET.csproj" />
+    <ProjectReference Include="..\..\XiaoLi.NET.RabbitMQ\XiaoLi.NET.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

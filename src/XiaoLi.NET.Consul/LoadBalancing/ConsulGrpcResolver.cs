@@ -9,18 +9,18 @@ using XiaoLi.NET.LoadBalancing;
 
 namespace XiaoLi.NET.Consul.LoadBalancing
 {
-    public class ConsulResolver : IResolver
+    public class ConsulGrpcResolver : IResolver
     {
-        private readonly ILogger<ConsulResolver> _logger;
+        private readonly ILogger<ConsulGrpcResolver> _logger;
         private readonly ConsulClientOptions _consulClientOptions;
 
-        public ConsulResolver(ILogger<ConsulResolver> logger, IOptions<ConsulClientOptions> options)
+        public ConsulGrpcResolver(ILogger<ConsulGrpcResolver> logger, IOptions<ConsulClientOptions> options)
         {
             _logger = logger;
             _consulClientOptions = options.Value ?? throw new ArgumentNullException(nameof(ConsulClientOptions));
         }
 
-        public string Name { get; } = nameof(ConsulResolver);
+        public string Name { get; } = nameof(ConsulGrpcResolver);
         public TimeSpan RefreshInterval { get; } = TimeSpan.FromSeconds(15);
 
         public async Task<(List<Uri> serviceUris, dynamic metaData)> ResolutionService(string serviceName)

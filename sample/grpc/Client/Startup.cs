@@ -18,25 +18,13 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllers(options =>
-        {
-            options.Filters.Add(typeof(HttpGlobalExceptionFilter));
-        });
-        
-        
         services.AddHostedService<Worker>();
         services.AddSingleton<IGreetRepository, GreetRepository>();
         services.Configure<ConsulClientOptions>(Configuration.GetSection("ConsulClient"));
-        services.AddGrpcLoadBalancingClient<Tester.TesterClient, ConsulResolver, RandomBalancer>("TestService");
+        services.AddGrpcLoadBalancingClient<Tester.TesterClient, ConsulGrpcResolver, RandomBalancer>("TestService");
     }
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseRouting();
-        app.UseAuthorization();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-        });
     }
 }

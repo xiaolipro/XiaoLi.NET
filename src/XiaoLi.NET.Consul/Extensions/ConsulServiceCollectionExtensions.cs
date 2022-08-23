@@ -39,7 +39,7 @@ namespace XiaoLi.NET.Consul.Extensions
             where TBalancer : class, IBalancer
         {
             services.TryAddSingleton<IBalancer, TBalancer>();
-            services.TryAddSingleton<IResolver, ConsulResolver>();
+            services.TryAddSingleton<IResolver, ConsulGrpcResolver>();
             services.TryAddSingleton<IDispatcher, ConsulDispatcher>();
         }
     }
