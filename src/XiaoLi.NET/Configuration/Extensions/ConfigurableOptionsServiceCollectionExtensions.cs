@@ -18,21 +18,23 @@ namespace XiaoLi.NET.Configuration.Extensions
     /// </summary>
     public static class ConfigurationServiceCollectionExtensions
     {
-        public static IServiceCollection AddAutoOptions(this IServiceCollection service, IConfiguration configuration)
+        public static IServiceCollection AddAutoOptions(this IServiceCollection service)
         {
+            var configuration = App.Configuration;
+            
             var types = App.PublicTypes
                 .Where(type => typeof(IAutoOptions).IsAssignableFrom(type) && !type.GetTypeInfo().IsAbstract);
-            foreach (var type in types)
+            foreach (var optionsType in types)
             {
                 // 获取配置路径
-                string path = App.GetConfigurationPath(type);
+                string path = App.GetConfigurationPath(optionsType);
 
                 var section = configuration.GetSection(path);
 
                 var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
                     .GetMethod(nameof(OptionsConfigurationServiceCollectionExtensions.Configure),
                         new Type[] { typeof(IServiceCollection), typeof(IConfiguration) })
-                    ?.MakeGenericMethod(type);
+                    ?.MakeGenericMethod(optionsType);
 
                 
                 // 静态方法忽略obj参数
@@ -50,7 +52,7 @@ namespace XiaoLi.NET.Configuration.Extensions
         /// <typeparam name="TOptions">配置项类型</typeparam>
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddConfiguration<TOptions>(this IServiceCollection services)
+        internal static IServiceCollection AddConfiguration<TOptions>(this IServiceCollection services)
             where TOptions : class, IAutoOptions
         {
             var optionsType = typeof(TOptions);

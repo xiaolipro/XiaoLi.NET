@@ -75,8 +75,6 @@ namespace XiaoLi.NET.Application
         /// <summary>
         /// 获取配置路径
         /// </summary>
-        /// <param name="attr">配置特性</param>
-        /// <param name="optionsType">配置类型</param>
         /// <returns></returns>
         internal static string GetConfigurationPath<TOptions>()
         {
@@ -86,7 +84,7 @@ namespace XiaoLi.NET.Application
         
         internal static string GetConfigurationPath(Type optionsType)
         {
-            var attr = optionsType.GetCustomAttribute<AutoOptionsAttribute>(false);
+            var attr = optionsType.GetCustomAttribute<PathAttribute>(false);
 
             if (attr != null)
             {

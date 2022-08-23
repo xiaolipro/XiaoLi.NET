@@ -9,7 +9,7 @@ namespace XiaoLi.NET.Configuration.Attributes
     /// 配置项特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public sealed class AutoOptionsAttribute : Attribute
+    public sealed class PathAttribute : Attribute
     {
         /// <summary>
         /// 对应配置文件中的路径
@@ -20,7 +20,7 @@ namespace XiaoLi.NET.Configuration.Attributes
         /// 构造函数
         /// </summary>
         /// <param name="path">配置文件对应节点的路径</param>
-        public AutoOptionsAttribute(string path)
+        public PathAttribute(string path)
         {
             Path = path;
         }

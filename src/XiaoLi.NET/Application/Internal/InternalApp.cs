@@ -54,7 +54,7 @@ namespace XiaoLi.NET.Application.Internal
                     services.AddHostedService<InternalHostedService>();
 
                     // 添加Options
-                    services.AddAutoOptions(Configuration);
+                    services.AddAutoOptions();
                     
                     // 添加依赖注入
                     services.AddDependencyInjection();

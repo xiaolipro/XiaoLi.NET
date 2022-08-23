@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using XiaoLi.NET.Configuration;
+using XiaoLi.NET.Configuration.Attributes;
 
 namespace XiaoLi.NET.Application
 {
-    public class AppSettingsOptions : IAutoOptions<AppSettingsOptions>
+    [Path("AppSettings")]
+    public class AppSettingsOptions : IAutoOptions
     {
-        public string Path => "AppSettings";
-
-
         /// <summary>
         /// 排除程序集，不扫描
         /// </summary>

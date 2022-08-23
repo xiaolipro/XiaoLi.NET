@@ -9,7 +9,6 @@ namespace XiaoLi.NET.DependencyInjection
     /// </summary>
     public sealed class DependencyInjectionOptions :IAutoOptions
     {
-        public string Path { get; }
         public IEnumerable<ExternalInject> ExternalServices { get; set; }
     }
 
