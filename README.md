@@ -15,7 +15,7 @@ git clone https://gitee.com/antinew/XiaoLi.NET.git
 - [x] Consul服务发现与注册
 - [x] Grpc客户端负载均衡
 - [x] RabbitMQ分布式事件总线
-- [x] skywalking分布式链路追踪
+- [x] skywalking分布式链路追踪，支持grpc
 
 ### Grpc设计
 ![输入图片说明](img/grpc.jpg)
