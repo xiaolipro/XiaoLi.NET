@@ -1,13 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using XiaoLi.NET.Configuration;
 using XiaoLi.NET.Configuration.Attributes;
 
 namespace XiaoLi.NET.Application
 {
-    [Path("AppSettings")]
+    [Path("App")]
     public class AppOptions : IAutoOptions<AppOptions>
     {
+        // private readonly ILogger<AppOptions> _logger;
+        //
+        // public AppOptions(ILogger<AppOptions> logger)
+        // {
+        //     _logger = logger;
+        // }
         public string Name { get; set; }
         /// <summary>
         /// 排除程序集，不扫描
@@ -26,7 +34,7 @@ namespace XiaoLi.NET.Application
 
         public void PostConfigure(AppOptions options)
         {
-            int a = 1 + 1;
+            Console.WriteLine("jaaaaaaaaaaasdasd");
         }
 
     }

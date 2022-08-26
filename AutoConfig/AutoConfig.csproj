@@ -6,4 +6,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\src\XiaoLi.NET\XiaoLi.NET.csproj" />
+    </ItemGroup>
+
 </Project>

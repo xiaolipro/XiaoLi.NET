@@ -1,5 +1,4 @@
-﻿#if NETSTANDARD1_6_OR_GREATER
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
 namespace XiaoLi.NET.Application.Extensions
 {
@@ -16,6 +15,3 @@ namespace XiaoLi.NET.Application.Extensions
 
     }
 }
-
-
-#endif

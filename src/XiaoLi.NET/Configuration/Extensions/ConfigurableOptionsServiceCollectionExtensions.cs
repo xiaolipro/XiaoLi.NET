@@ -53,14 +53,17 @@ namespace XiaoLi.NET.Configuration.Extensions
 
                 var actionType = typeof(Action<>).MakeGenericType(optionsType);
                 var postConfigureMethod =
-                    typeof(IAutoOptions<>).GetMethod(nameof(IAutoOptions<AppOptions>.PostConfigure));
-                var actionExpress = Delegate.CreateDelegate(actionType, postConfigureMethod!);
+                    typeof(IAutoOptions<>).MakeGenericType(optionsType)
+                        .GetMethod(nameof(IAutoOptions<AppOptions>.PostConfigure));
 
-                typeof(OptionsServiceCollectionExtensions)
+                var instance = App.Configuration.GetSection(path).Get(optionsType);
+                var actionExpress = Delegate.CreateDelegate(actionType, instance, postConfigureMethod);
+
+                var postConfigureHandler = typeof(OptionsServiceCollectionExtensions)
                     .GetMethod(nameof(OptionsServiceCollectionExtensions.PostConfigure),
                         new[] { typeof(IServiceCollection), typeof(Action<>) })
-                    ?.MakeGenericMethod(optionsType)
-                    .Invoke(null, new object[] { services, actionExpress });
+                    ?.MakeGenericMethod(optionsType);
+                postConfigureHandler?.Invoke(null, new object[] { services, actionExpress });
 
                 #endregion
 
