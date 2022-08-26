@@ -15,7 +15,8 @@ public class IntegrationLogger : ILogger
 
     public IDisposable BeginScope<TState>(TState state)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
+        return default!;
     }
 
     public bool IsEnabled(LogLevel logLevel)

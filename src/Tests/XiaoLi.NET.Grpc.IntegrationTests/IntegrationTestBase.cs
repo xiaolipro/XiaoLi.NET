@@ -1,18 +1,19 @@
 ﻿using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using XiaoLi.NET.Grpc.IntegrationTests.Infrastructure;
 using Xunit.Abstractions;
 
-namespace XiaoLi.NET.Grpc.IntegrationTests.Infrastructure;
+namespace XiaoLi.NET.Grpc.IntegrationTests;
 
 public class IntegrationTestBase:IClassFixture<IntegrationFixture<Startup>>, IDisposable
 {
-    private readonly IntegrationContext<Startup> _integrationContext;
-    private GrpcChannel _channel;
+    private readonly IDisposable _integrationContext;
+    private GrpcChannel? _channel;
     
     protected IntegrationFixture<Startup> IntegrationFixture { get; }
-    protected GrpcChannel Channel => _channel ??= CreateChannel();
+    protected GrpcChannel? Channel => _channel ??= CreateChannel();
 
-    private GrpcChannel CreateChannel()
+    private GrpcChannel? CreateChannel()
     {
         var channel = GrpcChannel.ForAddress("http://localhost", new GrpcChannelOptions()
         {
@@ -33,7 +34,7 @@ public class IntegrationTestBase:IClassFixture<IntegrationFixture<Startup>>, IDi
     public void Dispose()
     {
         _integrationContext.Dispose();
-        _channel.Dispose();
+        _channel = null;
         //IntegrationFixture.Dispose();
     }
 }

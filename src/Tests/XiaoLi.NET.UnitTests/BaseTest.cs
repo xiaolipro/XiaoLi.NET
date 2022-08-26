@@ -1,10 +1,18 @@
 using System.Threading.Channels;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests
 {
     public class BaseTest
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public BaseTest(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void Test1()
         {
@@ -42,6 +50,21 @@ namespace XiaoLi.NET.UnitTests
                     break;
                 default:
                     goto case "1";
+            }
+        }
+
+        
+        [Fact]
+        public void Nullable_Test()
+        {
+            DateTime? dd = null;
+            if (dd != null && dd.Value > DateTime.Now)
+            {
+                _testOutputHelper.WriteLine(1.ToString());
+            }
+            else
+            {
+                _testOutputHelper.WriteLine(2.ToString());
             }
         }
     }

@@ -9,7 +9,8 @@ namespace XiaoLi.NET.Grpc.IntegrationTests.Infrastructure;
 
 public delegate void IntegrationLogMessage(LogLevel logLevel, string categoryName, EventId eventId, string message,
     Exception exception);
-public class IntegrationFixture<TStartup> : IDisposable where TStartup: class
+
+public class IntegrationFixture<TStartup> : IDisposable where TStartup : class
 {
     private TestServer? _server;
     private IHost? _host;
@@ -18,6 +19,7 @@ public class IntegrationFixture<TStartup> : IDisposable where TStartup: class
 
     public event IntegrationLogMessage? LogMessage;
     public LoggerFactory LoggerFactory { get; }
+
     public HttpMessageHandler Handler
     {
         get
@@ -30,7 +32,11 @@ public class IntegrationFixture<TStartup> : IDisposable where TStartup: class
     public IntegrationFixture()
     {
         LoggerFactory = new LoggerFactory();
-        if (LogMessage != null) LoggerFactory.AddProvider(new IntegrationLoggerProvider(LogMessage));
+        // if (LogMessage != null) 
+        LoggerFactory.AddProvider(new IntegrationLoggerProvider(((level, name, id, message, exception) =>
+        {
+            LogMessage?.Invoke(level, name, id, message, exception);
+        })));
     }
 
     public void ConfigureWebHost(Action<IWebHostBuilder> configure)
@@ -43,16 +49,13 @@ public class IntegrationFixture<TStartup> : IDisposable where TStartup: class
         if (_host != null) return;
 
         var builder = new HostBuilder()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((context, services) => { services.AddSingleton<ILoggerFactory>(LoggerFactory); })
+            .ConfigureWebHostDefaults(webhost =>
             {
-                services.AddSingleton<ILoggerFactory>(LoggerFactory);
-            })
-            .ConfigureWebHostDefaults(builder =>
-            {
-                builder.UseTestServer()
+                webhost.UseTestServer()
                     .UseStartup<TStartup>();
 
-                _configureWebHost?.Invoke(builder);
+                _configureWebHost?.Invoke(webhost);
             });
 
         _host = builder.Start();
@@ -65,6 +68,6 @@ public class IntegrationFixture<TStartup> : IDisposable where TStartup: class
         _server?.Dispose();
         _host?.Dispose();
         _handler?.Dispose();
-        LoggerFactory.Dispose();
+        //LoggerFactory.Dispose();
     }
 }
