@@ -91,7 +91,7 @@ namespace XiaoLi.NET.Application.Internal
         }
        
 
-        private static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
+        internal static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
         {
             var configuration = configurationBuilder.Build();
 
@@ -126,7 +126,7 @@ namespace XiaoLi.NET.Application.Internal
             }
         }
         
-        private static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
+        internal static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
         {
             string env = hostEnvironment.EnvironmentName;
             if (string.IsNullOrWhiteSpace(env))
@@ -141,7 +141,7 @@ namespace XiaoLi.NET.Application.Internal
             return hostEnvironment;
         }
         
-        private static IHostingEnvironment ResolveEnvironmentVariables(IHostingEnvironment hostEnvironment)
+        internal static IHostingEnvironment ResolveEnvironmentVariables(IHostingEnvironment hostEnvironment)
         {
             string env = hostEnvironment.EnvironmentName;
             if (string.IsNullOrWhiteSpace(env))

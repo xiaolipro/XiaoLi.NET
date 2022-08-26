@@ -6,8 +6,9 @@ using XiaoLi.NET.Configuration.Attributes;
 namespace XiaoLi.NET.Application
 {
     [Path("AppSettings")]
-    public class AppSettingsOptions : IAutoOptions
+    public class AppOptions : IAutoOptions<AppOptions>
     {
+        public string Name { get; set; }
         /// <summary>
         /// 排除程序集，不扫描
         /// </summary>
@@ -23,9 +24,9 @@ namespace XiaoLi.NET.Application
         /// </summary>
         public IEnumerable<string> ExternalAssemblies { get; set; } = Enumerable.Empty<string>();
 
-        public void PostConfigure(AppSettingsOptions options)
+        public void PostConfigure(AppOptions options)
         {
-            
+            int a = 1 + 1;
         }
 
     }

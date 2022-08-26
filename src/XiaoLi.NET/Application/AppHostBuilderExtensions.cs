@@ -34,8 +34,6 @@ namespace XiaoLi.NET.Application
         
             return builder;
         }
-        
-        
-        // public static IWebHostBuilder
+
     }
 }

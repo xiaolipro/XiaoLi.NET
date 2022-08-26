@@ -21,7 +21,7 @@ namespace XiaoLi.NET.Application
         /// <summary>
         /// 基础配置AppSettings
         /// </summary>
-        public static AppSettingsOptions Settings => GetConfiguration<AppSettingsOptions>("AppSettings");
+        public static AppOptions Settings => GetConfiguration<AppOptions>("AppSettings");
 
         /// <summary>
         /// 获取主机环境

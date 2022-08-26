@@ -18,33 +18,69 @@ namespace XiaoLi.NET.Configuration.Extensions
     /// </summary>
     public static class ConfigurationServiceCollectionExtensions
     {
-        public static IServiceCollection AddAutoOptions(this IServiceCollection service)
+        public static IServiceCollection AddAutoOptions(this IServiceCollection services)
         {
             var configuration = App.Configuration;
-            
+
             var types = App.PublicTypes
                 .Where(type => typeof(IAutoOptions).IsAssignableFrom(type) && !type.GetTypeInfo().IsAbstract);
             foreach (var optionsType in types)
             {
+                #region IConfigureOptions
+
                 // 获取配置路径
                 string path = App.GetConfigurationPath(optionsType);
 
                 var section = configuration.GetSection(path);
 
-                var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
+                typeof(OptionsConfigurationServiceCollectionExtensions)
                     .GetMethod(nameof(OptionsConfigurationServiceCollectionExtensions.Configure),
-                        new Type[] { typeof(IServiceCollection), typeof(IConfiguration) })
-                    ?.MakeGenericMethod(optionsType);
+                        new[] { typeof(IServiceCollection), typeof(IConfiguration) })
+                    ?.MakeGenericMethod(optionsType)
+                    // 静态方法忽略obj参数
+                    .Invoke(null, new object[] { services, section });
 
-                
-                // 静态方法忽略obj参数
-                configureMethod?.Invoke(null, new object[] { service, section });
+
+                var genericOptionsType = optionsType.GetInterfaces()
+                    .FirstOrDefault(x =>
+                        x.IsGenericType && typeof(IAutoOptions).IsAssignableFrom(x.GetGenericTypeDefinition()));
+
+                if (genericOptionsType == null) continue;
+
+                #endregion
+
+                #region IPostConfigureOptions 配置后的
+
+                var actionType = typeof(Action<>).MakeGenericType(optionsType);
+                var postConfigureMethod =
+                    typeof(IAutoOptions<>).GetMethod(nameof(IAutoOptions<AppOptions>.PostConfigure));
+                var actionExpress = Delegate.CreateDelegate(actionType, postConfigureMethod!);
+
+                typeof(OptionsServiceCollectionExtensions)
+                    .GetMethod(nameof(OptionsServiceCollectionExtensions.PostConfigure),
+                        new[] { typeof(IServiceCollection), typeof(Action<>) })
+                    ?.MakeGenericMethod(optionsType)
+                    .Invoke(null, new object[] { services, actionExpress });
+
+                #endregion
+
+                #region IValidateOptions 带验证的
+
+                var genericTypeArguments = optionsType.GenericTypeArguments;
+                if (genericTypeArguments.Length > 1)
+                {
+                    // 注册验证器
+                    services.TryAddSingleton(typeof(IValidateOptions<>).MakeGenericType(optionsType),
+                        genericTypeArguments.Last());
+                }
+
+                #endregion
             }
 
-            return service;
+            return services;
         }
-        
-        
+
+
         /// <summary>
         /// 添加配置项
         /// TODO: 自定义版本的options第一个版本先不做了
@@ -79,7 +115,8 @@ namespace XiaoLi.NET.Configuration.Extensions
             }
 
             var genericOptionsType = optionsType.GetInterfaces()
-                .FirstOrDefault(x => x.IsGenericType && typeof(IAutoOptions).IsAssignableFrom(x.GetGenericTypeDefinition()));
+                .FirstOrDefault(x =>
+                    x.IsGenericType && typeof(IAutoOptions).IsAssignableFrom(x.GetGenericTypeDefinition()));
             if (genericOptionsType != null)
             {
                 // 泛型参数
@@ -89,20 +126,20 @@ namespace XiaoLi.NET.Configuration.Extensions
                 if (genericArguments.Length > 1)
                 {
                     // 注册验证器
-                    services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IValidateOptions<TOptions>), genericArguments.Last()));
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IValidateOptions<TOptions>),
+                        genericArguments.Last()));
                 }
 
                 // 配置后
                 var postConfigureMethod = optionsType.GetMethod(nameof(IAutoOptions<TOptions>.PostConfigure));
                 if (postConfigureMethod != null)
                 {
-                    services.PostConfigureAll<TOptions>(options => postConfigureMethod.Invoke(options, new object[] { options, optionsConfiguration }));
+                    services.PostConfigureAll<TOptions>(options =>
+                        postConfigureMethod.Invoke(options, new object[] { options, optionsConfiguration }));
                 }
             }
 
             return services;
         }
-
-        
     }
 }
