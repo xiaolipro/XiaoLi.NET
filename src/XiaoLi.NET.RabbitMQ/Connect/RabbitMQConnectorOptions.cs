@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using XiaoLi.NET.Configuration;
 
 namespace XiaoLi.NET.RabbitMQ.Connect
 {
     /// <summary>
     /// RabbitMQ连接器配置
     /// </summary>
-    public class RabbitMQConnectorOptions
+    public class RabbitMQConnectorOptions:IAutoOptions
     {
 
         /// <summary>

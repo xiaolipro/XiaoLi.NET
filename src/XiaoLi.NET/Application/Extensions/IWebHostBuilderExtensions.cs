@@ -15,7 +15,7 @@ namespace XiaoLi.NET.Application.Extensions
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IWebHostBuilder ConfigureApp(this IWebHostBuilder builder)
+        public static IWebHostBuilder InitApp(this IWebHostBuilder builder)
         {
             builder
                 .ConfigureAppConfiguration(((context, configurationBuilder) =>

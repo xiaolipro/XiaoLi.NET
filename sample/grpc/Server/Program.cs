@@ -1,10 +1,12 @@
 using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Server.Services;
+using XiaoLi.NET.Application.Extensions;
 using XiaoLi.NET.Consul.Extensions;
 using XiaoLi.NET.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.InitApp();
 
 // Additional configuration is required to successfully run gRPC on macOS.
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
@@ -13,12 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpcServer();
 builder.Services.AddSingleton<IGreeterService, GreeterService>();
 
-var Configuration = builder.Configuration;
+var configuration = builder.Configuration;
 builder.Services.AddConsul();
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    var ports = GetDefinedPorts(Configuration);
+    var ports = GetDefinedPorts(configuration);
     options.Listen(IPAddress.Any, ports.httpPort, listenOptions =>
     {
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;

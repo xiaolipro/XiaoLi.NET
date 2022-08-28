@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using XiaoLi.NET.Configuration;
 
 namespace XiaoLi.NET.RabbitMQ
 {
-    public class RabbitMQClientOptions
+    public class RabbitMQClientOptions:IAutoOptions
     {
         /// <summary>
         /// 主机

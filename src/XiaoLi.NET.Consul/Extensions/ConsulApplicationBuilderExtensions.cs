@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using XiaoLi.NET.Application;
 
 namespace XiaoLi.NET.Consul.Extensions
 {
@@ -19,8 +20,7 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <returns></returns>
         public static IApplicationBuilder UseHealthCheckForConsul(this IApplicationBuilder app)
         {
-            var consulRegisterOptions =
-                app.ApplicationServices.GetRequiredService<IOptions<ConsulRegisterOptions>>().Value;
+            var consulRegisterOptions = App.GetConfiguration<ConsulRegisterOptions>();
 
             // 心跳检测
             app.Map($"/{consulRegisterOptions.HealthCheckRoute.Trim('/')}", builder =>

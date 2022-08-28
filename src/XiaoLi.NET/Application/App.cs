@@ -107,10 +107,11 @@ namespace XiaoLi.NET.Application
         {
             // 解析程序集
             var (assemblies, externalAssemblies) = ResolveAssemblies();
-            Assemblies = assemblies;
+            var enumerable = assemblies as Assembly[] ?? assemblies.ToArray();
+            Assemblies = enumerable;
             ExternalAssemblies = externalAssemblies;
             // 解析程序集所有public类型
-            PublicTypes = assemblies.SelectMany(x => x.GetTypes()).Where(x => x.IsPublic);
+            PublicTypes = enumerable.SelectMany(x => x.GetTypes()).Where(x => x.IsPublic);
         }
 
 

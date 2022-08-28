@@ -7,8 +7,7 @@ using XiaoLi.NET.DependencyInjection.Extensions;
 namespace XiaoLi.NET.Application.Extensions
 {
     /// <summary>
-    /// Host.CreateDefaultBuilder()
-    /// 在通用 Host 的基础上重新构建 ASP.NET Core，支持其他如 Worker 服务的工作负载。.NET Core 3.x 和 .NET 5 中的默认方法。
+    /// 2.1, 2.2, 3.0, 3.1, 5, 6, 7 Preview 7
     /// </summary>
     public static class IHostBuilderExtensions
     {
@@ -17,7 +16,7 @@ namespace XiaoLi.NET.Application.Extensions
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IHostBuilder ConfigureApp(this IHostBuilder builder)
+        public static IHostBuilder InitApp(this IHostBuilder builder)
         {
             builder
                 .ConfigureAppConfiguration(((context, configurationBuilder) =>

@@ -11,9 +11,9 @@ using Microsoft.Extensions.Options;
 using XiaoLi.NET.Application;
 using XiaoLi.NET.Application.Extensions;
 
-var host = Host.CreateDefaultBuilder(args).ConfigureApp();
-
-var app = host.Build();
+var builder = WebApplication.CreateBuilder(args);
+builder.Host.InitApp();
+var app = builder.Build();
 
 
 var appOptions = app.Services.GetRequiredService<IOptions<TestValidateOptions>>();

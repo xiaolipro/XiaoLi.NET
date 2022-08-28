@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using XiaoLi.NET.Application;
 
 namespace XiaoLi.NET.Consul
 {
@@ -19,18 +20,18 @@ namespace XiaoLi.NET.Consul
         private CancellationTokenSource _consulCancellationToken;
         private string _serviceId;
 
-        public ConsulHostedService(ILogger<ConsulHostedService> logger,IConsulClient consulClient, IOptions<ConsulRegisterOptions> consulRegisterOptions)
+        public ConsulHostedService(ILogger<ConsulHostedService> logger,IConsulClient consulClient,IOptions<ConsulRegisterOptions> options)
         {
             _logger = logger;
             _consulClient = consulClient;
-            _consulRegisterOptions = consulRegisterOptions.Value?? throw new ArgumentNullException(nameof(ConsulRegisterOptions));
+            _consulRegisterOptions =  options.Value;
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             // Create a linked token so we can trigger cancellation outside of this token's cancellation
             _consulCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             
-            #region 移除服务，防止重复注册
+            #region 服务注销，防止重复注册
 
             var services = await _consulClient.Catalog.Service(_consulRegisterOptions.ServiceName, cancellationToken);
 
@@ -53,8 +54,8 @@ namespace XiaoLi.NET.Consul
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _consulCancellationToken.Cancel();
-            _logger.LogInformation("Consul已注销");
             await _consulClient.Agent.ServiceDeregister(_serviceId, cancellationToken);
+            _logger.LogInformation("Consul已注销");
         }
         
         

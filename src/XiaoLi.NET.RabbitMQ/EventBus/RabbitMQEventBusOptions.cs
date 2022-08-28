@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using XiaoLi.NET.Configuration;
 
 namespace XiaoLi.NET.RabbitMQ.EventBus
 {
-    public class RabbitMQEventBusOptions
+    public class RabbitMQEventBusOptions:IAutoOptions
     {
 
         /// <summary>
