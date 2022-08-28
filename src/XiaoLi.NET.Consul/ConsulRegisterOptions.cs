@@ -1,9 +1,11 @@
 ﻿
 using System.Reflection;
+using Microsoft.Extensions.Options;
+using XiaoLi.NET.Configuration;
 
 namespace XiaoLi.NET.Consul
 {
-    public class ConsulRegisterOptions
+    public class ConsulRegisterOptions:IAutoValidateOptions<ConsulClientOptions>
     {
         
         /// <summary>
@@ -50,5 +52,10 @@ namespace XiaoLi.NET.Consul
         /// 权重(使用权重调度器时有效)
         /// </summary>
         public int Weight { get; set; }
+
+        public ValidateOptionsResult Validate(string name, ConsulClientOptions options)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

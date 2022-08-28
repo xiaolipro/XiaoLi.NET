@@ -6,6 +6,7 @@
 // app.Run();
 
 
+using AutoConfig;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Application;
 using XiaoLi.NET.Application.Extensions;
@@ -15,10 +16,13 @@ var host = Host.CreateDefaultBuilder(args).ConfigureApp();
 var app = host.Build();
 
 
-var appOptions = app.Services.GetRequiredService<IOptions<AppOptions>>();
+var appOptions = app.Services.GetRequiredService<IOptions<TestValidateOptions>>();
 var t = appOptions.Value;
 
+var appOptions2 = app.Services.GetRequiredService<IOptions<TestOptions>>();
+var t2 = appOptions2.Value;
 
-var appOptions2 = app.Services.GetRequiredService<IOptions<AppOptions>>();
-var t2 = appOptions.Value;
+
+var appOptions3 = app.Services.GetRequiredService<IOptions<TestPostOptions>>();
+var t3 = appOptions3.Value;
 app.Run();

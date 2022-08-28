@@ -57,7 +57,7 @@ namespace XiaoLi.NET.Configuration.Extensions
 
                 #region IValidateOptions 带验证
                 
-                if (typeof(IAutoValidateOptions<>).IsAssignableFrom(optionsType))
+                if (typeof(IAutoValidateOptions<>).MakeGenericType(optionsType).IsAssignableFrom(optionsType))
                 {
                      services.TryAddSingleton(typeof(IValidateOptions<>).MakeGenericType(optionsType), optionsType);
                 }

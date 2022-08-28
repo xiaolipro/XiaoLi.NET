@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using XiaoLi.NET.Application;
 using XiaoLi.NET.Consul.LoadBalancing;
 using XiaoLi.NET.LoadBalancing;
 
@@ -18,11 +19,8 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <param name="configuration"></param>
         public static void AddConsul(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<ConsulClientOptions>(configuration.GetSection("ConsulClient"));
-            services.Configure<ConsulRegisterOptions>(configuration.GetSection("ConsulRegister"));
-
-            var consulClientOptions = configuration.GetSection("ConsulClient").Get<ConsulClientOptions>();
-            if (consulClientOptions == null) throw new ArgumentNullException(nameof(ConsulClientOptions));
+            var consulClientOptions = App.GetConfiguration<ConsulClientOptions>();
+            if (consulClientOptions == null) throw new ArgumentNullException(nameof(consulClientOptions));
             services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulConfig =>
             {
                 consulConfig.Address = consulClientOptions.Address;
