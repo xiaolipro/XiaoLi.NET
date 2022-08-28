@@ -17,17 +17,14 @@ namespace XiaoLi.NET.Consul.Extensions
         public static IConfigurationRoot AddConsulConfiguration(this IConfigurationBuilder builder)
         {
             var consulClientOptions = App.GetConfiguration<ConsulClientOptions>();
-            Uri addrUri = consulClientOptions.Address??throw new ArgumentNullException(nameof(consulClientOptions.Address));
-            string configFileName = consulClientOptions.ConfigFileName ?? throw new ArgumentNullException(nameof(consulClientOptions.ConfigFileName));
-
-
+            
             // 加载Consul上的配置文件
-            builder.AddConsul(configFileName, sources =>
+            builder.AddConsul(consulClientOptions.ConfigFileName, sources =>
             {
                 sources.ConsulConfigurationOptions = options =>
                 {
-                    options.Address = addrUri;
-                    options.Datacenter = options.Datacenter;
+                    options.Address = consulClientOptions.Address;
+                    options.Datacenter = consulClientOptions.Datacenter;
                 };
                 sources.Optional = true;
                 sources.ReloadOnChange = true; // hot-update

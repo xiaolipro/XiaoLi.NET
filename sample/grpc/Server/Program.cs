@@ -14,7 +14,7 @@ builder.Services.AddGrpcServer();
 builder.Services.AddSingleton<IGreeterService, GreeterService>();
 
 var Configuration = builder.Configuration;
-builder.Services.AddConsul(Configuration);
+builder.Services.AddConsul();
 
 builder.WebHost.ConfigureKestrel(options =>
 {

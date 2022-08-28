@@ -49,7 +49,7 @@ namespace XiaoLi.NET.Application
         public static readonly IEnumerable<Type> PublicTypes;
 
         /// <summary>
-        /// 获取配置
+        /// 获取配置，找不到会默认调用并返回new()
         /// </summary>
         /// <param name="path"></param>
         /// <typeparam name="TOptions"></typeparam>

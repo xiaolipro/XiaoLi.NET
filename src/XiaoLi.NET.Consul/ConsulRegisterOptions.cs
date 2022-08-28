@@ -5,9 +5,8 @@ using XiaoLi.NET.Configuration;
 
 namespace XiaoLi.NET.Consul
 {
-    public class ConsulRegisterOptions:IAutoValidateOptions<ConsulClientOptions>
+    public class ConsulRegisterOptions:IAutoValidateOptions<ConsulRegisterOptions>
     {
-        
         /// <summary>
         /// 服务IP
         /// </summary>
@@ -53,9 +52,10 @@ namespace XiaoLi.NET.Consul
         /// </summary>
         public int Weight { get; set; }
 
-        public ValidateOptionsResult Validate(string name, ConsulClientOptions options)
+        public ValidateOptionsResult Validate(string name, ConsulRegisterOptions options)
         {
-            throw new System.NotImplementedException();
+            if (options.Port == options.GrpcPort) return ValidateOptionsResult.Fail("http端口与grpc端口不能重复");
+            return ValidateOptionsResult.Success;
         }
     }
 }

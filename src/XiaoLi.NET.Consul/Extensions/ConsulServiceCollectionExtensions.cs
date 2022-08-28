@@ -16,11 +16,9 @@ namespace XiaoLi.NET.Consul.Extensions
         /// 添加Consul
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="configuration"></param>
-        public static void AddConsul(this IServiceCollection services, IConfiguration configuration)
+        public static void AddConsul(this IServiceCollection services)
         {
             var consulClientOptions = App.GetConfiguration<ConsulClientOptions>();
-            if (consulClientOptions == null) throw new ArgumentNullException(nameof(consulClientOptions));
             services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulConfig =>
             {
                 consulConfig.Address = consulClientOptions.Address;

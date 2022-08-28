@@ -12,11 +12,12 @@ namespace XiaoLi.NET.Consul
         /// <summary>
         /// Consul地址
         /// </summary>
-        public Uri Address { get; set; }
+        public Uri Address { get; set; } = new Uri("http://localhost:8500");
+
         /// <summary>
         /// 数据中心
         /// </summary>
-        public string Datacenter { get; set; }
+        public string Datacenter { get; set; } = "dc1";
 
         /// <summary>
         /// 配置文件名称（完整的Key）
@@ -25,7 +26,7 @@ namespace XiaoLi.NET.Consul
 
         public ValidateOptionsResult Validate(string name, ConsulClientOptions options)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (options.Address == default) return ValidateOptionsResult.Fail("consul地址为空");
 
             return ValidateOptionsResult.Success;
         }
