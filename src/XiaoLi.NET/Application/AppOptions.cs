@@ -8,14 +8,8 @@ using XiaoLi.NET.Configuration.Attributes;
 namespace XiaoLi.NET.Application
 {
     [Path("App")]
-    public class AppOptions : IAutoOptions<AppOptions>
+    public class AppOptions : IAutoPostOptions<AppOptions>
     {
-        // private readonly ILogger<AppOptions> _logger;
-        //
-        // public AppOptions(ILogger<AppOptions> logger)
-        // {
-        //     _logger = logger;
-        // }
         public string Name { get; set; }
         /// <summary>
         /// 排除程序集，不扫描
@@ -32,7 +26,7 @@ namespace XiaoLi.NET.Application
         /// </summary>
         public IEnumerable<string> ExternalAssemblies { get; set; } = Enumerable.Empty<string>();
 
-        public void PostConfigure(AppOptions options)
+        public void PostConfigure(string name, AppOptions options)
         {
             Console.WriteLine("jaaaaaaaaaaasdasd");
         }

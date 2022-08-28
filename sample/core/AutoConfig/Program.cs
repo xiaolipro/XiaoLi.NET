@@ -6,8 +6,19 @@
 // app.Run();
 
 
+using Microsoft.Extensions.Options;
+using XiaoLi.NET.Application;
 using XiaoLi.NET.Application.Extensions;
 
 var host = Host.CreateDefaultBuilder(args).ConfigureApp();
 
-host.Build().Run();
+var app = host.Build();
+
+
+var appOptions = app.Services.GetRequiredService<IOptions<AppOptions>>();
+var t = appOptions.Value;
+
+
+var appOptions2 = app.Services.GetRequiredService<IOptions<AppOptions>>();
+var t2 = appOptions.Value;
+app.Run();
