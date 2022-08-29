@@ -1,13 +1,13 @@
-# XiaoLi.NET
+
+### 介绍
+一点点关于点net的学习
+#### 克隆
 
 ```shell
 $ git clone https://gitee.com/antinew/XiaoLi.NET.git
 $ cd XiaoLi.NET
 $ dotnet restore
 ```
-
-### 介绍
-一点点关于点net的学习
 #### 框架基础能力
 - [x] 生命周期自动注入
 - [x] 配置项自动注入
