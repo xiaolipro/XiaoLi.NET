@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using XiaoLi.NET.Startup.Extensions;
 
 namespace XiaoLi.NET.Application.Internal
 {
@@ -13,7 +14,9 @@ namespace XiaoLi.NET.Application.Internal
         {
             return app =>
             {
-                InternalApp.UseStartups();
+                InternalApp.ServiceProvider = app.ApplicationServices;
+                app.UseStartups();
+                next(app);
             };
         }
     }

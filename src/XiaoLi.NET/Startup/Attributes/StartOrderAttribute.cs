@@ -1,15 +1,15 @@
 ﻿using System;
 
-namespace XiaoLi.NET.Application.Startup
+namespace XiaoLi.NET.Startup.Attributes
 {
     /// <summary>
     /// 启动顺序，降序
     /// </summary>
-    public class StartupOrderAttribute:Attribute
+    public class StartOrderAttribute:Attribute
     {
         public int Order { get; set; }
 
-        public StartupOrderAttribute(int order)
+        public StartOrderAttribute(int order)
         {
             Order = order;
         }

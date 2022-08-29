@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using XiaoLi.NET.Application.Startup;
+using XiaoLi.NET.Application.Hosting;
+using XiaoLi.NET.Startup;
 
 namespace XiaoLi.NET.Application.Internal
 {
@@ -15,15 +13,13 @@ namespace XiaoLi.NET.Application.Internal
     {
         internal static IHostEnvironment HostEnvironment;
         internal static IConfiguration Configuration;
-        internal static IServiceCollection Services;
         internal static IServiceProvider ServiceProvider;
 
-        private static IEnumerable<Type> _startups;
+        internal static IEnumerable<IAutoStart> Startups;
 
         internal static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
         {
-            string[] excludePrefixes = new[]
-            {
+            string[] excludePrefixes = {
                 /*
                  * 默认被加载
                  * appsettings.json
@@ -32,8 +28,7 @@ namespace XiaoLi.NET.Application.Internal
                 "appsettings"
             };
 
-            string[] excludeSuffixes = new[]
-            {
+            string[] excludeSuffixes = {
                 /*
                  * 应用程序依赖关系文件
                  * When a .NET application is compiled, the SDK generates a JSON manifest file (<ApplicationName>.deps.json)
@@ -76,9 +71,9 @@ namespace XiaoLi.NET.Application.Internal
             var jsonFiles = scanDirs
                 .SelectMany(dir => Directory.GetFiles(dir, "*.json", SearchOption.TopDirectoryOnly))
                 // 过滤前缀
-                .Where(file => !prefixes.Any(file.StartsWith))
-                // 过滤掉指定后缀的json文件
-                .Where(file => !suffixes.Any(file.EndsWith));
+                .Where(file => !prefixes.Any(Path.GetFileName(file).StartsWith))
+                // 过滤掉指定后缀
+                .Where(file => !suffixes.Any(Path.GetFileName(file).EndsWith));
 
             foreach (var file in jsonFiles)
             {
@@ -116,58 +111,8 @@ namespace XiaoLi.NET.Application.Internal
         }
 
 
-        internal static void AddStartups(this IServiceCollection services)
-        {
-            _startups = App.PublicTypes
-                .Where(x => typeof(IAutoStartup).IsAssignableFrom(x) && !x.IsAbstract).OrderByDescending(x =>
-                    x.IsDefined(typeof(StartupOrderAttribute), false)
-                        ? 0
-                        : x.GetCustomAttribute<StartupOrderAttribute>(false).Order);
-            
-            foreach (var startup in _startups)
-            {
-                // 公开的实例成员
-                var configureServicesMethods = startup.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    // 返回void且第一个参数是IServiceCollection
-                    .Where(method =>
-                    {
-                        if (method.ReturnType != typeof(void)) return false;
-                        var parameters = method.GetParameters();
-                        if (parameters.Length == 0) return false;
-                        return parameters.First().ParameterType == typeof(IApplicationBuilder);
-                    });
+        
 
-                // 调用Configure
-                foreach (var configureServices in configureServicesMethods)
-                {
-                    configureServices.Invoke(startup, new object[] { services });
-                }
-            }
-        }
-
-        internal static void UseStartups()
-        {
-            foreach (var startup in _startups)
-            {
-                // 公开的实例成员
-                var configureMethods = startup.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    // 返回void且第一个参数是IApplicationBuilder
-                    .Where(method =>
-                    {
-                        if (method.ReturnType != typeof(void)) return false;
-                        var parameters = method.GetParameters();
-                        if (parameters.Length == 0) return false;
-                        return parameters.First().ParameterType == typeof(IApplicationBuilder);
-                    });
-
-                // 调用Configure
-                foreach (var configure in configureMethods)
-                {
-                    var parameters = configure.GetParameters()
-                        .Select(parameter => ServiceProvider.GetRequiredService(parameter.ParameterType));
-                    configure.Invoke(startup, parameters.ToArray());
-                }
-            }
-        }
+        
     }
 }

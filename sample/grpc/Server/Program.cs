@@ -6,7 +6,7 @@ using XiaoLi.NET.Consul.Extensions;
 using XiaoLi.NET.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.InitApp();
+builder.WebHost.InitWebApp();
 
 // Additional configuration is required to successfully run gRPC on macOS.
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682

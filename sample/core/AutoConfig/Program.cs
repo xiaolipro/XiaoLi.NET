@@ -12,7 +12,7 @@ using XiaoLi.NET.Application;
 using XiaoLi.NET.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.InitApp().ConfigureServices(services =>
+builder.WebHost.InitWebApp().ConfigureServices(services =>
 {
     services.AddMvc();
 });
