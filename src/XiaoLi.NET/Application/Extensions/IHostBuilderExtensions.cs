@@ -44,6 +44,7 @@ namespace XiaoLi.NET.Application.Extensions
                     // 添加依赖注入
                     services.AddDependencyInjection();
                     
+                    // 添加Startup
                     services.AddStartups();
                 }));
 
