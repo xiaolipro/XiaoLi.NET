@@ -30,6 +30,5 @@ namespace XiaoLi.NET.Application
         {
             Console.WriteLine("jaaaaaaaaaaasdasd");
         }
-
     }
 }

@@ -20,7 +20,7 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <returns></returns>
         public static IApplicationBuilder UseHealthCheckForConsul(this IApplicationBuilder app)
         {
-            var consulRegisterOptions = App.GetConfiguration<ConsulRegisterOptions>();
+            var consulRegisterOptions = App.GetOptions<ConsulRegisterOptions>();
 
             // 心跳检测
             app.Map($"/{consulRegisterOptions.HealthCheckRoute.Trim('/')}", builder =>

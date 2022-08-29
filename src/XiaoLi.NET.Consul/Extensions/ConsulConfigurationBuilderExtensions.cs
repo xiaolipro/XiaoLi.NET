@@ -16,7 +16,7 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <exception cref="ArgumentNullException">未配置</exception>
         public static IConfigurationRoot AddConsulConfiguration(this IConfigurationBuilder builder)
         {
-            var consulClientOptions = App.GetConfiguration<ConsulClientOptions>();
+            var consulClientOptions = App.GetOptions<ConsulClientOptions>();
             
             // 加载Consul上的配置文件
             builder.AddConsul(consulClientOptions.ConfigFileName, sources =>

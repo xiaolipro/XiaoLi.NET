@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -19,9 +21,9 @@ namespace XiaoLi.NET.Application
     public static class App
     {
         /// <summary>
-        /// 基础配置AppSettings
+        /// App配置
         /// </summary>
-        public static AppOptions Settings => GetConfiguration<AppOptions>("AppSettings");
+        public static AppOptions AppOptions => GetOptions<AppOptions>();
 
         /// <summary>
         /// 获取主机环境
@@ -29,9 +31,14 @@ namespace XiaoLi.NET.Application
         public static IHostEnvironment HostEnvironment => InternalApp.HostEnvironment;
 
         /// <summary>
-        /// 所有配置
+        /// 配置中心
         /// </summary>
         public static IConfiguration Configuration => InternalApp.Configuration;
+
+        /// <summary>
+        /// 服务供应商
+        /// </summary>
+        public static IServiceProvider ServiceProvider => InternalApp.ServiceProvider;
 
         /// <summary>
         /// 所有程序集
@@ -49,12 +56,12 @@ namespace XiaoLi.NET.Application
         public static readonly IEnumerable<Type> PublicTypes;
 
         /// <summary>
-        /// 获取配置，找不到会默认调用并返回new()
+        /// 获取配置，找不到会默认调用new()并返回
         /// </summary>
         /// <param name="path"></param>
         /// <typeparam name="TOptions"></typeparam>
         /// <returns></returns>
-        public static TOptions GetConfiguration<TOptions>(string path = "")
+        public static TOptions GetOptions<TOptions>(string path = "")
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -121,12 +128,12 @@ namespace XiaoLi.NET.Application
             var assemblies = DependencyContext.Default.RuntimeLibraries
                 .Where(lib =>
                 {
-                    if (lib.Type.Equals("project") && !Settings.ExcludeAssemblies.Any(x => lib.Name.EndsWith(x)))
+                    if (lib.Type.Equals("project") && !AppOptions.ExcludeAssemblies.Any(x => lib.Name.EndsWith(x)))
                         return true;
                     if (lib.Type.Equals("package"))
                     {
                         if (lib.Name.StartsWith(nameof(XiaoLi))) return true;
-                        if (Settings.SupportPackagePrefixes.Any(x => lib.Name.StartsWith(x))) return true;
+                        if (AppOptions.SupportPackagePrefixes.Any(x => lib.Name.StartsWith(x))) return true;
                     }
 
                     return false;
@@ -134,7 +141,7 @@ namespace XiaoLi.NET.Application
 
                 .Select(lib => Assembly.Load(lib.Name));
             // 加载外部程序集
-            var externalAssemblies = Settings.ExternalAssemblies
+            var externalAssemblies = AppOptions.ExternalAssemblies
                 .Select(externalAssembly
                     => Path.Combine(AppContext.BaseDirectory,
                         externalAssembly.EndsWith(".dll") ? externalAssembly : externalAssembly + ".dll"))

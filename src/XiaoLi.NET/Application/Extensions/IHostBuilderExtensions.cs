@@ -43,6 +43,8 @@ namespace XiaoLi.NET.Application.Extensions
                     
                     // 添加依赖注入
                     services.AddDependencyInjection();
+                    
+                    services.AddStartups();
                 }));
 
             return builder;
