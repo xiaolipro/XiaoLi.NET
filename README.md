@@ -1,6 +1,8 @@
 
 ### 介绍
 一点点关于点net的学习
+#### 请帮帮我
+- [ ] 版本兼容问题
 #### 克隆
 
 ```shell
@@ -16,17 +18,15 @@ $ dotnet restore
 - [ ] 模型自动映射
 - [ ] 模型验证器
 
-#### 拓展能力
+### 拓展能力
 - [x] Consul服务发现与注册
 - [x] Grpc客户端负载均衡
 - [x] RabbitMQ分布式事件总线
 - [x] skywalking分布式链路追踪，支持grpc
 
-#### 困境
-- [ ] 版本兼容问题
 
-### Grpc设计
+#### Grpc设计
 ![输入图片说明](img/grpc.jpg)
 
-### Skywalking效果图
+#### Skywalking效果图
 ![输入图片说明](img/skywalking.png)
