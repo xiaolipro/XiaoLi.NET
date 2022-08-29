@@ -12,10 +12,19 @@ using XiaoLi.NET.Application;
 using XiaoLi.NET.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.InitApp();
+builder.Host.InitApp().ConfigureServices(services =>
+{
+    services.AddMvc();
+});
 var app = builder.Build();
 
+app.MapGet("/", () => "Hello World!");
 
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapDefaultControllerRoute();
+});
 var appOptions = app.Services.GetRequiredService<IOptions<TestValidateOptions>>();
 var t = appOptions.Value;
 

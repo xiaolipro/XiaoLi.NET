@@ -18,11 +18,7 @@ namespace XiaoLi.NET.Application.Internal
         internal static IServiceCollection Services;
         internal static IServiceProvider ServiceProvider;
 
-        private static IEnumerable<Type> _startups = App.PublicTypes
-            .Where(x => typeof(IAutoStartup).IsAssignableFrom(x) && !x.IsAbstract).OrderByDescending(x =>
-                x.IsDefined(typeof(StartupOrderAttribute), false)
-                    ? 0
-                    : x.GetCustomAttribute<StartupOrderAttribute>(false).Order);
+        private static IEnumerable<Type> _startups;
 
         internal static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
         {
@@ -122,6 +118,12 @@ namespace XiaoLi.NET.Application.Internal
 
         internal static void AddStartups(this IServiceCollection services)
         {
+            _startups = App.PublicTypes
+                .Where(x => typeof(IAutoStartup).IsAssignableFrom(x) && !x.IsAbstract).OrderByDescending(x =>
+                    x.IsDefined(typeof(StartupOrderAttribute), false)
+                        ? 0
+                        : x.GetCustomAttribute<StartupOrderAttribute>(false).Order);
+            
             foreach (var startup in _startups)
             {
                 // 公开的实例成员
