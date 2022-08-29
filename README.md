@@ -1,7 +1,9 @@
 # XiaoLi.NET
 
 ```shell
-git clone https://gitee.com/antinew/XiaoLi.NET.git
+$ git clone https://gitee.com/antinew/XiaoLi.NET.git
+$ cd XiaoLi.NET
+$ dotnet restore
 ```
 
 ### 介绍
