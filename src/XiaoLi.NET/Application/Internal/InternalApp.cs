@@ -13,7 +13,6 @@ namespace XiaoLi.NET.Application.Internal
     internal static class InternalApp
     {
         internal static IHostEnvironment HostEnvironment;
-        
 #if NETCOREAPP3_0_OR_GREATER
         internal static IWebHostEnvironment WebHostEnvironment;
 #else
@@ -113,7 +112,7 @@ namespace XiaoLi.NET.Application.Internal
             return hostEnvironment;
         }
 
-        
+
         internal static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
         {
             string env = hostEnvironment.EnvironmentName;
@@ -132,12 +131,14 @@ namespace XiaoLi.NET.Application.Internal
 
         private static bool VaildateJsonFile(string file)
         {
-            var arr = file.Split('.');
+            string fileName = Path.GetFileName(file);
+            var arr = fileName.Split('.');
 
             if (arr.Length == 2) return true;
             if (arr.Any(string.IsNullOrWhiteSpace)) return false;
 
-            return file.EndsWith($".{HostEnvironment.EnvironmentName}.json");
+            return fileName.EndsWith(
+                $".{HostEnvironment?.EnvironmentName ?? WebHostEnvironment!.EnvironmentName}.json");
         }
     }
 }
