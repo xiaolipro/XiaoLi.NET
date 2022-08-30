@@ -14,7 +14,7 @@ using XiaoLi.NET.Startup.Extensions;
 namespace XiaoLi.NET.Application.Extensions
 {
     /// <summary>
-    /// 支持WebHost/Host
+    /// App主机拓展，支持WebHost/Host
     /// </summary>
     public static class AppHostBuilderExtensions
     {

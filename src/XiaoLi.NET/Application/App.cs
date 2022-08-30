@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using XiaoLi.NET.Application.Internal;
 using XiaoLi.NET.Configuration.Attributes;
 using XiaoLi.NET.Helpers;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace XiaoLi.NET.Application
 {
@@ -26,9 +26,19 @@ namespace XiaoLi.NET.Application
         public static AppSettingsOptions Settings => GetOptions<AppSettingsOptions>();
 
         /// <summary>
-        /// 获取主机环境
+        /// 泛型主机环境
         /// </summary>
         public static IHostEnvironment HostEnvironment => InternalApp.HostEnvironment;
+        
+        /// <summary>
+        /// Web主机环境
+        /// </summary>
+#if NETCOREAPP3_0_OR_GREATER
+        public static IWebHostEnvironment WebHostEnvironment => InternalApp.WebHostEnvironment;
+#else
+        [Obsolete("Obsolete")]
+        public static IHostingEnvironment WebHostEnvironment => InternalApp.WebHostEnvironment;
+#endif
 
         /// <summary>
         /// 配置中心
