@@ -99,32 +99,14 @@ namespace XiaoLi.NET.Application.Internal
         internal static IHostingEnvironment ResolveWebEnvironmentVariables(IHostingEnvironment hostEnvironment)
         {
 #endif
-            string env = hostEnvironment.EnvironmentName;
-            if (string.IsNullOrWhiteSpace(env))
-            {
-                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
-
-                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
-
-                hostEnvironment.EnvironmentName = env;
-            }
-
+            hostEnvironment.EnvironmentName ??= Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "UnKnown";
             return hostEnvironment;
         }
 
 
         internal static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
         {
-            string env = hostEnvironment.EnvironmentName;
-            if (string.IsNullOrWhiteSpace(env))
-            {
-                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
-
-                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
-
-                hostEnvironment.EnvironmentName = env;
-            }
-
+            hostEnvironment.EnvironmentName ??= Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "UnKnown";
             return hostEnvironment;
         }
 
