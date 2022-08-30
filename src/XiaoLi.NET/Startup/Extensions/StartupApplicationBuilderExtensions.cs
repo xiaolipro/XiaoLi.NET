@@ -8,6 +8,11 @@ namespace XiaoLi.NET.Startup.Extensions
 {
     public static class StartupApplicationBuilderExtensions
     {
+        
+        /// <summary>
+        /// 调用所有IAutoStart 公开的实例成员中返回void且第一个参数是IApplicationBuilder的方法
+        /// </summary>
+        /// <param name="app"></param>
         internal static void UseStartups(this IApplicationBuilder app)
         {
             foreach (var startup in InternalApp.Startups.Reverse())
