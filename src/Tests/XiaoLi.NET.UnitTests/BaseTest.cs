@@ -67,5 +67,30 @@ namespace XiaoLi.NET.UnitTests
                 _testOutputHelper.WriteLine(2.ToString());
             }
         }
+        
+        [Fact]
+        public void String_Test()
+        {
+            string origin = "123";
+            var p1 = origin.GetHashCode();
+            ProcessRef(ref origin);
+            Process(origin);
+            var p2 = origin.GetHashCode();
+            string str = "123";
+            var p3 = str.GetHashCode();
+            Assert.Equal("123A",origin);
+            Assert.True(p1 == p3);
+            // Assert.True(origin.Equals(str));
+        }
+
+        private void ProcessRef(ref string origin)
+        {
+            origin += "A";
+        }
+        
+        private void Process(string origin)
+        {
+            origin += "A";
+        }
     }
 }
