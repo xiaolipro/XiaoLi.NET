@@ -23,7 +23,7 @@ namespace XiaoLi.NET.Application
         /// <summary>
         /// App配置
         /// </summary>
-        public static AppOptions AppOptions => GetOptions<AppOptions>();
+        public static AppSettingsOptions Settings => GetOptions<AppSettingsOptions>();
 
         /// <summary>
         /// 获取主机环境
@@ -128,12 +128,12 @@ namespace XiaoLi.NET.Application
             var assemblies = DependencyContext.Default.RuntimeLibraries
                 .Where(lib =>
                 {
-                    if (lib.Type.Equals("project") && !AppOptions.ExcludeAssemblies.Any(x => lib.Name.EndsWith(x)))
+                    if (lib.Type.Equals("project") && !Settings.ExcludeAssemblies.Any(x => lib.Name.EndsWith(x)))
                         return true;
                     if (lib.Type.Equals("package"))
                     {
                         if (lib.Name.StartsWith(nameof(XiaoLi))) return true;
-                        if (AppOptions.SupportPackagePrefixes.Any(x => lib.Name.StartsWith(x))) return true;
+                        if (Settings.SupportPackagePrefixes.Any(x => lib.Name.StartsWith(x))) return true;
                     }
 
                     return false;
@@ -141,7 +141,7 @@ namespace XiaoLi.NET.Application
 
                 .Select(lib => Assembly.Load(lib.Name));
             // 加载外部程序集
-            var externalAssemblies = AppOptions.ExternalAssemblies
+            var externalAssemblies = Settings.ExternalAssemblies
                 .Select(externalAssembly
                     => Path.Combine(AppContext.BaseDirectory,
                         externalAssembly.EndsWith(".dll") ? externalAssembly : externalAssembly + ".dll"))

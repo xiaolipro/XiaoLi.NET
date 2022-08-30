@@ -4,7 +4,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using XiaoLi.NET.Application.Hosting;
 using XiaoLi.NET.Application.Internal;
 using XiaoLi.NET.Configuration.Extensions;
 using XiaoLi.NET.DependencyInjection.Extensions;
@@ -15,12 +14,12 @@ using XiaoLi.NET.Startup.Extensions;
 namespace XiaoLi.NET.Application.Extensions
 {
     /// <summary>
-    /// 2.1, 2.2, 3.0, 3.1, 5, 6, 7 Preview 7
+    /// 支持WebHost/Host
     /// </summary>
     public static class AppHostBuilderExtensions
     {
         /// <summary>
-        /// 使用框架App
+        /// 初始化Web主机 1.0+
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
@@ -30,7 +29,12 @@ namespace XiaoLi.NET.Application.Extensions
                 .ConfigureAppConfiguration((context, configurationBuilder) =>
                 {
                     // 解析环境变量
-                    InternalApp.HostEnvironment = default;//InternalApp.ResolveEnvironmentVariables(context.HostingEnvironment);
+#if NETCOREAPP3_0_OR_GREATER
+                    InternalApp.WebHostEnvironment = InternalApp.ResolveWebEnvironmentVariables(context.HostingEnvironment);
+#else
+                    InternalApp.WebHostEnvironment =
+                        InternalApp.ResolveWebEnvironmentVariables(context.HostingEnvironment);
+#endif
                     
                     // 服务配置
                     InternalApp.Configuration = context.Configuration;
@@ -39,7 +43,7 @@ namespace XiaoLi.NET.Application.Extensions
                     InternalApp.Startups = App.PublicTypes
                         .Where(x => typeof(IAutoStart).IsAssignableFrom(x) && !x.IsAbstract).OrderByDescending(x =>
                             x.IsDefined(typeof(StartOrderAttribute), false)
-                                ? x.GetCustomAttribute<StartOrderAttribute>(false).Order
+                                ? x.GetCustomAttribute<StartOrderAttribute>(false)!.Order
                                 : 0)
                         .Select(x => Activator.CreateInstance(x) as IAutoStart);
 
@@ -50,8 +54,53 @@ namespace XiaoLi.NET.Application.Extensions
                 {
                     // 管道模型
                     services.AddTransient<IStartupFilter, InternalStartupFilter>();
-                    // // 初始化根服务
-                    // services.AddHostedService<InternalHostedService>();
+
+                    // 添加Options
+                    services.AddAutoOptions();
+
+                    // 添加依赖注入
+                    services.AddDependencyInjection();
+
+                    // 添加Startup
+                    services.AddStartups();
+                });
+
+            return builder;
+        }
+
+
+        
+        /// <summary>
+        /// 初始化泛型主机 2.1+
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IHostBuilder InitApp(this IHostBuilder builder)
+        {
+            builder
+                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                {
+                    // 解析环境变量
+                    InternalApp.HostEnvironment = InternalApp.ResolveEnvironmentVariables(context.HostingEnvironment);
+                    
+                    // 服务配置
+                    InternalApp.Configuration = context.Configuration;
+                    
+                    // Startup
+                    InternalApp.Startups = App.PublicTypes
+                        .Where(x => typeof(IAutoStart).IsAssignableFrom(x) && !x.IsAbstract).OrderByDescending(x =>
+                            x.IsDefined(typeof(StartOrderAttribute), false)
+                                ? x.GetCustomAttribute<StartOrderAttribute>(false)!.Order
+                                : 0)
+                        .Select(x => Activator.CreateInstance(x) as IAutoStart);
+
+                    // 添加json配置文件
+                    InternalApp.AddJsonFiles(configurationBuilder);
+                })
+                .ConfigureServices(services =>
+                {
+                    // 启动主机服务
+                    services.AddHostedService<InternalHostedService>();
 
                     // 添加Options
                     services.AddAutoOptions();

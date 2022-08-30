@@ -43,6 +43,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoConfig", "sample\core\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoStartup", "sample\core\AutoStartup\AutoStartup.csproj", "{4C62A5DA-87AC-4285-B952-C27401DFC62B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{158A2744-586A-49A5-844D-83884AD1D1AF}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+		global.json = global.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

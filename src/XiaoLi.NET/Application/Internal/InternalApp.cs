@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using XiaoLi.NET.Application.Hosting;
 using XiaoLi.NET.Startup;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace XiaoLi.NET.Application.Internal
 {
     internal static class InternalApp
     {
         internal static IHostEnvironment HostEnvironment;
+        
+#if NETCOREAPP3_0_OR_GREATER
+        internal static IWebHostEnvironment WebHostEnvironment;
+#else
+        internal static IHostingEnvironment WebHostEnvironment;
+#endif
         internal static IConfiguration Configuration;
         internal static IServiceProvider ServiceProvider;
 
@@ -19,7 +26,8 @@ namespace XiaoLi.NET.Application.Internal
 
         internal static void AddJsonFiles(IConfigurationBuilder configurationBuilder)
         {
-            string[] excludePrefixes = {
+            string[] excludePrefixes =
+            {
                 /*
                  * 默认被加载
                  * appsettings.json
@@ -28,7 +36,8 @@ namespace XiaoLi.NET.Application.Internal
                 "appsettings"
             };
 
-            string[] excludeSuffixes = {
+            string[] excludeSuffixes =
+            {
                 /*
                  * 应用程序依赖关系文件
                  * When a .NET application is compiled, the SDK generates a JSON manifest file (<ApplicationName>.deps.json)
@@ -84,6 +93,27 @@ namespace XiaoLi.NET.Application.Internal
             }
         }
 
+#if NETCOREAPP3_0_OR_GREATER
+        internal static IWebHostEnvironment ResolveWebEnvironmentVariables(IWebHostEnvironment hostEnvironment)
+        {
+#else
+        internal static IHostingEnvironment ResolveWebEnvironmentVariables(IHostingEnvironment hostEnvironment)
+        {
+#endif
+            string env = hostEnvironment.EnvironmentName;
+            if (string.IsNullOrWhiteSpace(env))
+            {
+                env = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
+
+                if (string.IsNullOrWhiteSpace(env)) throw new Exception("无法解析当前环境变量，请检查NETCORE_ENVIRONMENT");
+
+                hostEnvironment.EnvironmentName = env;
+            }
+
+            return hostEnvironment;
+        }
+
+        
         internal static IHostEnvironment ResolveEnvironmentVariables(IHostEnvironment hostEnvironment)
         {
             string env = hostEnvironment.EnvironmentName;
@@ -109,10 +139,5 @@ namespace XiaoLi.NET.Application.Internal
 
             return file.EndsWith($".{HostEnvironment.EnvironmentName}.json");
         }
-
-
-        
-
-        
     }
 }

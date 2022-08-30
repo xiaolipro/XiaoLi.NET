@@ -15,8 +15,7 @@ public class TestController:ControllerBase
         _logger = logger;
         _options = options;
     }
-
-
+    
     [HttpGet]
     public string GetValidateOptions()
     {

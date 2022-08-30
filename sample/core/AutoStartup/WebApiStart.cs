@@ -25,7 +25,7 @@ public class WebApiStart:IAutoStart
     }
 
 
-    public void SB(IApplicationBuilder app, IHostEnvironment env,IHostingEnvironment environment)
+    public void SB(IApplicationBuilder app, IHostEnvironment env)
     {
         // Configure the HTTP request pipeline.
         if (env.IsDevelopment())

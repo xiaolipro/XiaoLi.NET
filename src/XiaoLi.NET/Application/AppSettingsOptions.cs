@@ -8,7 +8,7 @@ using XiaoLi.NET.Configuration.Attributes;
 namespace XiaoLi.NET.Application
 {
     [Path("App")]
-    public class AppOptions : IAutoPostOptions<AppOptions>
+    public class AppSettingsOptions : IAutoPostOptions<AppSettingsOptions>
     {
         public string Name { get; set; }
         /// <summary>
@@ -26,7 +26,7 @@ namespace XiaoLi.NET.Application
         /// </summary>
         public IEnumerable<string> ExternalAssemblies { get; set; } = Enumerable.Empty<string>();
 
-        public void PostConfigure(string name, AppOptions options)
+        public void PostConfigure(string name, AppSettingsOptions settingsOptions)
         {
             Console.WriteLine("jaaaaaaaaaaasdasd");
         }
