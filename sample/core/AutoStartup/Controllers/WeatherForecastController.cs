@@ -1,9 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoStartup.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("[controller]/[action]")]
 public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
@@ -28,5 +29,27 @@ public class WeatherForecastController : ControllerBase
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+    }
+
+
+    [HttpPost]
+    public Output GetDt(Input input)
+    {
+        return new Output()
+        {
+            time = input.time,
+            time2 = input.time2
+        };
+    }
+    public class Output
+    {
+        public DateTime? time { get; set; }
+        public DateTime time2 { get; set; }
+    }
+    public class Input
+    {
+        public string Name { get; set; }
+        public DateTime? time { get; set; }
+        public DateTime time2 { get; set; }
     }
 }

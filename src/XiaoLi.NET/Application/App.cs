@@ -148,7 +148,6 @@ namespace XiaoLi.NET.Application
 
                     return false;
                 })
-
                 .Select(lib => Assembly.Load(lib.Name));
             // 加载外部程序集
             var externalAssemblies = Settings.ExternalAssemblies
