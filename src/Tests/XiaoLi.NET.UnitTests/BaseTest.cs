@@ -4,6 +4,10 @@ using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests
 {
+    enum Colors
+    {
+        Red, White        
+    }
     public class BaseTest
     {
         private readonly ITestOutputHelper _testOutputHelper;
@@ -11,6 +15,13 @@ namespace XiaoLi.NET.UnitTests
         public BaseTest(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
+        }
+        
+        [Fact]
+        public void Enum_ToString_Test()
+        {
+            _testOutputHelper.WriteLine(Colors.White.ToString());
+            _testOutputHelper.WriteLine(((int)Colors.White).ToString());
         }
 
         [Fact]

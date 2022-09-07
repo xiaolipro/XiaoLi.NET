@@ -21,7 +21,8 @@ public class Startup
         services.AddHostedService<Worker>();
         services.AddSingleton<IGreetRepository, GreetRepository>();
         services.Configure<ConsulClientOptions>(Configuration.GetSection("ConsulClient"));
-        services.AddGrpcLoadBalancingClient<Tester.TesterClient, ConsulGrpcResolver, RandomBalancer>("TestService");
+        services.AddGrpcClientLoadBalancer<ConsulGrpcResolver, RandomBalancer>();
+        services.AddGrpcLoadBalancingClient<Tester.TesterClient>("TestService");
     }
 
     public void Configure(IApplicationBuilder app)

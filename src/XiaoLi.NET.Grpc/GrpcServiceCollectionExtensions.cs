@@ -18,34 +18,30 @@ namespace XiaoLi.NET.Grpc
         /// 添加Grpc负载均衡客户端
         /// </summary>
         /// <typeparam name="TClient"></typeparam>
-        /// <typeparam name="TResolver"></typeparam>
-        /// <typeparam name="TBalancer"></typeparam>
         /// <param name="services"></param>
         /// <param name="address"></param>
-        public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient, TResolver, TBalancer>(
+        public static IHttpClientBuilder AddGrpcLoadBalancingClient<TClient>(
             this IServiceCollection services, string address)
             where TClient : class
-            where TResolver : class, IResolver
-            where TBalancer : class, IBalancer
         {
-            services.AddGrpcClientLoadBalancer<TResolver, TBalancer>();
-
             services.TryAddSingleton(typeof(ClientLogInterceptor));
             services.TryAddSingleton(typeof(ClientExceptionInterceptor));
+
+            var sp = services.BuildServiceProvider();
             return services
                 .AddGrpcClient<TClient>(options =>
                 {
-                    options.Address = new Uri($"{typeof(TResolver).Name}://" + address);
+                    options.Address = new Uri($"{sp.GetRequiredService<IResolver>().Name}://" + address);
                 })
                 .ConfigureChannel(options =>
                 {
                     options.Credentials = ChannelCredentials.Insecure;
                     options.ServiceConfig = new ServiceConfig
-                        { LoadBalancingConfigs = { new LoadBalancingConfig(typeof(TBalancer).Name) } };
-                    options.ServiceProvider = services.BuildServiceProvider();
+                        { LoadBalancingConfigs = { new LoadBalancingConfig(sp.GetRequiredService<IBalancer>().Name) } };
+                    options.ServiceProvider = sp;
                 })
-                .AddInterceptor<ClientLogInterceptor>()
                 .AddInterceptor<ClientExceptionInterceptor>()
+                .AddInterceptor<ClientLogInterceptor>()
                 .AddInterceptor<ClientDiagnosticInterceptor>();
         }
 
@@ -72,7 +68,7 @@ namespace XiaoLi.NET.Grpc
         /// <typeparam name="TResolver"></typeparam>
         /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
-        private static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
+        public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
             this IServiceCollection services)
             where TResolver : class, IResolver
             where TBalancer : class, IBalancer
