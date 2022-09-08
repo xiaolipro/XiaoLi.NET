@@ -26,6 +26,10 @@ public static class GrpcServiceCollectionExtensions
         this IServiceCollection services, string address, bool toApm = true)
         where TClient : class
     {
+        services.TryAddSingleton<IBackoffPolicyFactory, CustomBackoffPolicyFactory>();
+        services.TryAddSingleton<ResolverFactory, CustomResolverFactory>();
+        services.TryAddSingleton<LoadBalancerFactory, CustomBalancerFactory>();
+        
         services.TryAddSingleton(typeof(ClientLoggerInterceptor));
 
         var serviceConfig = new ServiceConfig()
@@ -108,30 +112,6 @@ public static class GrpcServiceCollectionExtensions
             options.Interceptors.Add<ServerLogInterceptor>();
             options.Interceptors.Add<ServerDiagnosticInterceptor>();
         });
-
-        return services;
-    }
-
-    /// <summary>
-    /// 添加Grpc客户端负载均衡器
-    /// </summary>
-    /// <param name="services"></param>
-    /// <typeparam name="TResolver"></typeparam>
-    /// <typeparam name="TBalancer"></typeparam>
-    /// <returns></returns>
-    public static IServiceCollection AddGrpcClientLoadBalancer<TResolver, TBalancer>(
-        this IServiceCollection services)
-        where TResolver : class, IResolver
-        where TBalancer : class, IBalancer
-    {
-        services.Replace(new ServiceDescriptor(typeof(IBalancer), typeof(TBalancer),
-            ServiceLifetime.Singleton));
-        services.Replace(new ServiceDescriptor(typeof(IResolver), typeof(TResolver),
-            ServiceLifetime.Singleton));
-
-        services.TryAddSingleton<IBackoffPolicyFactory, CustomBackoffPolicyFactory>();
-        services.TryAddSingleton<ResolverFactory, CustomResolverFactory>();
-        services.TryAddSingleton<LoadBalancerFactory, CustomBalancerFactory>();
 
         return services;
     }
