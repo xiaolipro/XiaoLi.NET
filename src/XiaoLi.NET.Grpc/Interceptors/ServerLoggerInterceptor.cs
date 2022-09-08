@@ -43,7 +43,6 @@ public class ServerLogInterceptor : Interceptor
         }
         catch (Exception e)
         {
-            WriteErrorLog(e);
             throw new GrpcException(e.Message);
         }
     }
@@ -69,7 +68,6 @@ public class ServerLogInterceptor : Interceptor
         }
         catch (Exception e)
         {
-            WriteErrorLog(e);
             throw new GrpcException(e.Message);
         }
     }
@@ -97,7 +95,6 @@ public class ServerLogInterceptor : Interceptor
         }
         catch (Exception e)
         {
-            WriteErrorLog(e);
             throw new GrpcException(e.Message);
         }
     }
@@ -125,7 +122,6 @@ public class ServerLogInterceptor : Interceptor
         }
         catch (Exception e)
         {
-            WriteErrorLog(e);
             throw new GrpcException(e.Message);
         }
     }

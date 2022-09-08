@@ -6,9 +6,9 @@ using Grpc.Net.Client.Balancer;
 using Microsoft.Extensions.Logging;
 using XiaoLi.NET.LoadBalancing;
 
-namespace XiaoLi.NET.Grpc.LoadBalancingFactories;
+namespace XiaoLi.NET.Grpc.Factories;
 
-public class CustomResolverFactory : ResolverFactory
+internal class CustomResolverFactory : ResolverFactory
 {
     private readonly IResolver _resolver;
     private readonly IBackoffPolicyFactory _backoffPolicyFactory;

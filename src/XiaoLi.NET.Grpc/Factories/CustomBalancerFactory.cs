@@ -5,9 +5,9 @@ using Grpc.Net.Client.Balancer;
 using Microsoft.Extensions.Logging;
 using XiaoLi.NET.LoadBalancing;
 
-namespace XiaoLi.NET.Grpc.LoadBalancingFactories;
+namespace XiaoLi.NET.Grpc.Factories;
 
-public class CustomBalancerFactory : LoadBalancerFactory
+internal class CustomBalancerFactory : LoadBalancerFactory
 {
     private readonly IBalancer _balancer;
     public override string Name => _balancer.Name;
