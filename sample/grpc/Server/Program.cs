@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Server.Services;
 using XiaoLi.NET.Application.Extensions;
 using XiaoLi.NET.Consul.Extensions;
+using XiaoLi.NET.Extensions;
 using XiaoLi.NET.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,5 +51,5 @@ app.MapGet("/",
         "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 // 心跳检测
 // app.MapGet($"/hc", () => $"Healthily {DateTime.Now:yyyy-MM-dd HH:mm:ss fff}");
-app.UseHealthCheckForConsul();
+app.UseHealthCheck();
 app.Run();

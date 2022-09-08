@@ -12,7 +12,7 @@ namespace XiaoLi.NET.LoadBalancing.Extensions
         /// <typeparam name="TResolver"></typeparam>
         /// <typeparam name="TBalancer"></typeparam>
         /// <returns></returns>
-        public static IServiceCollection AddClientLoadBalancer<TResolver, TBalancer>(
+        public static IServiceCollection AddLoadBalancer<TResolver, TBalancer>(
             this IServiceCollection services)
             where TResolver : class, IResolver
             where TBalancer : class, IBalancer

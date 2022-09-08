@@ -10,7 +10,6 @@ namespace XiaoLi.NET.Application
     [Path("App")]
     public class AppSettingsOptions : IAutoPostOptions<AppSettingsOptions>
     {
-        public string Name { get; set; }
         /// <summary>
         /// 排除程序集，不扫描
         /// </summary>
