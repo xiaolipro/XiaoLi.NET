@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using XiaoLi.NET.Grpc.IntegrationTests.Services;
 using XiaoLi.NET.Grpc.Interceptors;
@@ -13,7 +12,6 @@ public class Startup
         services.AddGrpc(options =>
         {
             options.EnableDetailedErrors = true;
-            options.Interceptors.Add<ServerExceptionInterceptor>();
             options.Interceptors.Add<ServerLogInterceptor>();
         });
 

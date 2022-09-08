@@ -41,9 +41,17 @@ public class Worker : BackgroundService
         {
             count++;
 
-            var reply = await _client.SayHelloUnaryAsync(new HelloRequest { Name = $"Worker {count}" }, cancellationToken: stoppingToken);
-
-            _greetRepository.SaveGreeting(reply.Message);
+            try
+            {
+                var reply = await _client.SayHelloUnaryAsync(new HelloRequest { Name = $"Worker {count}" }, cancellationToken: stoppingToken);
+                
+                _greetRepository.SaveGreeting(reply.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                // throw;
+            }
 
             await Task.Delay(1000, stoppingToken);
         }

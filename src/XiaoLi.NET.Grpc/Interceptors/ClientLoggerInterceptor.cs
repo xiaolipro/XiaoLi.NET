@@ -1,6 +1,7 @@
 ﻿using Grpc.Core.Interceptors;
 using Grpc.Core;
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace XiaoLi.NET.Grpc.Interceptors
@@ -12,11 +13,11 @@ namespace XiaoLi.NET.Grpc.Interceptors
     /// <para>Description see: https://docs.microsoft.com/zh-cn/aspnet/core/grpc/interceptors?view=aspnetcore-6.0</para>
     /// <para>Impl see: https://github.com/grpc/grpc-dotnet/blob/master/examples/Interceptor/Server/ServerLoggerInterceptor.cs</para>
     /// </remarks>
-    public class ClientLogInterceptor : Interceptor
+    public class ClientLoggerInterceptor : Interceptor
     {
-        private readonly ILogger<ClientLogInterceptor> _logger;
+        private readonly ILogger<ClientLoggerInterceptor> _logger;
 
-        public ClientLogInterceptor(ILogger<ClientLogInterceptor> logger)
+        public ClientLoggerInterceptor(ILogger<ClientLoggerInterceptor> logger)
         {
             _logger = logger;
         }
@@ -42,8 +43,16 @@ namespace XiaoLi.NET.Grpc.Interceptors
             WriteLog(context);
             AddCallerMetadata(ref context);
 
-            // => return continuation(request, context);
-            return base.BlockingUnaryCall(request, context, continuation);
+            try
+            {
+                // => return continuation(request, context);
+                return base.BlockingUnaryCall(request, context, continuation);
+            }
+            catch (Exception e)
+            {
+                WriteErrorLog(e);
+                throw new GrpcException(e.Message,e.InnerException);
+            }
         }
 
 
@@ -63,9 +72,35 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             WriteLog(context);
             AddCallerMetadata(ref context);
+            
+            try
+            {
+                var call = continuation(request, context);
 
-            return continuation(request, context);
+                return new AsyncUnaryCall<TResponse>(HandleResponse(call.ResponseAsync), call.ResponseHeadersAsync, call.GetStatus, call.GetTrailers, call.Dispose);
+            }
+            catch (Exception e)
+            {
+                WriteErrorLog(e);
+                throw new GrpcException(e.Message);
+            }
         }
+        
+        private async Task<TResponse> HandleResponse<TResponse>(Task<TResponse> t)
+        {
+            try
+            {
+                var response = await t;
+                _logger.LogInformation("Response received: {Response}", response);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                WriteErrorLog(ex);
+                throw new GrpcException(ex.Message);
+            }
+        }
+        
 
         /// <summary>
         /// 截获客户端流式处理 RPC 的异步调用。
@@ -81,8 +116,16 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             WriteLog(context);
             AddCallerMetadata(ref context);
-
-            return base.AsyncClientStreamingCall(context, continuation);
+            
+            try
+            {
+                return base.AsyncClientStreamingCall(context, continuation);
+            }
+            catch (Exception e)
+            {
+                WriteErrorLog(e);
+                throw new GrpcException(e.Message);
+            }
         }
 
         /// <summary>
@@ -101,7 +144,15 @@ namespace XiaoLi.NET.Grpc.Interceptors
             WriteLog(context);
             AddCallerMetadata(ref context);
 
-            return base.AsyncServerStreamingCall(request, context, continuation);
+            try
+            {
+                return base.AsyncServerStreamingCall(request, context, continuation);
+            }
+            catch (Exception e)
+            {
+                WriteErrorLog(e);
+                throw new GrpcException(e.Message);
+            }
         }
 
         /// <summary>
@@ -118,7 +169,16 @@ namespace XiaoLi.NET.Grpc.Interceptors
         {
             WriteLog(context);
             AddCallerMetadata(ref context);
-            return base.AsyncDuplexStreamingCall(context, continuation);
+            
+            try
+            {
+                return continuation(context);
+            }
+            catch (Exception e)
+            {
+                WriteErrorLog(e);
+                throw new GrpcException(e.Message);
+            }
         }
 
 
@@ -163,6 +223,15 @@ namespace XiaoLi.NET.Grpc.Interceptors
             _logger.LogInformation(
                 "Grpc客户端开始调用，主机{Host}，类型：{MethodType}，方法：{MethodName}，请求模型：{TRequest}，响应模型：{TResponse}",
                 context.Host, context.Method.Type, context.Method.Name, typeof(TRequest), typeof(TResponse));
+        }
+        
+        /// <summary>
+        /// 记录异常日志
+        /// </summary>
+        /// <param name="ex"></param>
+        private void WriteErrorLog(Exception ex)
+        {
+            _logger.LogError("客户端发起Grpc调用时发生一个异常：{Exception}", ex);
         }
     }
 }

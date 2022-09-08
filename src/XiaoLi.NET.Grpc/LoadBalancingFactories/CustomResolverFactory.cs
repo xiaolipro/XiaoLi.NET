@@ -49,6 +49,7 @@ public class CustomResolverFactory : ResolverFactory
             var (uris, metaData) = await _resolver.ResolutionService(_address.Host);
 
             // 防止服务端没起的时候重复请求服务解析
+            // 这是极其重要的，空addr被监听会使得channel无法再被pick，导致服务端重启客户端仍然无法调用
             if (uris == null || uris.Count < 1) return;
 
             var addresses = uris.Select(uri => new BalancerAddress(uri.Host, uri.Port)).ToArray();

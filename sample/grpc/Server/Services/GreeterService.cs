@@ -14,7 +14,8 @@ public class GreeterService : IGreeterService
 
     public string Greet(string name)
     {
-        _logger.LogInformation($"Creating greeting to {name}");
+        if (name.Contains("9")) throw new Exception("GG");
+        _logger.LogInformation("Creating greeting to {Name}", name);
         return $"Hello {name}";
     }
 }

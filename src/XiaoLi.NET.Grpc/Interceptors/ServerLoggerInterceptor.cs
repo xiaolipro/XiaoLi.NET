@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+﻿using System;
+using Grpc.Core;
 using Grpc.Core.Interceptors;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -36,8 +37,15 @@ public class ServerLogInterceptor : Interceptor
         UnaryServerMethod<TRequest, TResponse> continuation)
     {
         WriteLog<TRequest, TResponse>(MethodType.Unary, context);
-
-        return await base.UnaryServerHandler(request, context, continuation);
+        try
+        {
+            return await base.UnaryServerHandler(request, context, continuation);
+        }
+        catch (Exception e)
+        {
+            WriteErrorLog(e);
+            throw new GrpcException(e.Message);
+        }
     }
 
     /// <summary>
@@ -55,7 +63,15 @@ public class ServerLogInterceptor : Interceptor
         ClientStreamingServerMethod<TRequest, TResponse> continuation)
     {
         WriteLog<TRequest, TResponse>(MethodType.ClientStreaming, context);
-        return base.ClientStreamingServerHandler(requestStream, context, continuation);
+        try
+        {
+            return base.ClientStreamingServerHandler(requestStream, context, continuation);
+        }
+        catch (Exception e)
+        {
+            WriteErrorLog(e);
+            throw new GrpcException(e.Message);
+        }
     }
 
     /// <summary>
@@ -75,7 +91,15 @@ public class ServerLogInterceptor : Interceptor
         ServerStreamingServerMethod<TRequest, TResponse> continuation)
     {
         WriteLog<TRequest, TResponse>(MethodType.ServerStreaming, context);
-        return base.ServerStreamingServerHandler(request, responseStream, context, continuation);
+        try
+        {
+            return base.ServerStreamingServerHandler(request, responseStream, context, continuation);
+        }
+        catch (Exception e)
+        {
+            WriteErrorLog(e);
+            throw new GrpcException(e.Message);
+        }
     }
 
     /// <summary>
@@ -95,7 +119,15 @@ public class ServerLogInterceptor : Interceptor
         DuplexStreamingServerMethod<TRequest, TResponse> continuation)
     {
         WriteLog<TRequest, TResponse>(MethodType.DuplexStreaming, context);
-        return base.DuplexStreamingServerHandler(requestStream, responseStream, context, continuation);
+        try
+        {
+            return base.DuplexStreamingServerHandler(requestStream, responseStream, context, continuation);
+        }
+        catch (Exception e)
+        {
+            WriteErrorLog(e);
+            throw new GrpcException(e.Message);
+        }
     }
 
 
@@ -121,5 +153,14 @@ public class ServerLogInterceptor : Interceptor
             var headerValue = headers.GetValue(key) ?? "(unknown)";
             _logger.LogInformation("{Key}: {HeaderValue}", key, headerValue);
         }
+    }
+
+    /// <summary>
+    /// 记录异常日志
+    /// </summary>
+    /// <param name="ex"></param>
+    private void WriteErrorLog(Exception ex)
+    {
+        _logger.LogError("服务端处理Grpc请求时发生一个异常：{Message} \n {Details}", ex.Message, ex.StackTrace);
     }
 }

@@ -13,9 +13,8 @@ public class GrpcIntegrationTests:IntegrationTestBase
         private readonly CallInvoker _callInvoker;
         public GrpcIntegrationTests(IntegrationFixture<Startup> fixture, ITestOutputHelper outputHelper) : base(fixture, outputHelper)
         {
-            _callInvoker = Channel
-                .Intercept(new ClientExceptionInterceptor(fixture.LoggerFactory.CreateLogger<ClientExceptionInterceptor>()))
-                .Intercept(new ClientLogInterceptor(fixture.LoggerFactory.CreateLogger<ClientLogInterceptor>()));
+            _callInvoker = Channel!
+                .Intercept(new ClientLoggerInterceptor(fixture.LoggerFactory.CreateLogger<ClientLoggerInterceptor>()));
         }
 
         [Theory]
