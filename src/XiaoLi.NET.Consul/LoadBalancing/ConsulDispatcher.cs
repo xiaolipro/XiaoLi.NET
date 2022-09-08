@@ -48,7 +48,7 @@ namespace XiaoLi.NET.Consul.LoadBalancing
             var (uris, metaData) = await _resolver.ResolutionService(serviceName);
 
             IEnumerable<int> weights = default;
-            if (_balancer.Name == nameof(WeightBalancer))
+            if (_balancer.GetType() == typeof(WeightBalancer))
             {
                 weights = (metaData as List<Dictionary<string,string>>)?.Select(x => int.TryParse(x["Weight"], out int count) ? count : 1);
             }

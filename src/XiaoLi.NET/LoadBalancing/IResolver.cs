@@ -7,11 +7,6 @@ namespace XiaoLi.NET.LoadBalancing
     public interface IResolver
     {
         /// <summary>
-        /// 解析器名称
-        /// </summary>
-        string Name { get; }
-    
-        /// <summary>
         /// 解析缓存刷新间隔
         /// </summary>
         TimeSpan RefreshInterval { get; }

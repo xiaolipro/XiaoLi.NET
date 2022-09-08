@@ -11,12 +11,6 @@ namespace XiaoLi.NET.LoadBalancing
     public interface IBalancer
     {
         /// <summary>
-        /// 均衡器名称
-        /// </summary>
-        string Name { get; }
-
-        
-        /// <summary>
         /// 均衡算法
         /// </summary>
         /// <param name="serviceCount">服务数量</param>

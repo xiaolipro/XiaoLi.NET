@@ -1,6 +1,7 @@
 using Client;
 using Microsoft.AspNetCore.Hosting;
 using Test;
+using XiaoLi.NET.Application.Extensions;
 using XiaoLi.NET.Consul;
 using XiaoLi.NET.Consul.LoadBalancing;
 using XiaoLi.NET.Grpc;

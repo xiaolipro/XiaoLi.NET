@@ -10,8 +10,6 @@ namespace XiaoLi.NET.Grpc.Factories;
 internal class CustomBalancerFactory : LoadBalancerFactory
 {
     private readonly IBalancer _balancer;
-    public override string Name => _balancer.Name;
-
     public CustomBalancerFactory(IBalancer balancer)
     {
         _balancer = balancer;
@@ -21,6 +19,8 @@ internal class CustomBalancerFactory : LoadBalancerFactory
     {
         return new CustomBalancer(options.Controller, options.LoggerFactory, _balancer);
     }
+
+    public override string Name { get; } = nameof(CustomBalancerFactory);
 
     internal class CustomBalancer : SubchannelsLoadBalancer
     {
@@ -59,7 +59,7 @@ internal class CustomBalancerFactory : LoadBalancerFactory
                 var channel = _subchannels[index];
 
                 _logger.LogInformation("来自{BalancerName}均衡器{Count}选1的结果：{ChannelCurrentAddress}", 
-                    _balancer.Name, _subchannels.Count, channel.CurrentAddress);
+                    nameof(_balancer), _subchannels.Count, channel.CurrentAddress);
                 // Pick a sub-channel.
                 var res= PickResult.ForSubchannel(channel);
                 

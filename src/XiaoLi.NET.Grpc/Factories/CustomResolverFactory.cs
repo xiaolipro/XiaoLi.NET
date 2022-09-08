@@ -13,7 +13,7 @@ internal class CustomResolverFactory : ResolverFactory
     private readonly IResolver _resolver;
     private readonly IBackoffPolicyFactory _backoffPolicyFactory;
 
-    public override string Name => _resolver.Name;
+    public override string Name => nameof(CustomResolverFactory);
 
     public CustomResolverFactory(IResolver resolver, IBackoffPolicyFactory backoffPolicyFactory)
     {

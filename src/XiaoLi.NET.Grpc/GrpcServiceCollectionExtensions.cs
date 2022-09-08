@@ -28,15 +28,10 @@ public static class GrpcServiceCollectionExtensions
     {
         services.TryAddSingleton(typeof(ClientLoggerInterceptor));
 
-        var sp = services.BuildServiceProvider();
-
-        var balancer = sp.GetService<IBalancer>() ?? throw new InvalidOperationException(
-            "请先添加Grpc客户端负载均衡器，IServiceCollection.AddGrpcClientLoadBalancer<TResolver, TBalancer>");
-
         var serviceConfig = new ServiceConfig()
         {
             // 自定义负载均衡
-            LoadBalancingConfigs = { new LoadBalancingConfig(balancer!.Name) },
+            LoadBalancingConfigs = { new LoadBalancingConfig(nameof(CustomBalancerFactory)) },
             MethodConfigs =
             {
                 new MethodConfig
@@ -70,13 +65,13 @@ public static class GrpcServiceCollectionExtensions
         var httpClientBuilder = services
             .AddGrpcClient<TClient>(options =>
             {
-                options.Address = new Uri($"{sp.GetRequiredService<IResolver>().Name}://" + address);
+                options.Address = new Uri($"{nameof(CustomResolverFactory)}://" + address);
             })
             .ConfigureChannel(options =>
             {
                 options.Credentials = ChannelCredentials.Insecure;
                 options.ServiceConfig = serviceConfig;
-                options.ServiceProvider = sp;
+                //options.ServiceProvider = services.BuildServiceProvider();
 
                 /* 连接持活
                  在非活动期间每 60 秒向服务器发送一次保持活动 ping, 确保服务器和使用中的任何代理不会由于不活动而关闭连接。
