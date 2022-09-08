@@ -42,9 +42,3 @@ $ dotnet restore
 - 服务不可达/grpc内部异常，自动重试机制
 - 连接持活机制，服务队列缓存机制等
 ![输入图片说明](img/grpc.jpg)
-
-#### skywalking
-- 分布式链路追踪
-- 支持grpc上报
-- 性能监控
-![输入图片说明](img/skywalking.png)
