@@ -23,6 +23,7 @@ $ dotnet restore
 - [x] 配置项自动注入
 - [x] startup自动注入
 - [ ] RESTful
+- [ ] 插件支持
 
 ### 🐸微服务组件
 - [x] Consul服务发现与注册
