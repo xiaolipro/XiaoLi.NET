@@ -31,11 +31,8 @@ namespace XiaoLi.NET.Consul.Extensions
         /// <summary>
         /// 添加Consul负载均衡调度器
         /// </summary>
-        public static void AddConsulDispatcher<TBalancer>(this IServiceCollection services)
-            where TBalancer : class, IBalancer
+        public static void AddConsulDispatcher(this IServiceCollection services)
         {
-            services.TryAddSingleton<IBalancer, TBalancer>();
-            services.TryAddSingleton<IResolver, ConsulGrpcResolver>();
             services.TryAddSingleton<IDispatcher, ConsulDispatcher>();
         }
     }
