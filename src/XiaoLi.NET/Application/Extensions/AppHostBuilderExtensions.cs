@@ -67,8 +67,6 @@ namespace XiaoLi.NET.Application.Extensions
 
             return builder;
         }
-
-
         
         /// <summary>
         /// 初始化泛型主机 2.1+
