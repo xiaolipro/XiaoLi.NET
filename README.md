@@ -21,9 +21,8 @@ $ dotnet restore
 ### 🐌基础能力
 - [x] 生命周期自动注入
 - [x] 配置项自动注入
-- [x] startup自动注入
-- [ ] RESTful
-- [ ] 插件支持
+- [x] Startup自动注入
+- [x] UnifiedResult统一返回结构
 
 ### 🐸微服务组件
 - [x] Consul服务发现与注册
