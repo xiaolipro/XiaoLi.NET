@@ -14,7 +14,6 @@ using XiaoLi.NET.EventBus;
 using XiaoLi.NET.EventBus.Events;
 using XiaoLi.NET.EventBus.Subscriptions;
 using XiaoLi.NET.Extensions;
-using XiaoLi.NET.RabbitMQ;
 using XiaoLi.NET.RabbitMQ.Connect;
 
 namespace XiaoLi.NET.RabbitMQ.EventBus
