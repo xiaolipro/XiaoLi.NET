@@ -66,17 +66,7 @@ public class WeatherForecastController : ControllerBase
         throw new Exception();
         return playload;
     }
-    
-    [HttpPost]
-    public UnifiedResponse Post2(DemoPlayload playload)
-    {
-        var res = new UnifiedResponse();
 
-        res.Data = playload;
-        return res;
-    }
-    
-    
     public class DemoPlayload
     {
         [Required]
