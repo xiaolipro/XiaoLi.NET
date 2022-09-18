@@ -1,17 +1,21 @@
-using XiaoLi.NET.UnifiedResult;
-using XiaoLi.NET.UnifiedResult.Filters;
+using XiaoLi.NET.Mvc;
+using XiaoLi.NET.Mvc.Filters;
+using XiaoLi.NET.Mvc.UnifiedResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers(options => 
-    options.Filters.Add<UnifiedSuccessResultFilter>());
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<UnifiedResultFilter>();
+    options.Filters.Add<HttpExceptionFilter>();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IUnifiedResultFactory, DefaultUnifiedResultFactory>();
+builder.Services.AddSingleton<IUnifiedResultHandler, DefaultUnifiedResultHandler>();
 
 var app = builder.Build();
 

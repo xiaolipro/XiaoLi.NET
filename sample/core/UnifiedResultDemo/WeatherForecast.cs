@@ -1,4 +1,4 @@
-namespace UnifiedResult;
+namespace UnifiedResultDemo;
 
 public class WeatherForecast
 {
