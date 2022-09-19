@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using XiaoLi.NET.UnifiedResult;
-using XiaoLi.NET.UnifiedResult.Attributes;
+using XiaoLi.NET.Mvc;
+using XiaoLi.NET.Mvc.Exceptions;
+using XiaoLi.NET.Mvc.UnifiedResults;
 
-namespace UnifiedResult.Controllers;
+namespace UnifiedResultDemo.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
@@ -25,17 +26,17 @@ public class WeatherForecastController : ControllerBase
     /// 带SuppressUnifiedResult的不会被unified filter handle
     /// </summary>
     /// <returns></returns>
-    [SuppressUnifiedResult]
+    // [SuppressUnifiedResult]
     [HttpGet]
-    public IEnumerable<WeatherForecast> Get()
+    public (IEnumerable<WeatherForecast>,int,int) Get()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        return (Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
                 TemperatureC = Random.Shared.Next(-20, 55),
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
-            .ToArray();
+            .ToArray(),10,200);
     }
     [HttpGet]
     public IEnumerable<WeatherForecast> Get2()
@@ -55,9 +56,26 @@ public class WeatherForecastController : ControllerBase
     }
     
     [HttpGet]
-    public void Get4()
+    public string Get4()
+    {
+        return "123333ste";
+    }
+    
+    [HttpGet]
+    public Task Get5()
     {
         Console.WriteLine(123);
+
+        return Task.CompletedTask;
+    }
+    
+    [HttpGet]
+    public BaseResult Get6()
+    {
+        var res = UnifiedResultFactory.CreateBaseResult();
+        Console.WriteLine(123);
+
+        return res;
     }
 
     [HttpPost]
@@ -68,15 +86,33 @@ public class WeatherForecastController : ControllerBase
     }
     
     [HttpPost]
-    public UnifiedResponse Post2(DemoPlayload playload)
+    public DemoPlayload Post2(DemoPlayload playload)
     {
-        var res = new UnifiedResponse();
-
+        return playload;
+    }
+    
+    [HttpPost]
+    public ActionResult Post3(DemoPlayload playload)
+    {
+        var res = UnifiedResultFactory.CreateDataResult<DemoPlayload>();
+        res.Data = playload;
+        return Ok(res);
+    }
+    
+    [HttpPost]
+    public DataResult<DemoPlayload> Post4(DemoPlayload playload)
+    {
+        var res = UnifiedResultFactory.CreateDataResult<DemoPlayload>();
         res.Data = playload;
         return res;
     }
     
-    
+    [HttpPost]
+    public ActionResult Post5(DemoPlayload playload)
+    {
+        throw new BussinessException("GG");
+    }
+
     public class DemoPlayload
     {
         [Required]
