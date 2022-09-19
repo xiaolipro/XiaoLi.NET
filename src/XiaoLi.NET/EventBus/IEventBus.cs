@@ -9,7 +9,7 @@ namespace XiaoLi.NET.EventBus
     /// 事件总线
     /// </summary>
     /// <remarks>支持发布，动态订阅、解阅，支持动态集成事件</remarks>
-    public interface IEventBus:IDisposable
+    public interface IEventBus
     {
         /// <summary>
         /// 发布事件

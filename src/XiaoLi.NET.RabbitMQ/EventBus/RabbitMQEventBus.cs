@@ -25,7 +25,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
     /// <para>路由模式，直连交换机，以事件名称作为routeKey</para>
     /// <para>一个客户端对应一个队列（以客户端命名），一个队列一个指定消费者通道</para>
     /// </remarks>
-    public class RabbitMQEventBus : IEventBus
+    public class RabbitMQEventBus : IEventBus, IDisposable
     {
         private readonly IRabbitMQConnector _rabbitMqConnector;
         private readonly ILogger<RabbitMQEventBus> _logger;
@@ -107,19 +107,19 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
             where THandler : IIntegrationEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
-
             _logger.LogInformation("{EventHandler}订阅了事件{EventName}", typeof(THandler).GetTypeName(), eventName);
-            _subscriptionsManager.AddSubscription<TEvent, THandler>();
 
             DoRabbitMQSubscription(eventName);
+            _subscriptionsManager.AddSubscription<TEvent, THandler>();
+            StartBasicConsume();
         }
 
         public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
         {
             _logger.LogInformation("{EventHandler}订阅了动态事件{EventName}", typeof(THandler).GetTypeName(), eventName);
-            _subscriptionsManager.AddDynamicSubscription<THandler>(eventName);
-
             DoRabbitMQSubscription(eventName);
+            _subscriptionsManager.AddDynamicSubscription<THandler>(eventName);
+            StartBasicConsume();
         }
 
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent
@@ -161,13 +161,12 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
         /// <param name="eventName"></param>
         private void DoRabbitMQSubscription(string eventName)
         {
+            // 一个事件一个消费监听
             if (_subscriptionsManager.HasSubscriptions(eventName)) return;
 
             _rabbitMqConnector.KeepAlive();
 
             _consumerChannel.QueueBind(queue: _subscriptionQueueName, exchange: _brokerName, routingKey: eventName);
-
-            StartBasicConsume();
         }
 
         /// <summary>
