@@ -10,6 +10,9 @@ using XiaoLi.NET.Extensions;
 
 namespace XiaoLi.NET.EventBus
 {
+    /// <summary>
+    /// 基于内存实现的事件总线
+    /// </summary>
     public class InMemoryEventBus:IEventBus
     {
         private readonly ILogger<InMemoryEventBus> _logger;
