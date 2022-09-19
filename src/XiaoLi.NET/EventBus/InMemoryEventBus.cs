@@ -10,17 +10,12 @@ using XiaoLi.NET.Extensions;
 
 namespace XiaoLi.NET.EventBus
 {
-    public class InMemoryEventBusOptions
-    {
-        
-    }
     public class InMemoryEventBus:IEventBus
     {
         private readonly ILogger<InMemoryEventBus> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly ISubscriptionsManager _subscriptionsManager;
-        private readonly IOptions<InMemoryEventBusOptions> _eventBusOptions;
-        
+
         private readonly Channel<IntegrationEvent> _channel; // 事件存储源
 
 
@@ -32,7 +27,14 @@ namespace XiaoLi.NET.EventBus
             _logger = logger;
             _serviceProvider = serviceProvider;
             _subscriptionsManager = subscriptionsManager;
-            _eventBusOptions = eventBusOptions;
+            var eventBusOptions1 = eventBusOptions.Value;
+
+            var channelOptions = new BoundedChannelOptions(eventBusOptions1.Capacity)
+            {
+                // channel满了阻塞
+                FullMode = BoundedChannelFullMode.Wait
+            };
+            _channel = Channel.CreateBounded<IntegrationEvent>(channelOptions);
         }
 
         public void Publish(IntegrationEvent @event)
@@ -60,6 +62,7 @@ namespace XiaoLi.NET.EventBus
                     // Consumer patterns
                     // May throw ChannelClosedException if the parent channel's writer signals complete.
                     // Note. This code will throw an exception if the channel is closed.
+                    // Details see: https://learn.microsoft.com/en-us/dotnet/core/extensions/channels
                     var @event = await _channel.Reader.ReadAsync();
                     
                     await Processing(@event);

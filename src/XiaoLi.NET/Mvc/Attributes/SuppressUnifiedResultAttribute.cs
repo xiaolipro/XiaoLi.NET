@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETCOREAPP
+using System;
 
 namespace XiaoLi.NET.Mvc.Attributes
 {
@@ -10,3 +11,4 @@ namespace XiaoLi.NET.Mvc.Attributes
          */
     }
 }
+#endif
