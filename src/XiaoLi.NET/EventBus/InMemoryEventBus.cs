@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0_OR_GREATER
+﻿#if NETCOREAPP
 using System;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -47,6 +47,11 @@ namespace XiaoLi.NET.EventBus
 
             _subscriptionsManager.AddSubscription<TEvent, THandler>();
 
+            StartBasicConsume();
+        }
+
+        private void StartBasicConsume()
+        {
             var taskFacotry = new TaskFactory(TaskScheduler.Current);
             taskFacotry.StartNew(async () =>
             {
@@ -69,7 +74,11 @@ namespace XiaoLi.NET.EventBus
 
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent where THandler : IIntegrationEventHandler<TEvent>
         {
-            throw new NotImplementedException();
+            var eventName = _subscriptionsManager.GetEventName<TEvent>();
+
+            _logger.LogInformation("{EventHandler}解除了对事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
+
+            _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
         }
 
         public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler

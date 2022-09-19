@@ -1,4 +1,3 @@
-#if NETCOREAPP
 using System;
 
 namespace XiaoLi.NET.Mvc.Exceptions
@@ -17,4 +16,3 @@ namespace XiaoLi.NET.Mvc.Exceptions
         { }
     }
 }
-#endif
