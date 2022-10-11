@@ -25,7 +25,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
     /// <para>路由模式，直连交换机，以事件名称作为routeKey</para>
     /// <para>一个客户端对应一个队列（以客户端命名），一个队列一个指定消费者通道</para>
     /// </remarks>
-    public class RabbitMQEventBus : IEventBus, IDisposable
+    public class RabbitMQEventBus : IDynamicEventBus, IDisposable
     {
         private readonly IRabbitMQConnector _rabbitMqConnector;
         private readonly ILogger<RabbitMQEventBus> _logger;
