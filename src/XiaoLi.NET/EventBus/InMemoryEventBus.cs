@@ -11,7 +11,7 @@ using XiaoLi.NET.Extensions;
 namespace XiaoLi.NET.EventBus
 {
     /// <summary>
-    /// 基于内存实现的事件总线
+    /// 基于内存实现的本地事件总线
     /// </summary>
     public class InMemoryEventBus:IEventBus
     {
@@ -57,8 +57,8 @@ namespace XiaoLi.NET.EventBus
 
         private void StartBasicConsume()
         {
-            var taskFacotry = new TaskFactory(TaskScheduler.Current);
-            taskFacotry.StartNew(async () =>
+            var taskFactory = new TaskFactory(TaskScheduler.Current);
+            taskFactory.StartNew(async () =>
             {
                 while (true)
                 {
@@ -73,11 +73,6 @@ namespace XiaoLi.NET.EventBus
             });
         }
 
-        public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
-        {
-            throw new NotImplementedException();
-        }
-
         public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent where THandler : IIntegrationEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
@@ -86,12 +81,6 @@ namespace XiaoLi.NET.EventBus
 
             _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
         }
-
-        public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
-        {
-            throw new NotImplementedException();
-        }
-
 
         private async Task Processing(IntegrationEvent @event)
         {
