@@ -101,7 +101,7 @@ namespace XiaoLi.NET.EventBus
                 var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType);
                 if (handler == null)
                 {
-                    _logger.LogWarning("{EventName}没有实现`IIntegrationEventHandler`", eventName);
+                    _logger.LogWarning("{EventHandlerName}没有实现`IIntegrationEventHandler`", nameof(handler));
                     continue;
                 }
 

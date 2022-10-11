@@ -21,7 +21,7 @@ namespace XiaoLi.NET.EventBus
         /// </summary>
         /// <typeparam name="TEvent">事件</typeparam>
         /// <typeparam name="THandler">事件处理者</typeparam>
-        void Subscribe<TEvent, THandler>() 
+        void Subscribe<TEvent, THandler>()
             where TEvent : IntegrationEvent
             where THandler : IIntegrationEventHandler<TEvent>;
 
@@ -33,6 +33,27 @@ namespace XiaoLi.NET.EventBus
         void Unsubscribe<TEvent, THandler>()
             where TEvent : IntegrationEvent
             where THandler : IIntegrationEventHandler<TEvent>;
+    }
 
+    /// <summary>
+    /// 动态事件总线
+    /// </summary>
+    public interface IDynamicEventBus : IEventBus
+    {
+        /// <summary>
+        /// 订阅动态事件
+        /// </summary>
+        /// <typeparam name="THandler">动态事件处理者</typeparam>
+        /// <param name="eventName">动态事件名称</param>
+        void SubscribeDynamic<THandler>(string eventName)
+            where THandler : IDynamicIntegrationEventHandler;
+
+        /// <summary>
+        /// 解阅动态事件
+        /// </summary>
+        /// <typeparam name="THandler">动态事件处理者</typeparam>
+        /// <param name="eventName">动态事件名称</param>
+        void UnsubscribeDynamic<THandler>(string eventName)
+            where THandler : IDynamicIntegrationEventHandler;
     }
 }

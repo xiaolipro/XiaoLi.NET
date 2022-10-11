@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -241,27 +242,16 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
                 if (subscriptionInfo.IsDynamic)
                 {
                     var handler =
-                        _serviceProvider.GetService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
-                    if (handler == null)
-                    {
-                        _logger.LogWarning("{EventName}没有实现`{IDynamicIntegrationEventHandler}`", eventName,
-                            nameof(IDynamicIntegrationEventHandler));
-                        continue;
-                    }
+                        _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
 
                     _logger.LogTrace("正在处理动态集成事件: {EventName}", eventName);
 
-                    await handler.Handle(message);
+                    await handler!.Handle(message);
                 }
                 else // 处理集成事件
                 {
                     var eventType = _subscriptionsManager.GetEventTypeByName(eventName);
-                    var handler = _serviceProvider.GetService(subscriptionInfo.HandlerType);
-                    if (handler == null)
-                    {
-                        _logger.LogWarning("{EventName}没有实现`IIntegrationEventHandler`", eventName);
-                        continue;
-                    }
+                    var handler = _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType);
 
                     var handle = typeof(IIntegrationEventHandler<>)
                         .MakeGenericType(eventType)

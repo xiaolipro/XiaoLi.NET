@@ -14,7 +14,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         // 数据格式：{事件名称:[订阅信息]}
         private readonly Dictionary<string, List<SubscriptionInfo>> _subscriptions;
 
-        // 事件类型列表
+        // 事件类型列表（不包含动态事件）
         private readonly List<Type> _eventTypes;
         public InMemorySubscriptionsManager()
         {
@@ -41,6 +41,12 @@ namespace XiaoLi.NET.EventBus.Subscriptions
             string eventName = GetEventName<TEvent>();
             var subscription = SubscriptionInfo.Typed(eventName, typeof(THandler));
             DoAddSubscriptionInfo(subscription);
+            
+            // 维护事件类型列表
+            if (!_eventTypes.Contains(typeof(TEvent)))
+            {
+                _eventTypes.Add(typeof(TEvent));
+            }
         }
 
         public void RemoveDynamicSubscription<THandler>(string eventName) 
@@ -102,12 +108,6 @@ namespace XiaoLi.NET.EventBus.Subscriptions
             }
 
             _subscriptions[eventName].Add(subscriptionInfo);
-
-            // 维护事件类型列表
-            if (!_eventTypes.Contains(handlerType))
-            {
-                _eventTypes.Add(handlerType);
-            }
         }
 
         /// <summary>
