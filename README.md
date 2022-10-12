@@ -23,7 +23,7 @@ $ dotnet restore
 - [x] 配置项自动注入
 - [x] Startup自动注入
 - [x] UnifiedResult统一返回结构
-- [ ] 本地事件总线
+- [x] 本地事件总线
 
 ### 🐸微服务能力
 - [x] Consul服务发现与注册
