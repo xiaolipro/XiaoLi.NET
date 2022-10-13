@@ -2,13 +2,13 @@
 
 namespace XiaoLi.NET.UnitTests;
 
-public class LockTests
+public class MonitorTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private static readonly object _locker = new object();
     private static int _val1 = 1, _val2 = 1, num = 0;
 
-    public LockTests(ITestOutputHelper testOutputHelper)
+    public MonitorTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }

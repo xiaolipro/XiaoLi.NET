@@ -6,6 +6,13 @@ namespace XiaoLi.NET.UnitTests;
 public class JsonTest
 {
     [Fact]
+    void Seri()
+    {
+        //JObject jObject = 
+    }
+    
+    
+    [Fact]
     public void Deseri()
     {
         var str = "{\"A\":1,\"B\":{\"a\":2,\"b\":[1,2,3]},\"C\":\"4\"}";
