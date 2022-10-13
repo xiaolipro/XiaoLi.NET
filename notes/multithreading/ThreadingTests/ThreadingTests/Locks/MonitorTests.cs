@@ -14,7 +14,9 @@ public class MonitorTests
     }
 
     [Theory]
+    [InlineData(10)]
     [InlineData(20)]
+    [InlineData(50)]
     private void 测试Go(int threadNum)
     {
         num = 0;
