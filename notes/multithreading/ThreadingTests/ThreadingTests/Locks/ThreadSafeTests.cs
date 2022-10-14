@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Collections.Concurrent;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
 
