@@ -32,10 +32,10 @@ public class SemaphoreTests
     private async void 进来玩(int x)
     {
         _testOutputHelper.WriteLine(x + "想进来");
-        await SemaphoreSlim.WaitAsync();
+        await SemaphoreSlim.WaitAsync(); // - 1
         _testOutputHelper.WriteLine(x + "进来了");
         await Task.Delay(1000 * x);
         _testOutputHelper.WriteLine(x + "溜了");
-        SemaphoreSlim.Release();
+        SemaphoreSlim.Release(); // + 1
     }
 }

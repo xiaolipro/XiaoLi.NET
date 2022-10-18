@@ -26,7 +26,7 @@ namespace XiaoLi.NET.DependencyInjection.Attributes
         /// 注册策略
         /// </summary>
         /// <remarks>
-        /// <para>如果你未指定要公开的服务ExposeServicesAttribute,则ABP依照约定公开服务:</para>
+        /// <para>如果你未指定要公开的服务ExposeServicesAttribute,则依照约定公开服务:</para>
         /// <para>默认情况下,类本身是公开的.这意味着你可以按类名注入它.</para>
         /// <para>默认情况下,默认接口是公开的.默认接口是由命名约定确定.例如A:IA,IA2,那么IA是A的默认接口,IA2不是</para>
         /// </remarks>

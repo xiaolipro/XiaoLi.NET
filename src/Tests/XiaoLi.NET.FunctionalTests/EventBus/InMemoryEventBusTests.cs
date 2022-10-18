@@ -1,6 +1,8 @@
 ﻿
+using System.Timers;
 using Microsoft.Extensions.DependencyInjection;
 using XiaoLi.NET.EventBus;
+using XiaoLi.NET.FunctionalTests.EventBus.EventHandlers;
 using XiaoLi.NET.FunctionalTests.EventBus.Events;
 using Xunit.Abstractions;
 
@@ -18,11 +20,21 @@ public class InMemoryEventBusTests:EventBusScenarioBase
     [Fact]
     public void 发布一个本地事件()
     {
+        var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         var eventBus = ServiceProvider.GetRequiredService<IEventBus>();
-        _testOutputHelper.WriteLine("游戏开始了");
+        _testOutputHelper.WriteLine("进入游戏");
         eventBus.Publish(new GameBeginEvent("LOL",10));
-        
-        // 阻塞主线程等待消费者处理完
-        Thread.Sleep(4000);
+
+        var timer = new System.Timers.Timer(500);
+        timer.Elapsed += (sender, args) =>
+        {
+            _testOutputHelper.WriteLine(GameBeginEventHandler.Message);
+            if (GameBeginEventHandler.Message.Equals("初始化完毕！")) waitHandle.Set();
+            throw new Exception("G");
+        };
+        timer.Start();
+
+        waitHandle.WaitOne();
+        _testOutputHelper.WriteLine("游戏开始");
     }
 }

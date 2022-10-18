@@ -5,7 +5,7 @@ namespace XiaoLi.NET.UnitTests;
 
 public class ThreadSafeTests
 {
-    static List <string> _list = new List <string>();
+    static List<string> _list = new List <string>();
     private readonly ITestOutputHelper _testOutputHelper;
 
     public ThreadSafeTests(ITestOutputHelper testOutputHelper)

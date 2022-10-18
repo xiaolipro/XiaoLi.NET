@@ -17,8 +17,8 @@ public class EventWaitHandleTests
     [Fact]
     void 测试ManualResetEvent()
     {
-        var waitHandle = new ManualResetEvent(false);
-        // var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+        //var waitHandle = new ManualResetEvent(false);
+        var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         Task.Run(() =>
         {
             _testOutputHelper.WriteLine(Thread.CurrentThread.ManagedThreadId + " 尝试进门...");

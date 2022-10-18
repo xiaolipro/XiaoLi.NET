@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Collections.Concurrent;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
 
@@ -52,6 +53,7 @@ public class MonitorTests
             Monitor.Enter(_locker); // 20ns
             try
             {
+                // 业务
                 num++;
             }
             finally
@@ -67,7 +69,10 @@ public class MonitorTests
         {
             // 确保同一时间只有一个线程可以访问资源或代码
             // 对所有参与同步的线程可见的任何对象（必须为引用类型）都可以被当作同步对象使用
-            lock (_locker) num++;
+            lock (_locker)
+            {
+                num++;
+            }
         }
     }
 

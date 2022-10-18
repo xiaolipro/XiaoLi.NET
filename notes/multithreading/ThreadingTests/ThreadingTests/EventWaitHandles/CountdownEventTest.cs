@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Collections.Concurrent;
+using Xunit.Abstractions;
 
 namespace ThreadingTests.EventWaitHandles;
 
@@ -15,10 +16,10 @@ public class CountdownEventTest
     [Fact]
     void 测试CountdownEvent等待()
     {
+        Task.Run(工作);  // bg
         Task.Run(工作);
         Task.Run(工作);
-        Task.Run(工作);
-
+        
         _countdown.Wait();
         _testOutputHelper.WriteLine("大家都干完了");
     }
@@ -28,7 +29,7 @@ public class CountdownEventTest
     {
         _testOutputHelper.WriteLine("干活");
         Thread.Sleep(1000);
-        _countdown.Signal();
+        _countdown.Signal();//+1
     }
 
 

@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
 
 public class JsonTest
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
     [Fact]
     void Seri()
     {
@@ -15,25 +18,42 @@ public class JsonTest
     [Fact]
     public void Deseri()
     {
-        var str = "{\"A\":1,\"B\":{\"a\":2,\"b\":[1,2,3]},\"C\":\"4\"}";
+        var str = "{\"a\":1,\"B\":{\"a\":2,\"b\":[1,2,3]},\"C\":\"4\"}";
 
         var dic = JsonConvert.DeserializeObject<JObject>(str);
 
-        dfs(dic.Properties(), 0);
-        
+        var res = dfs(dic.Properties(), 0);
+        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(res));
         Assert.Equal(5, nodes.Count);
         Assert.Equal(2,nodes[3].pid);
     }
 
     private List<(int id, int pid,string name)> nodes = new List<(int id, int pid,string name)>();
     private int idx = 1;
-    public void dfs(IEnumerable<JProperty> properties, int pid)
+
+    public JsonTest(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
+    }
+
+    public JObject dfs(IEnumerable<JProperty> properties, int pid)
+    {
+        JObject res = new JObject();
         foreach (var property in properties)
         {
             nodes.Add((idx ++, pid, property.Name));
-            if (property.Value is JObject obj) dfs(obj.Properties(),idx - 1);
+            if (property.Value is JObject obj)
+            {
+                var jobject = dfs(obj.Properties(),idx - 1);
+                res.Add(property.Name,JObject.FromObject(jobject));
+            }
+            else
+            {
+                res.Add(property.Name,property.Value);
+            }
         }
+
+        return res;
     }
 
     [Fact]

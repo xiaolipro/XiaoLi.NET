@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using XiaoLi.NET.EventBus.Events;
 using XiaoLi.NET.FunctionalTests.EventBus.Events;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.FunctionalTests.EventBus.EventHandlers;
 
 public class GameBeginEventHandler:IIntegrationEventHandler<GameBeginEvent>
 {
     private readonly ILogger<GameBeginEventHandler> _logger;
+    public static string Message = string.Empty;
 
     public GameBeginEventHandler(ILogger<GameBeginEventHandler> logger)
     {
@@ -14,9 +16,9 @@ public class GameBeginEventHandler:IIntegrationEventHandler<GameBeginEvent>
     }
     public async Task Handle(GameBeginEvent @event)
     {
-        _logger.LogInformation("初始化游戏数据...");
+        Message="初始化游戏数据...";
         // business...
         await Task.Delay(3000);
-        _logger.LogInformation("初始化完毕，游戏开始！");
+        Message="初始化完毕！";
     }
 }
