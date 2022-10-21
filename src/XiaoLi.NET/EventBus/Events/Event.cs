@@ -5,7 +5,7 @@ namespace XiaoLi.NET.EventBus.Events
     /// <summary>
     /// 集成事件
     /// </summary>
-    public class IntegrationEvent
+    public class Event
     {
         /// <summary>
         /// 唯一标识
@@ -17,7 +17,7 @@ namespace XiaoLi.NET.EventBus.Events
         /// </summary>
         public DateTime CreationTime { get; }
         
-        public IntegrationEvent()
+        public Event()
         {
             Id = Guid.NewGuid();
             CreationTime = DateTime.UtcNow;

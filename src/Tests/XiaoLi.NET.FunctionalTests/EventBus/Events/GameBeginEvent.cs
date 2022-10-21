@@ -2,7 +2,7 @@
 
 namespace XiaoLi.NET.FunctionalTests.EventBus.Events;
 
-public class GameBeginEvent:IntegrationEvent
+public class GameBeginEvent:Event
 {
     public GameBeginEvent(string gameType, int peopleNumber)
     {

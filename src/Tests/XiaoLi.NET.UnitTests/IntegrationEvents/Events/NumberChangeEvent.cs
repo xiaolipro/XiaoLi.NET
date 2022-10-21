@@ -1,7 +1,7 @@
 ﻿
 namespace XiaoLi.NET.UnitTests.IntegrationEvents.Events
 {
-    public class NumberChangeEvent:IntegrationEvent
+    public class NumberChangeEvent:Event
     {
         public int Number { get; }
 

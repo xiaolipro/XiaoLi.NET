@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 namespace XiaoLi.NET.EventBus.Events
 {
     /// <summary>
-    /// 动态类型集成事件处理器
+    /// 动态类型事件处理器
     /// </summary>
-    public interface IDynamicIntegrationEventHandler
+    public interface IDynamicEventHandler
     {
         /// <summary>
         /// 处理动态事件
         /// </summary>
-        /// <param name="message">队列中的消息</param>
+        /// <param name="message">动态事件携带的数据</param>
         /// <returns></returns>
         Task Handle(string message);
     }

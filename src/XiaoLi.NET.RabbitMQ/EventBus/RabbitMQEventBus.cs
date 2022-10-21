@@ -58,7 +58,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
         }
 
 
-        public void Publish(IntegrationEvent @event)
+        public void Publish(Event @event)
         {
             _rabbitMqConnector.KeepAlive();
 
@@ -104,8 +104,8 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
             }
         }
 
-        public void Subscribe<TEvent, THandler>() where TEvent : IntegrationEvent
-            where THandler : IIntegrationEventHandler<TEvent>
+        public void Subscribe<TEvent, THandler>() where TEvent : Event
+            where THandler : IEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
             _logger.LogInformation("{EventHandler}订阅了事件{EventName}", typeof(THandler).GetTypeName(), eventName);
@@ -115,7 +115,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
             StartBasicConsume();
         }
 
-        public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
+        public void SubscribeDynamic<THandler>(string eventName) where THandler : IDynamicEventHandler
         {
             _logger.LogInformation("{EventHandler}订阅了动态事件{EventName}", typeof(THandler).GetTypeName(), eventName);
             DoRabbitMQSubscription(eventName);
@@ -123,8 +123,8 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
             StartBasicConsume();
         }
 
-        public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent
-            where THandler : IIntegrationEventHandler<TEvent>
+        public void Unsubscribe<TEvent, THandler>() where TEvent : Event
+            where THandler : IEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
 
@@ -135,7 +135,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
             DoRabbitMQUnSubscription(eventName);
         }
 
-        public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicIntegrationEventHandler
+        public void UnsubscribeDynamic<THandler>(string eventName) where THandler : IDynamicEventHandler
         {
             _logger.LogInformation("{EventHandler}取消了对动态事件{EventName}的订阅", typeof(THandler).GetTypeName(), eventName);
 
@@ -242,7 +242,7 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
                 if (subscriptionInfo.IsDynamic)
                 {
                     var handler =
-                        _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType) as IDynamicIntegrationEventHandler;
+                        _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType) as IDynamicEventHandler;
 
                     _logger.LogTrace("正在处理动态集成事件: {EventName}", eventName);
 
@@ -253,9 +253,9 @@ namespace XiaoLi.NET.RabbitMQ.EventBus
                     var eventType = _subscriptionsManager.GetEventTypeByName(eventName);
                     var handler = _serviceProvider.GetRequiredService(subscriptionInfo.HandlerType);
 
-                    var handle = typeof(IIntegrationEventHandler<>)
+                    var handle = typeof(IEventHandler<>)
                         .MakeGenericType(eventType)
-                        .GetMethod(nameof(IIntegrationEventHandler<IntegrationEvent>.Handle));
+                        .GetMethod(nameof(IEventHandler<Event>.Handle));
 
                     var integrationEvent = JsonSerializer.Deserialize(message, eventType,
                         new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });

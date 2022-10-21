@@ -19,7 +19,7 @@ namespace XiaoLi.NET.EventBus
         private readonly IServiceProvider _serviceProvider;
         private readonly ISubscriptionsManager _subscriptionsManager;
 
-        private readonly Channel<IntegrationEvent> _channel; // 事件存储源
+        private readonly Channel<Event> _channel; // 事件存储源
 
 
         public InMemoryEventBus(ILogger<InMemoryEventBus> logger,
@@ -37,15 +37,15 @@ namespace XiaoLi.NET.EventBus
                 // channel满了阻塞
                 FullMode = BoundedChannelFullMode.Wait
             };
-            _channel = Channel.CreateBounded<IntegrationEvent>(channelOptions);
+            _channel = Channel.CreateBounded<Event>(channelOptions);
         }
 
-        public void Publish(IntegrationEvent @event)
+        public void Publish(Event @event)
         {
             _channel.Writer.TryWrite(@event);
         }
 
-        public void Subscribe<TEvent, THandler>() where TEvent : IntegrationEvent where THandler : IIntegrationEventHandler<TEvent>
+        public void Subscribe<TEvent, THandler>() where TEvent : Event where THandler : IEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
             _logger.LogInformation("{EventHandler}订阅了事件{EventName}", typeof(THandler).GetTypeName(), eventName);
@@ -73,7 +73,7 @@ namespace XiaoLi.NET.EventBus
             });
         }
 
-        public void Unsubscribe<TEvent, THandler>() where TEvent : IntegrationEvent where THandler : IIntegrationEventHandler<TEvent>
+        public void Unsubscribe<TEvent, THandler>() where TEvent : Event where THandler : IEventHandler<TEvent>
         {
             var eventName = _subscriptionsManager.GetEventName<TEvent>();
 
@@ -82,7 +82,7 @@ namespace XiaoLi.NET.EventBus
             _subscriptionsManager.RemoveSubscription<TEvent, THandler>();
         }
 
-        private async Task Processing(IntegrationEvent @event)
+        private async Task Processing(Event @event)
         {
             string eventName = @event.GetType().GetTypeName();
             // 空订阅
@@ -105,9 +105,9 @@ namespace XiaoLi.NET.EventBus
                     continue;
                 }
 
-                var handle = typeof(IIntegrationEventHandler<>)
+                var handle = typeof(IEventHandler<>)
                     .MakeGenericType(eventType)
-                    .GetMethod(nameof(IIntegrationEventHandler<IntegrationEvent>.Handle));
+                    .GetMethod(nameof(IEventHandler<Event>.Handle));
 
                 // see：https://stackoverflow.com/questions/22645024/when-would-i-use-task-yield
                 await Task.Yield();

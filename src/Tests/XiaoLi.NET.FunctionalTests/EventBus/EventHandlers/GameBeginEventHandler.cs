@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace XiaoLi.NET.FunctionalTests.EventBus.EventHandlers;
 
-public class GameBeginEventHandler:IIntegrationEventHandler<GameBeginEvent>
+public class GameBeginEventHandler:IEventHandler<GameBeginEvent>
 {
     private readonly ILogger<GameBeginEventHandler> _logger;
     public static string Message = string.Empty;

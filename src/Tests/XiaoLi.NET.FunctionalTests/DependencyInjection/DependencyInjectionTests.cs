@@ -21,4 +21,15 @@ public class DependencyInjectionTests:DependencyInjectionScenarioBase
         
         Assert.NotNull(userService);
     }
+
+    [Fact]
+    async Task Get_user_info_by_id()
+    {
+        var userService = ServiceProvider.GetService<IUserService>();
+        var user = await userService!.GetUserById(1);
+        
+        Assert.Equal(1,user.Id);
+        Assert.Equal("用户1",user.Name);
+        Assert.True(user.Age >= 18);
+    }
 }

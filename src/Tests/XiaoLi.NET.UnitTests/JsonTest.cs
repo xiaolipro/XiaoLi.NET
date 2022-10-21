@@ -69,6 +69,7 @@ public class JsonTest
         while (q.Count > 0)
         {
             var cur = q.Dequeue();
+            _testOutputHelper.WriteLine(cur.property.Path + " " + cur.property.Value);
             nodes.Add((idx ++, cur.pid, cur.property.Name));
             if (cur.property.Value is JObject obj)
             {

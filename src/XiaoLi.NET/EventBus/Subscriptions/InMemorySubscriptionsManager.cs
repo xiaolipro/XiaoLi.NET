@@ -27,7 +27,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
 
         public event EventHandler<string> OnEventRemoved;
         public void AddDynamicSubscription<THandler>(string eventName) 
-            where THandler : IDynamicIntegrationEventHandler
+            where THandler : IDynamicEventHandler
         {
             var handlerType = typeof(THandler);
             var subscription = SubscriptionInfo.Dynamic(eventName,handlerType);
@@ -35,8 +35,8 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         }
 
         public void AddSubscription<TEvent, THandler>() 
-            where TEvent : IntegrationEvent 
-            where THandler : IIntegrationEventHandler<TEvent>
+            where TEvent : Event 
+            where THandler : IEventHandler<TEvent>
         {
             string eventName = GetEventName<TEvent>();
             var subscription = SubscriptionInfo.Typed(eventName, typeof(THandler));
@@ -50,15 +50,15 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         }
 
         public void RemoveDynamicSubscription<THandler>(string eventName) 
-            where THandler : IDynamicIntegrationEventHandler
+            where THandler : IDynamicEventHandler
         {
             var subscription = DoFindSubscription(eventName, typeof(THandler));
             DoRemoveSubscriptionInfo(subscription);
         }
 
         public void RemoveSubscription<TEvent, THandler>() 
-            where TEvent : IntegrationEvent
-            where THandler : IIntegrationEventHandler<TEvent>
+            where TEvent : Event
+            where THandler : IEventHandler<TEvent>
         {
             string eventName = GetEventName<TEvent>();
             var subscription = DoFindSubscription(eventName, typeof(THandler));
@@ -69,16 +69,16 @@ namespace XiaoLi.NET.EventBus.Subscriptions
 
         public IEnumerable<SubscriptionInfo> GetSubscriptionInfos(string eventName) => _subscriptions[eventName];
         
-        public IEnumerable<SubscriptionInfo> GetSubscriptionInfos<TEvent>() where TEvent : IntegrationEvent
+        public IEnumerable<SubscriptionInfo> GetSubscriptionInfos<TEvent>() where TEvent : Event
             => GetSubscriptionInfos(GetEventName<TEvent>());
 
-        public bool HasSubscriptions<TEvent>() where TEvent : IntegrationEvent
+        public bool HasSubscriptions<TEvent>() where TEvent : Event
             => HasSubscriptions(GetEventName<TEvent>());
 
         public bool HasSubscriptions(string eventName)
             => _subscriptions.ContainsKey(eventName);
 
-        public string GetEventName<TEvent>() where TEvent : IntegrationEvent 
+        public string GetEventName<TEvent>() where TEvent : Event 
             => typeof(TEvent).Name;
 
         public Type GetEventTypeByName(string eventName) 

@@ -28,7 +28,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// <typeparam name="THandler">处理者</typeparam>
         /// <param name="eventName">事件名称</param>
         void AddDynamicSubscription<THandler>(string eventName)
-            where THandler : IDynamicIntegrationEventHandler;
+            where THandler : IDynamicEventHandler;
 
         /// <summary>
         /// 添加订阅
@@ -36,8 +36,8 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// <typeparam name="TEvent">事件</typeparam>
         /// <typeparam name="THandler">处理者</typeparam>
         void AddSubscription<TEvent, THandler>()
-            where TEvent : IntegrationEvent
-            where THandler : IIntegrationEventHandler<TEvent>;
+            where TEvent : Event
+            where THandler : IEventHandler<TEvent>;
 
         #endregion
 
@@ -50,7 +50,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// <typeparam name="THandler"></typeparam>
         /// <param name="eventName"></param>
         void RemoveDynamicSubscription<THandler>(string eventName)
-            where THandler : IDynamicIntegrationEventHandler;
+            where THandler : IDynamicEventHandler;
 
         /// <summary>
         /// 移除订阅
@@ -58,8 +58,8 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// <typeparam name="TEvent"></typeparam>
         /// <typeparam name="THandler"></typeparam>
         void RemoveSubscription<TEvent, THandler>()
-            where TEvent : IntegrationEvent
-            where THandler : IIntegrationEventHandler<TEvent>;
+            where TEvent : Event
+            where THandler : IEventHandler<TEvent>;
 
         /// <summary>
         /// 清除所有订阅
@@ -82,7 +82,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// </summary>
         /// <typeparam name="TEvent">事件类型</typeparam>
         /// <returns></returns>
-        IEnumerable<SubscriptionInfo> GetSubscriptionInfos<TEvent>() where TEvent : IntegrationEvent;
+        IEnumerable<SubscriptionInfo> GetSubscriptionInfos<TEvent>() where TEvent : Event;
 
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         /// </summary>
         /// <typeparam name="TEvent">事件类型</typeparam>
         /// <returns></returns>
-        bool HasSubscriptions<TEvent>() where TEvent : IntegrationEvent;
+        bool HasSubscriptions<TEvent>() where TEvent : Event;
         /// <summary>
         /// 此事件是否有订阅
         /// </summary>
@@ -99,7 +99,7 @@ namespace XiaoLi.NET.EventBus.Subscriptions
         bool HasSubscriptions(string eventName);
 
 
-        string GetEventName<TEvent>() where TEvent : IntegrationEvent;
+        string GetEventName<TEvent>() where TEvent : Event;
 
         Type GetEventTypeByName(string eventName);
         #endregion

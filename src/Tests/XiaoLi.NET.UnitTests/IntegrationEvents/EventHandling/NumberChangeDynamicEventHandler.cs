@@ -1,6 +1,6 @@
 ﻿namespace XiaoLi.NET.UnitTests.IntegrationEvents.EventHandling
 {
-    public class NumberChangeDynamicEventHandler : IDynamicIntegrationEventHandler
+    public class NumberChangeDynamicEventHandler : IDynamicEventHandler
     {
         public Task Handle(string message)
         {
