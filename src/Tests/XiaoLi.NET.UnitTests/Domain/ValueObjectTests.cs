@@ -9,10 +9,21 @@ public class ValueObjectTests
     public void Equals_EqualValueObjects_ReturnsTrue(ValueObject instanceA, ValueObject instanceB, string reason)
     {
         // Act
-        var result = EqualityComparer<ValueObject>.Default.Equals(instanceA, instanceB);
+        var result = instanceA.Equals(instanceB);
 
         // Assert
         Assert.True(result, reason);
+    }
+
+    [Fact]
+    public void Equals_NullObject_ThrowsError()
+    {
+        Assert.Throws<NullReferenceException>(() =>
+        {
+            object objA = null;
+            var objB = new object();
+            objA.Equals(objB);
+        });
     }
     
     
