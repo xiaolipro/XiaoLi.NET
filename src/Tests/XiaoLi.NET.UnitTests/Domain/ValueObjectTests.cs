@@ -9,7 +9,7 @@ public class ValueObjectTests
     public void Equals_EqualValueObjects_ReturnsTrue(ValueObject instanceA, ValueObject instanceB, string reason)
     {
         // Act
-        var result = instanceA.Equals(instanceB);
+        var result = EqualityComparer<ValueObject>.Default.Equals(instanceA, instanceB);
 
         // Assert
         Assert.True(result, reason);
