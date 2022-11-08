@@ -1,7 +1,13 @@
-﻿namespace XiaoLi.NET.Domain.Entities;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+namespace XiaoLi.NET.Domain.Entities;
 
 /// <summary>
-/// 实体顶层抽象，支持复合索引
+/// 实体顶层抽象
+/// 支持复合索引，单主键建议使用<see cref="IEntity{TKey}"/>
 /// </summary>
 public interface IEntity
 {
@@ -13,7 +19,7 @@ public interface IEntity
 }
 
 /// <summary>
-/// 实体顶层泛型抽象，索引唯一
+/// 实体顶层泛型抽象
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 public interface IEntity<out TKey>: IEntity

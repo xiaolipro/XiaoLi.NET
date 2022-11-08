@@ -23,7 +23,9 @@ public class InMemoryEventBusTests:EventBusScenarioBase
         var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         var eventBus = ServiceProvider.GetRequiredService<IEventBus>();
         _testOutputHelper.WriteLine("进入游戏");
-        eventBus.Publish(new GameBeginEvent("LOL",10));
+        var @event = new GameBeginEvent("LOL", 10);
+        _testOutputHelper.WriteLine(@event.ToString());
+        eventBus.Publish(@event);
 
         var timer = new System.Timers.Timer(500);
         timer.Elapsed += (sender, args) =>

@@ -22,5 +22,10 @@ namespace XiaoLi.NET.EventBus.Events
             Id = Guid.NewGuid();
             CreationTime = DateTime.UtcNow;
         }
+
+        public override string ToString()
+        {
+            return $"[事件：{GetType().Name} Id：{Id} 创建时间：{CreationTime}]";
+        }
     }
 }
