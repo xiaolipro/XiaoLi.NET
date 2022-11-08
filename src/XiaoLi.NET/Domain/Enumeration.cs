@@ -45,10 +45,9 @@ public class Enumeration : IComparable
         Debug.Assert(enumeration != null);
         return Id.CompareTo(enumeration.Id);
     }
-}
 
-public static class EnumerationExtensions
-{
+    #region Utils
+
     public static IEnumerable<T> GetAll<T>() where T : Enumeration
     {
         var type = typeof(T);
@@ -80,4 +79,6 @@ public static class EnumerationExtensions
 
         return matchingItem;
     }
+
+    #endregion
 }

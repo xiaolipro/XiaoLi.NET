@@ -117,7 +117,7 @@ public class JsonRestructureTest
 
         List<ParameterNode> treeList = BuildTreeList(list, 0);
 
-        var res = JsonConvert.SerializeObject(dfs(treeList, hash, 0));
+        var res = JsonConvert.SerializeObject(dfs_object(treeList, hash, 0));
         _testOutputHelper.WriteLine(res);
     }
 
@@ -218,7 +218,7 @@ public class JsonRestructureTest
     }
 
 
-    JObject dfs(List<ParameterNode> list, Dictionary<string, JToken> hash, int idx)
+    JObject dfs_object(List<ParameterNode> list, Dictionary<string, JToken> hash, int idx)
     {
         var res = new JObject();
         foreach (var item in list)
@@ -227,7 +227,7 @@ public class JsonRestructureTest
 
             if (item.Type == (int)ParameterType.Object)
             {
-                var jobject = dfs(item.Children, hash, 0);
+                var jobject = dfs_object(item.Children, hash, 0);
                 res.Add(name, JObject.FromObject(jobject));
             }
             else if (item.Type == (int)ParameterType.Array)
@@ -258,7 +258,7 @@ public class JsonRestructureTest
             for (int idx = 0; idx < len; idx++)
                 if (item.Type == (int)ParameterType.Object)
                 {
-                    var jobject = dfs(item.Children, hash, idx);
+                    var jobject = dfs_object(item.Children, hash, idx);
                     res.Add(jobject);
                 }
                 else if (item.Type == (int)ParameterType.Array)
