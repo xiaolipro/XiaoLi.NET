@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace XiaoLi.NET.Domain;
+namespace XiaoLi.NET.Domain.SeedWork;
 
 /// <summary>
 /// 枚举

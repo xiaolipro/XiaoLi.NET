@@ -5,7 +5,7 @@ namespace XiaoLi.NET.EventBus.Events
     /// <summary>
     /// 集成事件
     /// </summary>
-    public class Event
+    public abstract class Event
     {
         /// <summary>
         /// 唯一标识
