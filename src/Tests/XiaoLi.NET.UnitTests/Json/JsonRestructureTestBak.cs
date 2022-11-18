@@ -4,11 +4,11 @@ using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
 
-public class JsonRestructureTest
+public class JsonRestructureTestBak
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public JsonRestructureTest(ITestOutputHelper testOutputHelper)
+    public JsonRestructureTestBak(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }
@@ -237,18 +237,9 @@ public class JsonRestructureTest
             }
             else
             {
-                if (string.IsNullOrEmpty(item.MapAlias))
-                {
-                    res.Add(name, null);
-                    continue;
-                }
                 if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) continue;
                 var key = item.MapAlias.Replace("[*]", $"[{idx}]");
-                if (!hash.ContainsKey(key))
-                {
-                    res.Add(name, null);
-                    continue;
-                }
+                if (!hash.ContainsKey(key)) continue;
                 var val = hash[key];
                 //ValidationValue(item.Type, val);
                 res.Add(name, val);
@@ -277,14 +268,9 @@ public class JsonRestructureTest
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(item.MapAlias))
-                    {
-                        res.Add(null);
-                        continue;
-                    }
-                    var key = item.MapAlias.Replace("[*]", $"[{idx}]");
-                    var val = hash[key];
-                    //ValidationValue(item.Type, val);
+                    var key2 = item.MapAlias.Replace("[*]", $"[{idx}]");
+                    var val = hash[key2];
+                    ValidationValue(item.Type, val);
                     res.Add(val);
                 }
         }
@@ -297,8 +283,6 @@ public class JsonRestructureTest
         int res = 1;
         if (item.Type is not (int)ParameterType.Object and not (int)ParameterType.Array)
         {
-            // 跳过无映射
-            if (string.IsNullOrEmpty(item.MapAlias) || !item.MapAlias.Contains("[*]")) return 0;
             int idx = 0;
             while (hash.ContainsKey(item.MapAlias.Replace("[*]", $"[{idx}]"))) idx++;
             res = Math.Max(res, idx);
@@ -309,7 +293,6 @@ public class JsonRestructureTest
         foreach (var sub in item.Children)
         {
             if (sub.Type == (int)ParameterType.Object || sub.Type == (int)ParameterType.Array) continue;
-            if (string.IsNullOrEmpty(sub.MapAlias) || !sub.MapAlias.Contains("[*]")) continue;
             int idx = 0;
             while (hash.ContainsKey(sub.MapAlias.Replace("[*]", $"[{idx}]"))) idx++;
             res = Math.Max(res, idx);

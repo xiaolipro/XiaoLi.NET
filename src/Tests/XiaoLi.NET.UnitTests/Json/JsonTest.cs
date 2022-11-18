@@ -8,10 +8,24 @@ public class JsonTest
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
+    public JsonTest(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     void Seri()
     {
-        //JObject jObject = 
+        var obj = new
+        {
+            a = 1,
+            b = "str",
+            c = true
+        };
+
+        var res = JObject.FromObject(obj);
+        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(res));
+        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(obj));
     }
     
     
@@ -21,68 +35,93 @@ public class JsonTest
         var str = "{\"a\":1,\"B\":{\"a\":2,\"b\":[1,2,3]},\"C\":\"4\"}";
 
         var dic = JsonConvert.DeserializeObject<JObject>(str);
-
-        var res = dfs(dic.Properties(), 0);
-        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(res));
-        Assert.Equal(5, nodes.Count);
-        Assert.Equal(2,nodes[3].pid);
     }
 
-    private List<(int id, int pid,string name)> nodes = new List<(int id, int pid,string name)>();
-    private int idx = 1;
-
-    public JsonTest(ITestOutputHelper testOutputHelper)
+    [Fact]
+    public void Path()
     {
-        _testOutputHelper = testOutputHelper;
-    }
+        var str = "{\"a\":1,\"B\":{\"a\":true,\"b\":[1,2,3]},\"C\":\"4\"}";
 
-    public JObject dfs(IEnumerable<JProperty> properties, int pid)
-    {
-        JObject res = new JObject();
-        foreach (var property in properties)
+        var obj = JsonConvert.DeserializeObject<JObject>(str);
+        
+        foreach (var item in Jobject2Hash(obj))
         {
-            nodes.Add((idx ++, pid, property.Name));
-            if (property.Value is JObject obj)
+            _testOutputHelper.WriteLine(item.Key);
+        }
+        
+        _testOutputHelper.WriteLine(obj.SelectToken("B.a").ToString());
+        
+        Assert.True(obj.SelectToken("B.a").ToString().Equals(Boolean.TrueString));
+        Assert.True(obj.SelectToken("B.a").ToString().Equals("true", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private Dictionary<string, JToken> Jobject2Hash(JObject jobject)
+    {
+        Dictionary<string, JToken> res = new();
+        var q = new Queue<JProperty>(jobject.Properties());
+        while (q.Count > 0)
+        {
+            var cur = q.Dequeue();
+            if (cur.Value is JObject obj)
             {
-                var jobject = dfs(obj.Properties(),idx - 1);
-                res.Add(property.Name,JObject.FromObject(jobject));
+                foreach (var item in obj.Properties())
+                {
+                    q.Enqueue(item);
+                }
+            }
+            else if (cur.Value is JArray arr)
+            {
+                Add(res, JArrayToHash(arr));
             }
             else
             {
-                res.Add(property.Name,property.Value);
+                res.Add(cur.Path, cur.Value);
             }
         }
 
         return res;
     }
 
-    [Fact]
-    public void bfs()
+
+    Dictionary<string, JToken> JArrayToHash(JArray jarr)
     {
-        var str = "{\"A\":1,\"B\":{\"a\":2,\"b\":[1,2,3]},\"C\":\"4\"}";
-
-        var dic = JsonConvert.DeserializeObject<JObject>(str);
-
-        var q = new Queue<(JProperty property, int pid)>(dic.Properties().Select(x => (x, 0)));
-        var nodes = new List<(int id, int pid,string name)>();
-        int idx = 1;
-        while (q.Count > 0)
+        Dictionary<string, JToken> res = new();
+        //res.Add(jarr.Path, jarr.Count);
+        for (var i = 0; i < jarr.Count; i++)
         {
-            var cur = q.Dequeue();
-            _testOutputHelper.WriteLine(cur.property.Path + " " + cur.property.Value);
-            nodes.Add((idx ++, cur.pid, cur.property.Name));
-            if (cur.property.Value is JObject obj)
+            var jToken = jarr[i];
+            if (jToken is JArray arr)
             {
-                foreach (var item in obj.Properties())
+                Add(res, JArrayToHash(arr));
+            }
+            else if (jToken is JObject obj)
+            {
+                Add(res, Jobject2Hash(obj));
+            }
+            else
+            {
+                if (jToken is JProperty prop)
                 {
-                    q.Enqueue((item,idx - 1));
+                    res.Add(jToken.Path /*.Replace("[0]","[*]")*/, prop.Value);
+                }
+                else if (jToken is JValue val)
+                {
+                    res.Add(jToken.Path /*.Replace("[0]","[*]")*/, val);
+                }
+                else
+                {
                 }
             }
         }
-        
-        Assert.Equal(5, nodes.Count);
-        Assert.Equal(2,nodes[3].pid);
-        Assert.Equal(2,nodes[4].pid);
-        Assert.Equal(0,nodes[2].pid);
+
+        return res;
+    }
+    
+    void Add(Dictionary<string, JToken> a, Dictionary<string, JToken> b)
+    {
+        foreach (var item in b)
+        {
+            a.Add(item.Key, item.Value);
+        }
     }
 }
