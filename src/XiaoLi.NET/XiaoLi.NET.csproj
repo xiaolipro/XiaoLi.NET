@@ -24,7 +24,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Auditing" />
+      <Compile Remove="Auditing\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Auditing\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Auditing\**" />
     </ItemGroup>
 
 </Project>
