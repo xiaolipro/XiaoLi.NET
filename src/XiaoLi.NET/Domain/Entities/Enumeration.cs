@@ -9,7 +9,7 @@ namespace XiaoLi.NET.Domain.SeedWork;
 /// <summary>
 /// 枚举基类
 /// </summary>
-public class Enumeration : IComparable
+public abstract class Enumeration : IComparable
 {
     public int Id { get; private set; }
     public string Name { get; private set; }
