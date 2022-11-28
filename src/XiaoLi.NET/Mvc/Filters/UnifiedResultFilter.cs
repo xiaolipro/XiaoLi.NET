@@ -19,7 +19,7 @@ namespace XiaoLi.NET.Mvc.Filters
             _unifiedResultHandler = unifiedResultHandler;
         }
 
-        public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        public virtual async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             if (context.ActionDescriptor.EndpointMetadata.Any(
                     x => x.GetType() == typeof(SuppressUnifiedResultAttribute))) return;

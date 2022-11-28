@@ -7,7 +7,7 @@ using System.Reflection;
 namespace XiaoLi.NET.Domain.SeedWork;
 
 /// <summary>
-/// 枚举
+/// 枚举基类
 /// </summary>
 public class Enumeration : IComparable
 {

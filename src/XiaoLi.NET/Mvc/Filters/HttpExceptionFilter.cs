@@ -21,7 +21,7 @@ namespace XiaoLi.NET.Mvc.Filters
             _logger = logger;
         }
         
-        public Task OnExceptionAsync(ExceptionContext context)
+        public virtual Task OnExceptionAsync(ExceptionContext context)
         {
             HandleExceptionResult(context);
             return Task.CompletedTask;
@@ -35,7 +35,7 @@ namespace XiaoLi.NET.Mvc.Filters
             
             if (context.ExceptionHandled) return;
             
-            if (context.Exception is BussinessException businessException)
+            if (context.Exception is BusinessException businessException)
             {
                 var res = UnifiedResultFactory.CreateBaseResult();
                 res.Code = (int)HttpStatusCode.BadRequest;
@@ -49,7 +49,7 @@ namespace XiaoLi.NET.Mvc.Filters
                 res.Message = context.Exception.Message;
                 if (_env.IsDevelopment()) res.StackTrace = context.Exception.StackTrace;
 
-                // Result asigned to a result object but in destiny the response is empty. This is a known bug of .net core 1.1
+                // Result assigned to a result object but in destiny the response is empty. This is a known bug of .net core 1.1
                 // It will be fixed in .net core 1.1.2. See https://github.com/aspnet/Mvc/issues/5594 for more information
                 context.Result = new ObjectResult(res);
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

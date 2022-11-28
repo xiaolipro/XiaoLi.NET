@@ -110,7 +110,7 @@ public class WeatherForecastController : ControllerBase
     [HttpPost]
     public ActionResult Post5(DemoPlayload playload)
     {
-        throw new BussinessException("GG");
+        throw new BusinessException("GG");
     }
 
     public class DemoPlayload

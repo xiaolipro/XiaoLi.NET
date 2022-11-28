@@ -17,7 +17,6 @@ builder.WebHost.InitWebApp().ConfigureServices(services =>
     services.AddMvc();
 });
 var app = builder.Build();
-
 app.MapGet("/", () => "Hello World!");
 
 app.UseRouting();
