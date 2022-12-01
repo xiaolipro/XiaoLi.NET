@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Threading.Channels;
+using System.Web;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
@@ -133,8 +134,36 @@ namespace XiaoLi.NET.UnitTests
         [Fact]
         void ff()
         {
-            var res = Enumerable.Range(11, 62);
-            _testOutputHelper.WriteLine(string.Join(",",res));
+            // var res = Enumerable.Range(11, 62);
+            // _testOutputHelper.WriteLine(string.Join(",",res));
+            List<byte> list = new List<byte>();
+            for (int i = 0; i < int.MaxValue + 1e5; i++)
+            {
+                list.Add(new byte());
+            }
+        }
+
+        [Fact]
+        void uritest()
+        {
+            var builder = new UriBuilder("http://example.com");
+            builder.Port = -1;
+            var query = HttpUtility.ParseQueryString(builder.Query);
+            query["foo"] = "bar<>&-baz";
+            query["bar"] = "bazinga";
+            builder.Query = query.ToString();
+            string url = builder.ToString();
+            _testOutputHelper.WriteLine(url);
+        }
+
+
+        [Fact]
+        void tmp()
+        {
+            while (true)
+            {
+                
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ using XiaoLi.NET.Domain.SeedWork;
 
 namespace XiaoLi.NET.Domain;
 
-public interface IRepository<TEntity, in TKey> where TEntity : AggregateRoot<TKey>
+public interface IRepository<TEntity> where TEntity : AggregateRoot<TEntity>
 {
     IUnitOfWork UnitOfWork { get; }
 }

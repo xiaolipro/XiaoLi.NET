@@ -2,7 +2,6 @@
 
 namespace XiaoLi.NET.Domain.Events;
 
-public  class DomainEvent
+public class DomainEvent
 {
-    
 }

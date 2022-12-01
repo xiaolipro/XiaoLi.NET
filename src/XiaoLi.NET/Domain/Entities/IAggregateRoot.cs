@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using XiaoLi.NET.Domain.Events;
 
 namespace XiaoLi.NET.Domain.Entities;
 
@@ -13,13 +11,12 @@ namespace XiaoLi.NET.Domain.Entities;
 /// 定义聚合根，复合主键下用这个
 /// 其他情况尽可能使用 <see cref="IAggregateRoot{TKey}"/>
 /// </summary>
-public interface IAggregateRoot : IEntity
+public interface IAggregateRoot : IEntity, IHasDomainEvent
 {
-    public IReadOnlyCollection<DomainEvent> DomainEvents { get; }
 }
 
 /// <summary>
-/// 使用"Id"做主键的聚合根
+/// 使用"Id"做主键的实体
 /// </summary>
 /// <typeparam name="TKey">实体主键类型</typeparam>
 public interface IAggregateRoot<out TKey> : IEntity<TKey>, IAggregateRoot

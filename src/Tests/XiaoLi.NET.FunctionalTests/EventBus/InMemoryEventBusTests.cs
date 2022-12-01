@@ -32,7 +32,7 @@ public class InMemoryEventBusTests:EventBusScenarioBase
         {
             _testOutputHelper.WriteLine(GameBeginEventHandler.Message);
             if (GameBeginEventHandler.Message.Equals("初始化完毕！")) waitHandle.Set();
-            throw new Exception("G");
+            //throw new Exception("G");
         };
         timer.Start();
 
