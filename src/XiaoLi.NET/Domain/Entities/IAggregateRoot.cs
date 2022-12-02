@@ -11,12 +11,12 @@ namespace XiaoLi.NET.Domain.Entities;
 /// 定义聚合根，复合主键下用这个
 /// 其他情况尽可能使用 <see cref="IAggregateRoot{TKey}"/>
 /// </summary>
-public interface IAggregateRoot : IEntity, IHasDomainEvent
+public interface IAggregateRoot : IEntity
 {
 }
 
 /// <summary>
-/// 使用"Id"做主键的实体
+/// 定义聚合根，单主键下用这个
 /// </summary>
 /// <typeparam name="TKey">实体主键类型</typeparam>
 public interface IAggregateRoot<out TKey> : IEntity<TKey>, IAggregateRoot

@@ -6,11 +6,9 @@ namespace XiaoLi.NET.Domain.Entities;
 
 
 [Serializable]
-public abstract class AggregateRoot : HasDomainEvent, IAggregateRoot
+public abstract class AggregateRoot : Entity, IAggregateRoot
 {
-    public abstract object[] GetKeys();
     public Guid Version { get; set; }
-
     protected AggregateRoot()
     {
         Version = Guid.NewGuid();
@@ -18,10 +16,8 @@ public abstract class AggregateRoot : HasDomainEvent, IAggregateRoot
 }
 
 [Serializable]
-public abstract class AggregateRoot<TKey> : HasDomainEvent, IAggregateRoot<TKey>
+public abstract class AggregateRoot<TKey> : Entity<TKey>, IAggregateRoot<TKey>
 {
-    public abstract object[] GetKeys();
-    public abstract TKey Id { get; }
     public Guid Version { get; set; }
 
     protected AggregateRoot()

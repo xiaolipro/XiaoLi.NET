@@ -5,7 +5,7 @@ using XiaoLi.NET.EventBus.Events;
 namespace XiaoLi.NET.Domain.Entities;
 
 [Serializable]
-public abstract class Entity : IEntity
+public abstract class Entity : HasDomainEvent, IEntity
 {
     
     public abstract object[] GetKeys();
