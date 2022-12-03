@@ -8,7 +8,8 @@ public class HasDomainEvent : IHasDomainEvent
 {
     private List<DomainEvent> _domainEvents;
 
-    [NotMapped] public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents?.AsReadOnly();
+    [NotMapped] 
+    public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents?.AsReadOnly();
 
     protected void AddDomainEvent(DomainEvent domainEvent)
     {
