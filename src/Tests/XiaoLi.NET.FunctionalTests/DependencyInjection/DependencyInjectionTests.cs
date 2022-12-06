@@ -21,6 +21,14 @@ public class DependencyInjectionTests:DependencyInjectionScenarioBase
         
         Assert.NotNull(userService);
     }
+    
+    [Fact]
+    void Get_scope_imp_success()
+    {
+        var userService = ServiceProvider.GetService<UserService>();
+        
+        Assert.NotNull(userService);
+    }
 
     [Fact]
     async Task Get_user_info_by_id()

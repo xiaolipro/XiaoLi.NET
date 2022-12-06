@@ -23,6 +23,17 @@ namespace XiaoLi.NET.UnitTests
         }
 
         [Fact]
+        void sadf()
+        {
+            void m1(params int[] nums)
+            {
+                _testOutputHelper.WriteLine(nums.Length.ToString());
+            }
+
+            m1();
+        }
+
+        [Fact]
         public void Enum_ToString_Test()
         {
             _testOutputHelper.WriteLine(Colors.White.ToString());
