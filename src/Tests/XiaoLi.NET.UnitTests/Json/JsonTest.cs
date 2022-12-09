@@ -24,8 +24,12 @@ public class JsonTest
         };
 
         var res = JObject.FromObject(obj);
-        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(res));
+        var json = JsonConvert.SerializeObject(res);
+        json = json.Insert(json.IndexOf('{') + 1, "\"b\":1,");
         _testOutputHelper.WriteLine(JsonConvert.SerializeObject(obj));
+        _testOutputHelper.WriteLine(JsonConvert.SerializeObject(json));
+
+        JsonConvert.DeserializeObject(json);
     }
     
     
