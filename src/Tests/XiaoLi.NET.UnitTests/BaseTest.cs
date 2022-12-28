@@ -25,12 +25,21 @@ namespace XiaoLi.NET.UnitTests
         [Fact]
         void sadf()
         {
-            void m1(params int[] nums)
+            var res = maketuple();
+
+            (string response, bool ok) maketuple()
             {
-                _testOutputHelper.WriteLine(nums.Length.ToString());
+                return ("123", true);
             }
 
-            m1();
+            processres(ref res);
+            
+            void processres(ref (string response, bool ok) res)
+            {
+                res.ok = false;
+            }
+
+            _testOutputHelper.WriteLine(res.ok.ToString());
         }
 
         [Fact]
@@ -70,10 +79,10 @@ namespace XiaoLi.NET.UnitTests
             switch (str)
             {
                 case "1":
-                    Console.WriteLine(1);
+                    _testOutputHelper.WriteLine(1.ToString());
                     break;
                 case "2":
-                    Console.WriteLine(2);
+                    _testOutputHelper.WriteLine(2.ToString());
                     break;
                 default:
                     goto case "1";
