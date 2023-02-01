@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
-namespace XiaoLi.NET.UnitTests;
+namespace XiaoLi.NET.UnitTests.Json;
 
 public class JsonRestructureTest
 {
@@ -12,8 +12,6 @@ public class JsonRestructureTest
     {
         _testOutputHelper = testOutputHelper;
     }
-
-    private JObject jobj;
 
     [Fact]
     void Core()
@@ -27,9 +25,9 @@ public class JsonRestructureTest
         //  order_weight ->  boxList[].weight[].x.c   NULL
         //  a[].c      ->  x.y[].z[].d
         var str =
-            "{\"x\":{\"order_weight\":1},\"C\":[{\"a\":1},{\"a\":2},{\"a\":3}],\"B\":{\"a\":2,\"b\":[{\"a\":101,\"b\":\"b1\",\"c\":[1,2,3]},{\"a\":102,\"b\":\"b2\"},{\"a\":103,\"b\":\"b3\"}]},\"D\":[{\"a\":1,\"b\":1},{\"a\":2,\"b\":2}],\"E\":[{\"x\":\"x1\",\"y\":\"y1\"},{\"x\":\"x2\",\"y\":\"y2\"},{\"y\":\"y4\"}]}";
-        jobj = JObject.Parse(str);
-        _testOutputHelper.WriteLine(jobj.SelectToken("x.order_weight").ToString());
+            "{\"x\":[{\"order_weight\":1}],\"C\":[{\"a\":1},{\"a\":2},{\"a\":3}],\"B\":{\"a\":2,\"b\":[{\"a\":101,\"b\":\"b1\",\"c\":[1,2,3]},{\"a\":102,\"b\":\"b2\"},{\"a\":103,\"b\":\"b3\"}]},\"D\":[{\"a\":1,\"b\":1},{\"a\":2,\"b\":2}],\"E\":[{\"x\":\"x1\",\"y\":\"y1\"},{\"x\":\"x2\",\"y\":\"y2\"},{\"y\":\"y4\"}]}";
+        var jobj = JObject.Parse(str);
+        _testOutputHelper.WriteLine(jobj.SelectToken("x[0].order_weight").ToString());
         var hash = Jobject2Hash(jobj);
         foreach (var item in hash)
         {
@@ -73,7 +71,7 @@ public class JsonRestructureTest
                 Name = "v",
                 Type = ParameterType.Number,
                 Alias = "boxList[*].boxList2[*]",
-                MapAlias = "x.order_weight",
+                MapAlias = "x[*].order_weight",
                 //IsRequired = true
             },
             new()
@@ -156,7 +154,7 @@ public class JsonRestructureTest
 
         List<ParameterNode> treeList = BuildTreeList(list, 0);
 
-        var res = JsonConvert.SerializeObject(dfs_object(treeList, hash, new List<int>()));
+        var res = JsonConvert.SerializeObject(dfs_object(jobj, treeList, hash, new List<int>()));
 
         _testOutputHelper.WriteLine(res);
     }
@@ -260,7 +258,7 @@ public class JsonRestructureTest
     }
 
 
-    JObject dfs_object(List<ParameterNode> list, Dictionary<string, JToken> hash, List<int> idxs)
+    JObject dfs_object(JObject jobject, List<ParameterNode> list, Dictionary<string, JToken> hash, List<int> idxList)
     {
         var res = new JObject();
         foreach (var item in list)
@@ -269,23 +267,16 @@ public class JsonRestructureTest
 
             if (item.Type == ParameterType.Object)
             {
-                var jobject = dfs_object(item.Children, hash, idxs);
-                res.Add(name, JObject.FromObject(jobject));
+                res.Add(name, dfs_object(jobject,item.Children, hash, idxList));
             }
             else if (item.Type == ParameterType.Array)
             {
-                idxs.Add(-1);
-                var jarray = dfs_array(item, hash, idxs);
-                foreach (var jtoken in jarray)
-                {
-                    if (jtoken.Type != JTokenType.Null)
-                    {
-                        res.Add(item.Name, jarray);
-                        break;
-                    }
-                }
+                idxList.Add(-1);
+                var jarray = dfs_array(jobject,item, hash, idxList);
                 
-                idxs.RemoveAt(idxs.Count - 1);
+                bool isEmptyArray = jarray.All(el => el.Type == JTokenType.Null);
+                res.Add(item.Name, isEmptyArray ? null : jarray);
+                idxList.RemoveAt(idxList.Count - 1);
             }
             else
             {
@@ -305,7 +296,7 @@ public class JsonRestructureTest
                     if (item.MapAlias[i] == '[')
                     {
                         i += 2;
-                        path += $"[{idxs[j]}]";
+                        path += $"[{idxList[j]}]";
                         j++;
                     }
                     else path += item.MapAlias[i];
@@ -324,24 +315,23 @@ public class JsonRestructureTest
         return res;
     }
 
-    JArray dfs_array(ParameterNode arr, Dictionary<string, JToken> hash, List<int> idxs)
+    JArray dfs_array(JObject jobject, ParameterNode arr, Dictionary<string, JToken> hash, List<int> idxList)
     {
         var res = new JArray();
 
         var item = arr.Children[0];
-        int len = get_len(item);
+        int len = get_len(jobject, item);
         for (int idx = 0; idx < len; idx++)
         {
-            idxs[^1]++;
+            idxList[^1]++;
             if (item.Type == ParameterType.Object)
             {
-                var jobject = dfs_object(item.Children, hash, idxs);
-                res.Add(jobject);
+                res.Add(dfs_object(jobject,item.Children, hash, idxList));
             }
             else if (item.Type == ParameterType.Array)
             {
-                idxs.Add(-1);
-                var jarray = dfs_array(item, hash, idxs);
+                idxList.Add(-1);
+                var jarray = dfs_array(jobject,item, hash, idxList);
                 res.Add(jarray);
             }
             else
@@ -362,7 +352,7 @@ public class JsonRestructureTest
                 if (strs.Length < 2) path = item.MapAlias;
                 for (var i = 0; i < strs.Length - 1; i++)
                 {
-                    path += $"{strs[i]}[{idxs[i]}]";
+                    path += $"{strs[i]}[{idxList[i]}]";
                 }
 
                 if (hash.ContainsKey(path))
@@ -378,13 +368,13 @@ public class JsonRestructureTest
         return res;
     }
 
-    private int get_len(ParameterNode item)
+    private int get_len(JObject jobject, ParameterNode item)
     {
-        if (item.MapAlias == null) return get_sub_len(item.Children);
+        if (item.MapAlias == null) return get_sub_len(jobject,item.Children);
         // 数组层级不对等情况
         if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) return 1;
 
-        return jobj.SelectTokens(item.MapAlias).Count();
+        return jobject.SelectTokens(item.MapAlias).Count();
 
 
         // if (item.Type is not ParameterType.Object and not ParameterType.Array)
@@ -410,12 +400,12 @@ public class JsonRestructureTest
         // return res;
     }
 
-    private int get_sub_len(List<ParameterNode> nodes)
+    private int get_sub_len(JObject jobject, List<ParameterNode> nodes)
     {
         int res = 0;
         foreach (var node in nodes)
         {
-            var len = get_len(node);
+            var len = get_len(jobject, node);
             if (res != 0 && res != len) throw new Exception("组成元素数量不对等");
             res = len;
         }

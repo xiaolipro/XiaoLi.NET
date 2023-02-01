@@ -30,7 +30,7 @@ public class Parameter
     ///<summary>
     /// 映射参数别名
     ///</summary>
-    public string MapAlias { get; set; }
+    public string? MapAlias { get; set; }
 
     public bool IsRequired { get; set; }
 }
