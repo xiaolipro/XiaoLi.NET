@@ -1,39 +1,45 @@
 ﻿using System.Reflection;
+using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
 
 public class 随便看看
 {
-    [Fact]
-    void hh()
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public 随便看看(ITestOutputHelper testOutputHelper)
     {
-        var flow = Assembly.GetAssembly(typeof(IA))!.GetTypes().Where(x => x.IsPublic).Where(x =>
-        {
-            if (!x.IsClass) return false;
-            if (x.IsAbstract) return false;
-            return typeof(IA).IsAssignableFrom(x);
-        }).FirstOrDefault(x => x.Name.Equals("B"));
-        if (flow == default) new A().Go();
-        else (Activator.CreateInstance(flow) as IA)!.Go();
+        _testOutputHelper = testOutputHelper;
+    }
+
+    [Fact]
+    void sadf()
+    {
+        var tail = "mutiarr".TrimStart("mutiarr".ToCharArray());
+        _testOutputHelper.WriteLine(tail);
+    }
+    [Fact]
+    void ddf()
+    {
+        new A();
     }
 }
 
-public interface IA
+public class A
 {
-    void Go();
-}
-
-public class A : IA
-{
-    public void Go()
+    public A()
+    {
+        Go();
+    }
+    public virtual void Go()
     {
         Console.WriteLine(123);
     }
 }
 
-public class B : IA
+public class B : A
 {
-    public void Go()
+    public override void Go()
     {
         Console.WriteLine(321);
     }

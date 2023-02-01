@@ -12,13 +12,16 @@ public class JsonRestructureTest
     {
         _testOutputHelper = testOutputHelper;
     }
-    
+
+    private JObject jobj;
     [Fact]
     void Core()
     {
         var str =
-            "{\"A\":1,\"B\":{\"a\":2,\"b\":[{\"a\":101,\"b\":\"b1\",\"c\":[1,2,3]},{\"a\":102,\"b\":\"b2\"},{\"a\":103,\"b\":\"b3\"}]},\"C\":[\"4\",\"3\",\"2\",\"1\"],\"D\":[{\"a\":1,\"b\":1},{\"a\":2,\"b\":2}],\"E\":[{\"x\":\"x1\",\"y\":\"y1\"},{\"x\":\"x2\",\"y\":\"y2\"},{\"x\":\"x3\",\"y\":\"y4\"}]}";
-        var hash = Jobject2Hash(JObject.Parse(str));
+            "{\"order_weight\":1.54,\"C\":[{\"a\":1},{\"a\":2},{\"a\":3}],\"B\":{\"a\":2,\"b\":[{\"a\":101,\"b\":\"b1\",\"c\":[1,2,3]},{\"a\":102,\"b\":\"b2\"},{\"a\":103,\"b\":\"b3\"}]},\"D\":[{\"a\":1,\"b\":1},{\"a\":2,\"b\":2}],\"E\":[{\"x\":\"x1\",\"y\":\"y1\"},{\"x\":\"x2\",\"y\":\"y2\"},{\"x\":\"x3\",\"y\":\"y4\"}]}";
+        jobj = JObject.Parse(str);
+        _testOutputHelper.WriteLine(jobj.SelectToken("C").Children().Count().ToString());
+        var hash = Jobject2Hash(jobj);
         foreach (var item in hash)
         {
             _testOutputHelper.WriteLine(item.Key + "=" + item.Value);
@@ -30,12 +33,38 @@ public class JsonRestructureTest
         {
             new()
             {
-                Id = 1,
+                Id = 100,
                 PId = 0,
-                Name = "_A",
-                Type = (int)ParameterType.String,
-                Alias = "_A",
-                MapAlias = "A"
+                Name = "boxList",
+                Type = (int)ParameterType.Array,
+                Alias = "boxList",
+                MapAlias = "order_weight"
+            },
+            new()
+            {
+                Id = 101,
+                PId = 100,
+                Name = "val",
+                Type = (int)ParameterType.Object,
+                Alias = "boxList[*]",
+            },
+            new()
+            {
+                Id = 102,
+                PId = 101,
+                Name = "subBoxList",
+                Type = (int)ParameterType.Array,
+                Alias = "boxList[*].subBoxList",
+                MapAlias = "order_weight"
+            },
+            new()
+            {
+                Id = 103,
+                PId = 102,
+                Name = "val",
+                Type = (int)ParameterType.Number,
+                Alias = "boxList[*].subBoxList[*]",
+                MapAlias = "order_weight[*]"
             },
             new()
             {
@@ -68,7 +97,7 @@ public class JsonRestructureTest
                 Name = "_E",
                 Alias = "_B[*]._D[*]",
                 Type = (int)ParameterType.String,
-                MapAlias = "C[*]" // 叶子
+                MapAlias = "C[*].a" // 叶子
             },
             new()
             {
@@ -131,15 +160,17 @@ public class JsonRestructureTest
             node.Name = child.Name;
             node.Type = child.Type;
             node.Alias = child.Alias;
+            
             if (node.Type is (int)ParameterType.Object or (int)ParameterType.Array)
             {
                 node.Children = BuildTreeList(list, child.Id);
             }
-            else
+            
+            if (node.Type is not (int)ParameterType.Object)
             {
                 node.MapAlias = child.MapAlias;
             }
-
+            
             res.Add(node);
         }
 
@@ -242,7 +273,7 @@ public class JsonRestructureTest
                     res.Add(name, null);
                     continue;
                 }
-                if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) continue;
+                //if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) continue;
                 var key = item.MapAlias.Replace("[*]", $"[{idx}]");
                 if (!hash.ContainsKey(key))
                 {
@@ -260,10 +291,13 @@ public class JsonRestructureTest
 
     JArray dfs_array(ParameterNode arr, Dictionary<string, JToken> hash)
     {
+        
+
         var res = new JArray();
         foreach (var item in arr.Children)
         {
-            int len = get_len(item, hash);
+            int len = get_arrlen(arr);
+            //int len = get_len(item, hash);
             for (int idx = 0; idx < len; idx++)
                 if (item.Type == (int)ParameterType.Object)
                 {
@@ -279,10 +313,14 @@ public class JsonRestructureTest
                 {
                     if (string.IsNullOrEmpty(item.MapAlias))
                     {
-                        res.Add(null);
                         continue;
                     }
+                    //if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) continue;
                     var key = item.MapAlias.Replace("[*]", $"[{idx}]");
+                    if (!hash.ContainsKey(key))
+                    {
+                        continue;
+                    }
                     var val = hash[key];
                     //ValidationValue(item.Type, val);
                     res.Add(val);
@@ -292,9 +330,17 @@ public class JsonRestructureTest
         return res;
     }
 
+    private int get_arrlen(ParameterNode arr)
+    {
+        // order_weight[*].a  -> a[*].v[*].c
+        arr.MapAlias = "order_weight";
+        var path = arr.MapAlias; // order_weight[*][*] ->
+        return Math.Max( jobj.SelectToken(path).Children().Count(), 1);
+    }
+
     private int get_len(ParameterNode item, Dictionary<string, JToken> hash)
     {
-        int res = 1;
+        int res = 0;
         if (item.Type is not (int)ParameterType.Object and not (int)ParameterType.Array)
         {
             // 跳过无映射

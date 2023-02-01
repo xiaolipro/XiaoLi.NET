@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using XiaoLi.NET.FunctionalTests.DependencyInjection.Services;
 
 namespace XiaoLi.NET.FunctionalTests;
 
@@ -47,7 +48,7 @@ public class ScenarioBase<TStartup> :IDisposable where TStartup : class
 
     protected virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-
+        services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
     }
 
 
