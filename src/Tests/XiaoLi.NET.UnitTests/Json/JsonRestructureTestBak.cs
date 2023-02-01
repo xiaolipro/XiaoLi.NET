@@ -33,7 +33,7 @@ public class JsonRestructureTestBak
                 Id = 1,
                 PId = 0,
                 Name = "_A",
-                Type = (int)ParameterType.String,
+                Type = ParameterType.String,
                 Alias = "_A",
                 MapAlias = "A"
             },
@@ -43,7 +43,7 @@ public class JsonRestructureTestBak
                 PId = 0,
                 Name = "_B",
                 Alias = "_B",
-                Type = (int)ParameterType.Array,
+                Type = ParameterType.Array,
             },
             new()
             {
@@ -51,7 +51,7 @@ public class JsonRestructureTestBak
                 PId = 2,
                 Name = "_C",
                 Alias = "_B[*]",
-                Type = (int)ParameterType.Object,
+                Type = ParameterType.Object,
             },
             new()
             {
@@ -59,7 +59,7 @@ public class JsonRestructureTestBak
                 PId = 3,
                 Name = "_D",
                 Alias = "_B[*]._D",
-                Type = (int)ParameterType.Array,
+                Type = ParameterType.Array,
             },
             new()
             {
@@ -67,7 +67,7 @@ public class JsonRestructureTestBak
                 PId = 4,
                 Name = "_E",
                 Alias = "_B[*]._D[*]",
-                Type = (int)ParameterType.String,
+                Type = ParameterType.String,
                 MapAlias = "C[*]" // 叶子
             },
             new()
@@ -76,7 +76,7 @@ public class JsonRestructureTestBak
                 PId = 3,
                 Name = "_F",
                 Alias = "_B[*]._F",
-                Type = (int)ParameterType.String,
+                Type = ParameterType.String,
                 MapAlias = "B.b[*].b"
             },
             new()
@@ -85,7 +85,7 @@ public class JsonRestructureTestBak
                 PId = 0,
                 Name = "_G",
                 Alias = "_K",
-                Type = (int)ParameterType.Array,
+                Type = ParameterType.Array,
             },
             new()
             {
@@ -93,7 +93,7 @@ public class JsonRestructureTestBak
                 PId = 7,
                 Name = "_gg",
                 Alias = "_K[*]",
-                Type = (int)ParameterType.Object,
+                Type = ParameterType.Object,
             },
             new()
             {
@@ -101,7 +101,7 @@ public class JsonRestructureTestBak
                 PId = 8,
                 Name = "_X",
                 Alias = "_K[*]._X",
-                Type = (int)ParameterType.Number,
+                Type = ParameterType.Number,
                 MapAlias = "D[*].a"
             },
             new()
@@ -110,7 +110,7 @@ public class JsonRestructureTestBak
                 PId = 8,
                 Name = "_Y",
                 Alias = "_K[*]._Y",
-                Type = (int)ParameterType.String,
+                Type = ParameterType.String,
                 MapAlias = "E[*].x"
             },
         };
@@ -131,7 +131,7 @@ public class JsonRestructureTestBak
             node.Name = child.Name;
             node.Type = child.Type;
             node.Alias = child.Alias;
-            if (node.Type is (int)ParameterType.Object or (int)ParameterType.Array)
+            if (node.Type is ParameterType.Object or ParameterType.Array)
             {
                 node.Children = BuildTreeList(list, child.Id);
             }
@@ -225,12 +225,12 @@ public class JsonRestructureTestBak
         {
             string name = item.Name;
 
-            if (item.Type == (int)ParameterType.Object)
+            if (item.Type == ParameterType.Object)
             {
                 var jobject = dfs_object(item.Children, hash, 0);
                 res.Add(name, JObject.FromObject(jobject));
             }
-            else if (item.Type == (int)ParameterType.Array)
+            else if (item.Type == ParameterType.Array)
             {
                 var jarray = dfs_array(item, hash);
                 res.Add(item.Name, JArray.FromObject(jarray));
@@ -256,12 +256,12 @@ public class JsonRestructureTestBak
         {
             int len = get_len(item, hash);
             for (int idx = 0; idx < len; idx++)
-                if (item.Type == (int)ParameterType.Object)
+                if (item.Type == ParameterType.Object)
                 {
                     var jobject = dfs_object(item.Children, hash, idx);
                     res.Add(jobject);
                 }
-                else if (item.Type == (int)ParameterType.Array)
+                else if (item.Type == ParameterType.Array)
                 {
                     var jarray = dfs_array(item, hash);
                     res.Add(jarray);
@@ -270,7 +270,7 @@ public class JsonRestructureTestBak
                 {
                     var key2 = item.MapAlias.Replace("[*]", $"[{idx}]");
                     var val = hash[key2];
-                    ValidationValue(item.Type, val);
+                    //ValidationValue(item.Type, val);
                     res.Add(val);
                 }
         }
@@ -281,7 +281,7 @@ public class JsonRestructureTestBak
     private int get_len(ParameterNode item, Dictionary<string, JToken> hash)
     {
         int res = 1;
-        if (item.Type is not (int)ParameterType.Object and not (int)ParameterType.Array)
+        if (item.Type is not ParameterType.Object and not ParameterType.Array)
         {
             int idx = 0;
             while (hash.ContainsKey(item.MapAlias.Replace("[*]", $"[{idx}]"))) idx++;
@@ -292,7 +292,7 @@ public class JsonRestructureTestBak
 
         foreach (var sub in item.Children)
         {
-            if (sub.Type == (int)ParameterType.Object || sub.Type == (int)ParameterType.Array) continue;
+            if (sub.Type == ParameterType.Object || sub.Type == ParameterType.Array) continue;
             int idx = 0;
             while (hash.ContainsKey(sub.MapAlias.Replace("[*]", $"[{idx}]"))) idx++;
             res = Math.Max(res, idx);
@@ -301,8 +301,4 @@ public class JsonRestructureTestBak
         return res;
     }
 
-
-    private void ValidationValue(int itemType, JToken val)
-    {
-    }
 }

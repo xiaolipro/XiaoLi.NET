@@ -20,7 +20,7 @@ public class Parameter
     ///<summary>
     /// 参数类型
     ///</summary>
-    public int Type { get; set; }
+    public ParameterType Type { get; set; }
 
     ///<summary>
     /// 参数别名
@@ -31,4 +31,6 @@ public class Parameter
     /// 映射参数别名
     ///</summary>
     public string MapAlias { get; set; }
+
+    public bool IsRequired { get; set; }
 }
