@@ -7,9 +7,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 NatashaInitializer.Preheating();
 string script = """   
-int _customerCode = int.Parse(arg.customerCode);
-string _appKey = arg.appKey;
-long _timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+int _customerCode = int.Parse(arg[0]);
+string _appKey = arg[1];
+long _timestamp = long.Parse(arg[2]);
 string pwd = _customerCode + _appKey + _timestamp;
 
 string MD5Encrypt32(string password = "")
@@ -46,35 +46,12 @@ var memberDeclaration = CSharpSyntaxTree.ParseText(script)
     .FirstOrDefault();
 Console.WriteLine(memberDeclaration.NormalizeWhitespace().ToFullString());
 
-
-var list = new List<(string name, string val)>();
-list.Add(("customerCode", "1255"));
-list.Add(("appKey", "a1255yunlian20220426PEYGDJEY548654NCSOSHS"));
-
-var dd = NatashaManagement.CreateDomain("myDomain");
-var nClass = NClass.UseDomain(dd)
-    .Name("arg")
-    .Public();
-
-foreach (var item in list)
-{
-    //添加字段
-    nClass.Property(fb => fb.Public().Static()
-        .Name(item.name)
-        .Type<string>()
-        .OnlyGetter($"return \"{item.val}\";"));
-}
-
-var action = NDelegate.UseDomain(dd)
-    //.ConfigUsing(nClass.GetType())
-    .Func<object>(script);
-
-var res = action();
-
+var func = NDelegate.RandomDomain().Func<string[], Object>(script);
+var res = func(new string[] { "1255", "a1255yunlian20220426PEYGDJEY548654NCSOSHS","1675655425" });
 foreach (var item in res.GetType().GetProperties())
 {
     Console.WriteLine(item.Name + "---" + item.GetValue(res));
 }
 
 //如果以后都不会再用 action 可以卸载
-action.DisposeDomain();
+func.DisposeDomain();
