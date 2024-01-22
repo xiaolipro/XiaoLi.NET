@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Linq.Expressions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using XiaoLi.NET.UnitTests.Json;
 using Xunit.Abstractions;
 
 namespace XiaoLi.NET.UnitTests;
@@ -14,6 +16,44 @@ public class JsonTest
     }
 
     [Fact]
+    void dd()
+    {
+        var obj = new
+        {
+
+        };
+        var list = JsonRestructureTest.GetMaps();
+        List<ParameterNode> treeList = JsonHelper.BuildTreeList(list);
+
+        var res = JsonHelper.Restructure(JToken.FromObject(obj), treeList);
+        
+        _testOutputHelper.WriteLine(res.ToString());
+    }
+static Func<object, bool> IsNull = obj => obj == null;
+static Expression<Func<object, bool>> IsNull2 = obj => obj == null;
+    [Fact]
+    void Concat()
+    {
+        // 原始的JObject
+        JObject originalObject = new JObject();
+        originalObject["a"] = 1;
+        originalObject["b"] = 2;
+
+        // 创建新的JObject并将原始JObject作为属性值
+        JObject newObject = new JObject();
+        newObject["x"] = originalObject;
+
+        // 输出新的JObject
+        _testOutputHelper.WriteLine(newObject.ToString());
+        
+        var hash = JsonRestructureTest.Json2Hash(newObject);
+        foreach (var item in hash)
+        {
+            _testOutputHelper.WriteLine(item.Key + "=" + item.Value);
+        }
+    }
+
+    [Fact]
     void Seri()
     {
         var obj = new
@@ -25,7 +65,7 @@ public class JsonTest
 
         var res = JObject.FromObject(obj);
 
-        _testOutputHelper.WriteLine("---"+ res.SelectToken("").ToString());
+        _testOutputHelper.WriteLine("---" + res.SelectToken("").ToString());
         var json = JsonConvert.SerializeObject(res);
         json = json.Insert(json.IndexOf('{') + 1, "\"b\":1,");
         _testOutputHelper.WriteLine(JsonConvert.SerializeObject(obj));
@@ -36,8 +76,8 @@ public class JsonTest
 
         JsonConvert.DeserializeObject(json);
     }
-    
-    
+
+
     [Fact]
     public void Deseri()
     {
@@ -52,14 +92,14 @@ public class JsonTest
         var str = "{\"a\":1,\"B\":{\"a\":true,\"b\":[1,2,3]},\"C\":\"4\"}";
 
         var obj = JsonConvert.DeserializeObject<JObject>(str);
-        
+
         foreach (var item in Jobject2Hash(obj))
         {
             _testOutputHelper.WriteLine(item.Key);
         }
-        
+
         _testOutputHelper.WriteLine(obj.SelectToken("B.a").ToString());
-        
+
         Assert.True(obj.SelectToken("B.a").ToString().Equals(Boolean.TrueString));
         Assert.True(obj.SelectToken("B.a").ToString().Equals("true", StringComparison.OrdinalIgnoreCase));
     }
@@ -125,7 +165,7 @@ public class JsonTest
 
         return res;
     }
-    
+
     void Add(Dictionary<string, JToken> a, Dictionary<string, JToken> b)
     {
         foreach (var item in b)

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Globalization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using XiaoLi.NET.Mvc.Exceptions;
 using Xunit.Abstractions;
@@ -17,6 +18,11 @@ public class JsonRestructureTest
     [Fact]
     void Core()
     {
+        _testOutputHelper.WriteLine(Thread.CurrentThread.CurrentCulture.ToString());
+        _testOutputHelper.WriteLine(DateTime.Now.ToString("yyyy-M-d dddd"));
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+        _testOutputHelper.WriteLine(Thread.CurrentThread.CurrentCulture.ToString());
+        _testOutputHelper.WriteLine(DateTime.Now.ToString("yyyy-M-d dddd"));
         // [][] -> [][]
         // [属性,属性,属性] -》1：1
         // len  危险
@@ -26,7 +32,63 @@ public class JsonRestructureTest
         //  order_weight ->  boxList[].weight[].x.c   NULL
         //  a[].c      ->  x.y[].z[].d
         var str = //"[{\"orderNo\":1},{\"orderNo\":2},{\"orderNo\":3}]";
-        "{\"x\":[{\"order_weight\":1},{\"order_weight\":2},{\"order_weight\":3}],\"C\":[{\"a\":1},{\"a\":2},{\"a\":3}],\"B\":{\"a\":2,\"b\":[{\"a\":101,\"b\":\"b1\",\"c\":[123]},{\"a\":102,\"b\":\"b2\",\"c\":[2,3,7,9]},{\"a\":103,\"b\":\"b3\",\"c\":[2]}]},\"D\":[{\"a\":1,\"b\":1},{\"a\":2,\"b\":2}],\"E\":[{\"x\":\"x1\",\"y\":\"y1\"},{\"x\":\"x2\",\"y\":\"y2\"}]}";
+        """
+{
+	"x": [{
+		"order_weight": 1
+	}, {
+		"order_weight": 2
+	}, {
+		"order_weight": 3
+	}],
+	"C": [{
+		"a": 1
+	}, {
+		"a": 2
+	}, {
+		"a": 3
+	}],
+	"B": {
+		"a": 2,
+		"b": [{
+			"a": 101,
+			"b": "b1",
+			"c": [123]
+		}, {
+			"a": 102,
+			"b": "b2",
+			"c": [2, 3, 7, 9]
+		}, {
+			"a": 103,
+			"b": "b3",
+			"c": [2]
+		}]
+	},
+
+}
+""";
+        var jtoken = JToken.Parse(str);
+        //_testOutputHelper.WriteLine(jtoken.SelectToken("[0].orderNo").ToString());
+
+        _testOutputHelper.WriteLine("==============");
+
+        List<Parameter> list = GetMaps();
+
+        List<ParameterNode> treeList = BuildTreeList(list, 0);
+
+        var res = JsonConvert.SerializeObject(dfs_json(jtoken, treeList));
+
+        _testOutputHelper.WriteLine(res);
+    }
+    
+    
+    [Fact]
+    void Jarray()
+    {
+        // [{}] -> []
+        // [{}] -> {[]}
+        // [{}] -> [{}]
+        var str = "{\"orderNo\":1}";
         var jtoken = JToken.Parse(str);
         //_testOutputHelper.WriteLine(jtoken.SelectToken("[0].orderNo").ToString());
         var hash = Json2Hash(jtoken);
@@ -37,7 +99,7 @@ public class JsonRestructureTest
 
         _testOutputHelper.WriteLine("==============");
 
-        List<Parameter> list = GetMaps();
+        List<Parameter> list = GetMaps2();
         if (jtoken is JArray)
         {
             list.ForEach(x =>
@@ -51,9 +113,60 @@ public class JsonRestructureTest
 
         List<ParameterNode> treeList = BuildTreeList(list, 0);
 
-        var res = JsonConvert.SerializeObject(dfs_json(jtoken, treeList, hash));
+        var res = JsonConvert.SerializeObject(dfs_json(jtoken, treeList, MappedJsonType.Array));
 
         _testOutputHelper.WriteLine(res);
+    }
+    
+    [Fact]
+    void Value()
+    {
+        // {} -> v
+        var str = "1";
+        var jtoken = JToken.Parse(str);
+        //_testOutputHelper.WriteLine(jtoken.SelectToken("[0].orderNo").ToString());
+        var hash = Json2Hash(jtoken);
+        foreach (var item in hash)
+        {
+            _testOutputHelper.WriteLine(item.Key + "=" + item.Value);
+        }
+
+        _testOutputHelper.WriteLine("==============");
+
+        List<Parameter> list = GetMaps3();
+
+        List<ParameterNode> treeList = BuildTreeList(list, 0);
+
+        var res = JsonConvert.SerializeObject(dfs_json(jtoken, treeList, MappedJsonType.Value));
+
+        _testOutputHelper.WriteLine(res);
+    }
+
+    [Fact]
+    void annotation()
+    {
+        string json = @"
+            {
+                ""SubVersion"": ""1707"", //子版本，1801代表着18年1月
+                ""RequestOption"": ""nonvalidate"", //请求操作，validate=城市/州/邮政编码/组合验证，nonvalidate=邮政编码/州组合验证/y
+                ""TransactionReference"": {
+                    ""CustomerContext"": """" //客户上下文信息
+                }
+            }";
+
+        JsonLoadSettings settings = new JsonLoadSettings
+        {
+            CommentHandling = CommentHandling.Load
+        };
+
+        JToken token = JToken.Parse(json);
+
+        // 遍历所有的注释
+        foreach (var comment in token.Annotations<string>())
+        {
+            _testOutputHelper.WriteLine(comment); // 输出注释文本
+        }
+
     }
 
     enum MappedJsonType
@@ -63,11 +176,16 @@ public class JsonRestructureTest
         Value
     }
 
-    private JToken dfs_json(JToken jtoken, List<ParameterNode> treeList, Dictionary<string, JToken> hash,
-        MappedJsonType mappedJsonType = MappedJsonType.Object)
+    private JToken dfs_json(JToken jtoken, List<ParameterNode> treeList, MappedJsonType mappedJsonType = MappedJsonType.Object)
     {
+        if (treeList.Count == 0) return jtoken;
         var idxList = new List<int>();
-
+        var hash = Json2Hash(jtoken);
+        foreach (var item in hash)
+        {
+            _testOutputHelper.WriteLine(item.Key + "=" + item.Value);
+        }
+        
         switch (mappedJsonType)
         {
             case MappedJsonType.Object:
@@ -77,13 +195,13 @@ public class JsonRestructureTest
                 return dfs_array(jtoken, treeList[0], hash, idxList);
             case MappedJsonType.Value:
                 var value = hash[treeList[0].MapAlias!];
-                return new JValue(value);
+                return value;
             default:
                 throw new ArgumentOutOfRangeException(nameof(mappedJsonType), mappedJsonType, null);
         }
     }
 
-    private Dictionary<string, JToken> Json2Hash(JToken jtoken)
+    public static Dictionary<string, JToken> Json2Hash(JToken jtoken)
     {
         if (jtoken is JObject obj)
         {
@@ -102,28 +220,8 @@ public class JsonRestructureTest
         };
     }
 
-    private List<Parameter> GetMaps()
+    public static List<Parameter> GetMaps()
     {
-        // return new List<Parameter>()
-        // {
-        //     new()
-        //     {
-        //         Id = 100,
-        //         PId = 0,
-        //         Name = "codes",
-        //         Type = ParameterType.Array,
-        //         Alias = "codes",
-        //     },
-        //     new()
-        //     {
-        //         Id = 101,
-        //         PId = 100,
-        //         Name = "val",
-        //         Type = ParameterType.String,
-        //         Alias = "codes[*]",
-        //         MapAlias = "orderNo"
-        //     },
-        // };
         return new List<Parameter>()
         {
             new()
@@ -250,6 +348,83 @@ public class JsonRestructureTest
         };
     }
 
+    public static List<Parameter> GetMaps2()
+    {
+        // return new List<Parameter>()
+        // {
+        //     new()
+        //     {
+        //         Id = 100,
+        //         PId = 0,
+        //         Name = "codes",
+        //         Type = ParameterType.Array,
+        //         Alias = "codes",
+        //     },
+        //     new()
+        //     {
+        //         Id = 101,
+        //         PId = 100,
+        //         Name = "val",
+        //         Type = ParameterType.Object,
+        //         Alias = "codes[*]",
+        //     },
+        //     new()
+        //     {
+        //         Id = 102,
+        //         PId = 0,
+        //         Name = "no",
+        //         Type = ParameterType.String,
+        //         Alias = "no",
+        //         MapAlias = "orderNo"
+        //     },
+        //     new()
+        //     {
+        //         Id = 110,
+        //         PId = 101,
+        //         Name = "no",
+        //         Type = ParameterType.String,
+        //         Alias = "codes[*].val",
+        //         MapAlias = "orderNo"
+        //     },
+        // };
+        return new List<Parameter>()
+        {
+            new()
+            {
+                Id = 100,
+                PId = 0,
+                Name = "codes",
+                Type = ParameterType.Array,
+                Alias = "codes",
+            },
+            new()
+            {
+                Id = 101,
+                PId = 100,
+                Name = "val",
+                Type = ParameterType.String,
+                Alias = "codes[*]",
+                MapAlias = "orderNo"
+            },
+        };
+    }
+
+    public static List<Parameter> GetMaps3()
+    {
+        return new List<Parameter>()
+        {
+            new()
+            {
+                Id = 100,
+                PId = 0,
+                Name = "code",
+                Type = ParameterType.String,
+                Alias = "code",
+                MapAlias = ""
+            },
+        };
+    }
+
     private static Dictionary<string, JToken> Jobject2Hash(JObject jobject)
     {
         Dictionary<string, JToken> res = new();
@@ -352,8 +527,9 @@ public class JsonRestructureTest
                 idxList.Add(-1);
                 var jarray = dfs_array(jtoken, item, hash, idxList);
 
-                bool isEmptyArray = jarray.All(el => el.Type == JTokenType.Null);
-                res.Add(item.Name, isEmptyArray ? null : jarray);
+                // bool isEmptyArray = jarray.All(el => el.Type == JTokenType.Null);
+                // res.Add(item.Name, isEmptyArray ? null : jarray);
+                res.Add(item.Name, jarray);
 
                 idxList.RemoveAt(idxList.Count - 1);
             }
@@ -430,7 +606,6 @@ public class JsonRestructureTest
                 {
                     if (item.IsRequired)
                         throw new BusinessException(message: $"必填参数{item.Name}（{item.Alias}）必须建立映射");
-                    continue;
                 }
 
                 //if (item.Alias.Split("[*]").Length != item.MapAlias.Split("[*]").Length) continue;
