@@ -13,7 +13,7 @@ namespace XiaoLi.NET.Mvc.UnifiedResults
             // void、Task会被包装成EmptyResult
             if (context.Result is EmptyResult)
             {
-                var res = UnifiedResultFactory.CreateBaseResult();
+                var res = ResultFactory.CreateSimpleResult();
                 context.Result = new ObjectResult(res);
 
                 return;
@@ -25,9 +25,9 @@ namespace XiaoLi.NET.Mvc.UnifiedResults
                 var value = objectResult.Value;
                 
                 // 已unified的无须再包装
-                if (value is BaseResult) return;
+                if (value is SimpleResult) return;
 
-                var res = UnifiedResultFactory.CreateDataResult<object>();
+                var res = ResultFactory.CreateDataResult<object>();
 
                 // A machine-readable format for specifying errors in HTTP API responses based on https://tools.ietf.org/html/rfc7807.
                 if (value is ProblemDetails details)

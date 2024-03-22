@@ -37,7 +37,7 @@ namespace XiaoLi.NET.Mvc.Filters
             
             if (context.Exception is BusinessException businessException)
             {
-                var res = UnifiedResultFactory.CreateBaseResult();
+                var res = ResultFactory.CreateSimpleResult();
                 res.Code = (int)HttpStatusCode.BadRequest;
                 res.Message = businessException.Message;
 
@@ -45,7 +45,7 @@ namespace XiaoLi.NET.Mvc.Filters
             }
             else
             {
-                var res = UnifiedResultFactory.CreateErrorResult();
+                var res = ResultFactory.CreateErrorResult();
                 res.Message = context.Exception.Message;
                 if (_env.IsDevelopment()) res.StackTrace = context.Exception.StackTrace;
 

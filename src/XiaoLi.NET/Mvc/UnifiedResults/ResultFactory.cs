@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace XiaoLi.NET.Mvc.UnifiedResults
 {
-    public static class UnifiedResultFactory
+    public static class ResultFactory
     {
-        public static BaseResult CreateBaseResult()
+        public static SimpleResult CreateSimpleResult()
         {
-            return new BaseResult();
+            return new SimpleResult();
         }
 
         public static DataResult<T> CreateDataResult<T>() where T : class

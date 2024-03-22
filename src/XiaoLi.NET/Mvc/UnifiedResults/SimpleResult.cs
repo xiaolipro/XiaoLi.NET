@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace XiaoLi.NET.Mvc.UnifiedResults
 {
-    public class BaseResult
+    public class SimpleResult
     {
         /// <summary>
         /// 响应状态码
@@ -16,13 +16,13 @@ namespace XiaoLi.NET.Mvc.UnifiedResults
         /// </summary>
         public string Message { get; set; }
         
-        public BaseResult(int code = (int)HttpStatusCode.OK)
+        public SimpleResult(int code = (int)HttpStatusCode.OK)
         {
             Code = code;
         }
     }
     
-    public class DataResult<T> : BaseResult where T : class
+    public class DataResult<T> : SimpleResult where T : class
     {
         /// <summary>
         /// 响应数据
@@ -30,7 +30,7 @@ namespace XiaoLi.NET.Mvc.UnifiedResults
         public T Data { get; set; }
     }
 
-    public class ErrorResult : BaseResult
+    public class ErrorResult : SimpleResult
     {
         public ErrorResult()
         {

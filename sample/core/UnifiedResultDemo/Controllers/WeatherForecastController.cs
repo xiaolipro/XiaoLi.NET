@@ -70,9 +70,9 @@ public class WeatherForecastController : ControllerBase
     }
     
     [HttpGet]
-    public BaseResult Get6()
+    public SimpleResult Get6()
     {
-        var res = UnifiedResultFactory.CreateBaseResult();
+        var res = ResultFactory.CreateSimpleResult();
         Console.WriteLine(123);
 
         return res;
@@ -94,7 +94,7 @@ public class WeatherForecastController : ControllerBase
     [HttpPost]
     public ActionResult Post3(DemoPlayload playload)
     {
-        var res = UnifiedResultFactory.CreateDataResult<DemoPlayload>();
+        var res = ResultFactory.CreateDataResult<DemoPlayload>();
         res.Data = playload;
         return Ok(res);
     }
@@ -102,7 +102,7 @@ public class WeatherForecastController : ControllerBase
     [HttpPost]
     public DataResult<DemoPlayload> Post4(DemoPlayload playload)
     {
-        var res = UnifiedResultFactory.CreateDataResult<DemoPlayload>();
+        var res = ResultFactory.CreateDataResult<DemoPlayload>();
         res.Data = playload;
         return res;
     }
